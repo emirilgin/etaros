@@ -1,0 +1,21 @@
+node_modules/
+dist/
+out/
+release/
+*.dmg
+*.exe
+*.AppImage
+*.deb
+*.snap
+.DS_Store
+Thumbs.db
+*.log
+npm-debug.log*
+.env
+app.config.js
+build/icon.iconset/
+
+# Keep generated icons
+!build/icon.png
+!build/icon.icns
+!build/icon.ico

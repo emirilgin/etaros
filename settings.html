@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Sidekick · Settings</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:       #1C1917;
+  --bg-hi:    #211E1B;
+  --surface:  #272320;
+  --card:     #2E2A26;
+  --card-h:   #363228;
+  --border:   #353028;
+  --border2:  #463D34;
+
+  --orange:     #CF6E3C;
+  --orange-dim: rgba(207,110,60,.13);
+  --orange-t:   #D98060;
+
+  --green: #5AB47A; --green-bg: rgba(90,180,122,.11);
+  --red:   #D46868; --red-bg:   rgba(212,104,104,.11);
+
+  --t1: #ECE8E0;
+  --t2: #9A8B7C;
+  --t3: #5E5248;
+  --r:  12px;
+  --r-s: 8px;
+}
+
+html,body{
+  width:480px;min-height:100vh;background:transparent;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  font-size:13.5px;color:var(--t1);-webkit-font-smoothing:antialiased;
+}
+#win{
+  width:480px;min-height:100vh;background:var(--bg);
+  border:1px solid var(--border2);border-radius:14px;
+  display:flex;flex-direction:column;overflow:hidden;
+}
+
+/* ── Header ── */
+#hdr{
+  display:flex;align-items:center;gap:10px;
+  padding:14px 16px 13px;border-bottom:1px solid var(--border);
+  -webkit-app-region:drag;flex-shrink:0;
+}
+.hdr-hex{
+  width:28px;height:28px;flex-shrink:0;
+  clip-path:polygon(50% 0%,95% 25%,95% 75%,50% 100%,5% 75%,5% 25%);
+  background:var(--orange-dim);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:700;color:var(--orange);
+}
+#hdr h1{flex:1;font-size:14px;font-weight:600;color:var(--t1);letter-spacing:.03em;}
+#x-btn{
+  -webkit-app-region:no-drag;
+  width:28px;height:28px;border-radius:7px;
+  background:none;border:1px solid transparent;
+  color:var(--t3);cursor:pointer;font-size:14px;
+  display:flex;align-items:center;justify-content:center;
+  transition:color .15s,border-color .15s,background .15s;
+}
+#x-btn:hover{color:var(--red);border-color:rgba(212,104,104,.35);background:var(--red-bg);}
+
+/* ── Scrollable body ── */
+#body{
+  flex:1;overflow-y:auto;
+  padding:20px 16px;display:flex;flex-direction:column;gap:20px;
+}
+#body::-webkit-scrollbar{width:3px;}
+#body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+
+/* ── Section ── */
+.sec{display:flex;flex-direction:column;gap:8px;}
+.sec-label{
+  font-size:10.5px;font-weight:700;text-transform:uppercase;
+  letter-spacing:.1em;color:var(--t3);padding-bottom:2px;
+}
+.hint{font-size:12px;color:var(--t3);line-height:1.6;}
+.hint-link{
+  color:var(--orange-t);text-decoration:none;
+  background:none;border:none;font:inherit;cursor:pointer;padding:0;
+}
+.hint-link:hover{opacity:.75;}
+.div{height:1px;background:var(--border);}
+
+/* ── Plan card ── */
+.plan-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);overflow:hidden;
+}
+.plan-top{
+  display:flex;align-items:center;gap:12px;
+  padding:15px 16px;border-bottom:1px solid var(--border);
+}
+.plan-hex{
+  width:36px;height:36px;flex-shrink:0;
+  clip-path:polygon(50% 0%,95% 25%,95% 75%,50% 100%,5% 75%,5% 25%);
+  background:var(--orange-dim);
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;font-weight:700;color:var(--orange);
+}
+.plan-info{flex:1;}
+.plan-name{font-size:14px;font-weight:600;color:var(--t1);display:block;}
+.plan-desc{font-size:12px;color:var(--t3);margin-top:2px;display:block;}
+.tier-chip{
+  font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+  padding:3px 10px;border-radius:20px;flex-shrink:0;
+}
+.tier-chip.free{background:rgba(100,90,80,.18);color:var(--t2);}
+.tier-chip.pro {background:var(--orange-dim);color:var(--orange-t);border:1px solid rgba(207,110,60,.22);}
+.tier-chip.max {background:var(--green-bg);color:var(--green);border:1px solid rgba(90,180,122,.2);}
+
+/* ── License key input row ── */
+.plan-key{
+  display:flex;align-items:center;gap:0;
+  border-bottom:1px solid var(--border);
+}
+.plan-key input{
+  flex:1;background:none;border:none;outline:none;
+  color:var(--t1);font-family:inherit;font-size:13px;
+  padding:11px 14px;letter-spacing:.04em;
+}
+.plan-key input::placeholder{color:var(--t3);letter-spacing:0;}
+.plan-key-btn{
+  background:none;border:none;border-left:1px solid var(--border);
+  color:var(--orange-t);font-family:inherit;font-size:12px;font-weight:500;
+  padding:0 14px;align-self:stretch;cursor:pointer;white-space:nowrap;
+  transition:background .14s;
+}
+.plan-key-btn:hover{background:var(--orange-dim);}
+
+/* ── Upgrade tiers ── */
+.plan-tiers{display:grid;grid-template-columns:1fr 1fr;}
+.tier-opt{
+  padding:15px 16px;display:flex;flex-direction:column;gap:8px;
+  border-right:1px solid var(--border);
+}
+.tier-opt:last-child{border-right:none;}
+.tier-opt-name{font-size:13px;font-weight:600;color:var(--t1);}
+.tier-opt-price{
+  font-size:22px;font-weight:700;color:var(--orange-t);line-height:1;
+}
+.tier-opt-price sup{font-size:13px;vertical-align:top;margin-top:4px;display:inline-block;}
+.tier-opt-price sub{font-size:11px;font-weight:400;color:var(--t3);}
+.tier-opt-features{font-size:12px;color:var(--t3);line-height:1.7;flex:1;}
+.tier-opt-features li{list-style:none;padding-left:14px;position:relative;}
+.tier-opt-features li::before{content:'✓';position:absolute;left:0;color:var(--green);font-size:11px;}
+.tier-btn{
+  padding:9px 0;text-align:center;border-radius:var(--r-s);
+  font-family:inherit;font-size:12.5px;font-weight:600;
+  cursor:pointer;transition:opacity .14s;border:none;
+}
+.tier-btn.pro-btn{background:var(--orange);color:#fff;}
+.tier-btn.max-btn{background:var(--surface);color:var(--t1);border:1px solid var(--border2);}
+.tier-btn:hover{opacity:.82;}
+.plan-note{
+  padding:11px 16px;font-size:11.5px;color:var(--t3);
+  border-top:1px solid var(--border);text-align:center;line-height:1.55;
+}
+
+/* ── Input fields ── */
+.field{
+  display:flex;align-items:center;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r-s);overflow:hidden;
+  transition:border-color .18s,box-shadow .18s;
+}
+.field:focus-within{
+  border-color:rgba(207,110,60,.45);
+  box-shadow:0 0 0 3px rgba(207,110,60,.06);
+}
+.field input,.field select{
+  flex:1;background:none;border:none;outline:none;
+  color:var(--t1);font-family:inherit;font-size:13.5px;
+  padding:10px 13px;
+}
+.field input::placeholder{color:var(--t3);}
+.field select{cursor:pointer;}
+.field select option{background:var(--card);}
+.field-btn{
+  background:none;border:none;border-left:1px solid var(--border);
+  color:var(--t3);cursor:pointer;padding:0 12px;align-self:stretch;
+  display:flex;align-items:center;font-size:14px;transition:color .15s;
+}
+.field-btn:hover{color:var(--t2);}
+
+/* ── Interval pills ── */
+.pills{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;}
+.pill{
+  padding:8px 4px;text-align:center;background:var(--surface);
+  border:1px solid var(--border);border-radius:var(--r-s);cursor:pointer;
+  font-size:12px;color:var(--t2);
+  transition:background .14s,border-color .14s,color .14s;user-select:none;
+}
+.pill:hover{background:var(--card);color:var(--t1);}
+.pill.active{background:var(--orange-dim);border-color:var(--orange);color:var(--orange-t);font-weight:600;}
+.pill small{display:block;font-size:10px;opacity:.65;margin-top:1px;}
+
+/* ── Toggle rows ── */
+.toggles{display:flex;flex-direction:column;}
+.trow{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:11px 0;border-bottom:1px solid var(--border);
+}
+.trow:last-child{border-bottom:none;}
+.tinfo{display:flex;flex-direction:column;gap:2px;}
+.tlabel{font-size:13.5px;color:var(--t1);}
+.tsub{font-size:11.5px;color:var(--t3);}
+.sw{position:relative;width:38px;height:22px;flex-shrink:0;}
+.sw input{opacity:0;width:0;height:0;position:absolute;}
+.sw-t{
+  position:absolute;inset:0;background:var(--card);
+  border:1px solid var(--border2);border-radius:11px;cursor:pointer;
+  transition:background .2s,border-color .2s;
+}
+.sw-t::after{
+  content:'';position:absolute;top:3px;left:3px;
+  width:14px;height:14px;border-radius:50%;background:var(--t3);
+  transition:transform .2s,background .2s;
+}
+.sw input:checked+.sw-t{background:var(--orange-dim);border-color:var(--orange);}
+.sw input:checked+.sw-t::after{transform:translateX(16px);background:var(--orange);}
+
+/* ── Developer section (collapsed by default) ── */
+.dev-toggle{
+  display:flex;align-items:center;gap:8px;
+  background:none;border:none;color:var(--t3);
+  font-family:inherit;font-size:12px;cursor:pointer;
+  padding:0;transition:color .14s;
+  width:100%;text-align:left;
+}
+.dev-toggle:hover{color:var(--t2);}
+.dev-toggle .arrow{font-size:10px;transition:transform .2s;}
+.dev-toggle.open .arrow{transform:rotate(90deg);}
+#dev-body{display:none;margin-top:12px;}
+#dev-body.open{display:flex;flex-direction:column;gap:14px;}
+
+/* ── Provider grid (inside dev) ── */
+.prov-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:5px;}
+.pcard{
+  background:var(--surface);border:2px solid var(--border);
+  border-radius:var(--r-s);padding:11px 9px;cursor:pointer;
+  display:flex;flex-direction:column;gap:4px;
+  transition:border-color .16s,background .16s;user-select:none;
+}
+.pcard:hover{background:var(--card);}
+.pcard.active{border-color:var(--orange);background:var(--orange-dim);}
+.pcard-icon{font-size:16px;}
+.pcard-name{font-size:12px;font-weight:600;color:var(--t1);}
+.pcard-sub{font-size:10.5px;color:var(--t3);line-height:1.4;}
+.pcard.active .pcard-name{color:var(--orange-t);}
+
+/* ── Ollama status ── */
+.status-row{
+  display:flex;align-items:center;gap:10px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r-s);padding:10px 13px;
+}
+.sdot{width:8px;height:8px;border-radius:50%;flex-shrink:0;background:var(--t3);transition:background .3s;}
+.sdot.on{background:var(--green);}
+.sdot.off{background:var(--red);}
+#status-text{font-size:12.5px;flex:1;color:var(--t2);}
+.sm-btn{
+  background:none;border:1px solid var(--border);border-radius:6px;
+  color:var(--t3);cursor:pointer;font-size:11px;padding:3px 8px;
+  font-family:inherit;transition:color .14s,border-color .14s;
+}
+.sm-btn:hover{color:var(--orange-t);border-color:var(--orange);}
+.install-box{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r-s);padding:13px;display:flex;flex-direction:column;gap:8px;
+}
+.install-box p{font-size:12px;color:var(--t2);line-height:1.6;}
+.install-box code{
+  display:block;background:var(--card);border:1px solid var(--border2);
+  border-radius:5px;padding:7px 11px;
+  font-family:'SFMono-Regular',Consolas,Menlo,monospace;
+  font-size:11.5px;color:var(--orange-t);
+}
+.link-btn{
+  align-self:flex-start;background:none;border:1px solid var(--border2);
+  border-radius:6px;color:var(--orange-t);font-family:inherit;
+  font-size:11.5px;padding:5px 11px;cursor:pointer;
+  transition:background .14s,border-color .14s;
+}
+.link-btn:hover{background:var(--orange-dim);border-color:var(--orange);}
+
+/* ── Footer ── */
+#foot{
+  padding:12px 16px 15px;border-top:1px solid var(--border);
+  flex-shrink:0;display:flex;flex-direction:column;gap:6px;
+}
+#save-btn{
+  width:100%;padding:11px;background:var(--orange);color:#fff;
+  border:none;border-radius:var(--r-s);
+  font-family:inherit;font-size:13.5px;font-weight:600;
+  cursor:pointer;transition:opacity .15s;
+}
+#save-btn:hover{opacity:.85;}
+#save-btn:disabled{opacity:.4;cursor:default;}
+#feedback{text-align:center;font-size:12px;color:var(--green);min-height:16px;}
+</style>
+</head>
+<body>
+<div id="win">
+
+  <div id="hdr">
+    <div class="hdr-hex">S</div>
+    <h1>Settings</h1>
+    <button id="x-btn">✕</button>
+  </div>
+
+  <div id="body">
+
+    <!-- ── Plan ── -->
+    <div class="sec">
+      <div class="sec-label">Your Plan</div>
+      <div class="plan-card">
+
+        <!-- Current tier -->
+        <div class="plan-top">
+          <div class="plan-hex">S</div>
+          <div class="plan-info">
+            <span class="plan-name" id="plan-name">Sidekick</span>
+            <span class="plan-desc" id="plan-desc">Loading…</span>
+          </div>
+          <span class="tier-chip free" id="tier-chip">Free</span>
+        </div>
+
+        <!-- License key -->
+        <div class="plan-key">
+          <input id="lic-key" type="text" placeholder="Have a license key? Paste it here" autocomplete="off" spellcheck="false"/>
+          <button class="plan-key-btn" id="activate-btn">Activate →</button>
+        </div>
+
+        <!-- Upgrade options — hidden when pro/max -->
+        <div class="plan-tiers" id="upgrade-tiers">
+          <div class="tier-opt">
+            <div class="tier-opt-name">Pro</div>
+            <div class="tier-opt-price"><sup>$</sup>9<sub>/mo</sub></div>
+            <ul class="tier-opt-features">
+              <li>50 messages per day</li>
+              <li>Claude Sonnet vision</li>
+              <li>Priority responses</li>
+            </ul>
+            <button class="tier-btn pro-btn" id="pro-btn">Get Pro</button>
+          </div>
+          <div class="tier-opt">
+            <div class="tier-opt-name">Max</div>
+            <div class="tier-opt-price"><sup>$</sup>19<sub>/mo</sub></div>
+            <ul class="tier-opt-features">
+              <li>Unlimited messages</li>
+              <li>Fastest model</li>
+              <li>Everything in Pro</li>
+            </ul>
+            <button class="tier-btn max-btn" id="max-btn">Get Max</button>
+          </div>
+        </div>
+
+        <div class="plan-note" id="plan-note">
+          After payment your license key is emailed instantly — paste it above.
+        </div>
+
+      </div>
+    </div>
+
+    <div class="div"></div>
+
+    <!-- ── Scan interval ── -->
+    <div class="sec">
+      <div class="sec-label">Scan Interval</div>
+      <div class="pills">
+        <div class="pill" data-val="3">3s<small>Fast</small></div>
+        <div class="pill active" data-val="5">5s<small>Default</small></div>
+        <div class="pill" data-val="10">10s<small>Gentle</small></div>
+        <div class="pill" data-val="0">Off<small>Manual</small></div>
+      </div>
+      <div class="hint">How often Sidekick checks your screen for new insights.</div>
+    </div>
+
+    <!-- ── Behaviour ── -->
+    <div class="sec">
+      <div class="sec-label">Behaviour</div>
+      <div class="toggles">
+        <div class="trow">
+          <div class="tinfo">
+            <span class="tlabel">Auto-scan</span>
+            <span class="tsub">Watch screen continuously</span>
+          </div>
+          <label class="sw"><input type="checkbox" id="auto-scan" checked/><span class="sw-t"></span></label>
+        </div>
+        <div class="trow">
+          <div class="tinfo">
+            <span class="tlabel">Launch at login</span>
+            <span class="tsub">Start when you sign in to your Mac</span>
+          </div>
+          <label class="sw"><input type="checkbox" id="login"/><span class="sw-t"></span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── City ── -->
+    <div class="sec">
+      <div class="sec-label">Your City</div>
+      <div class="field">
+        <input id="city" type="text" placeholder="e.g. New York, London, Tokyo"/>
+      </div>
+      <div class="hint">Used for local prices, restaurants, and nearby deals.</div>
+    </div>
+
+    <div class="div"></div>
+
+    <!-- ── Developer options (collapsed) ── -->
+    <div class="sec">
+      <button class="dev-toggle" id="dev-toggle">
+        <span class="arrow">▶</span>
+        Developer options
+      </button>
+      <div id="dev-body">
+
+        <div class="sec">
+          <div class="sec-label">AI Provider</div>
+          <div class="prov-grid">
+            <div class="pcard active" data-prov="cloud">
+              <span class="pcard-icon">✦</span>
+              <span class="pcard-name">Sidekick Cloud</span>
+              <span class="pcard-sub">Default · No setup</span>
+            </div>
+            <div class="pcard" data-prov="ollama">
+              <span class="pcard-icon">🦙</span>
+              <span class="pcard-name">Ollama</span>
+              <span class="pcard-sub">Local · Private</span>
+            </div>
+            <div class="pcard" data-prov="claude">
+              <span class="pcard-icon">☁</span>
+              <span class="pcard-name">Own Key</span>
+              <span class="pcard-sub">Your Anthropic key</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Own Claude key -->
+        <div id="claude-sec" style="display:none">
+          <div class="sec">
+            <div class="sec-label">Anthropic API Key</div>
+            <div class="field">
+              <input id="api-key" type="password" placeholder="sk-ant-api03-…" autocomplete="off" spellcheck="false"/>
+              <button class="field-btn" id="pw-eye">👁</button>
+            </div>
+            <div class="hint">
+              Get yours at <button class="hint-link" id="console-link">console.anthropic.com ↗</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Ollama -->
+        <div id="ollama-sec" style="display:none">
+          <div class="sec">
+            <div class="sec-label">Ollama Status</div>
+            <div class="status-row">
+              <div class="sdot" id="ol-dot"></div>
+              <span id="status-text">Checking…</span>
+              <button class="sm-btn" id="refresh-btn">⟳ Refresh</button>
+            </div>
+          </div>
+          <div id="model-sec" style="display:none;margin-top:12px;">
+            <div class="sec">
+              <div class="sec-label">Model</div>
+              <div class="field"><select id="ollama-model"></select></div>
+              <div class="hint">Vision models only — recommended: <strong style="color:var(--t2)">llava</strong></div>
+            </div>
+          </div>
+          <div id="install-sec" style="display:none;margin-top:12px;">
+            <div class="install-box">
+              <p>Ollama isn't running. Download it free, then pull a vision model:</p>
+              <button class="link-btn" id="ollama-dl-btn">Download Ollama ↗</button>
+              <code>ollama pull llava</code>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+  </div><!-- /body -->
+
+  <div id="foot">
+    <button id="save-btn">Save</button>
+    <div id="feedback"></div>
+  </div>
+
+</div>
+<script>
+'use strict';
+
+// ── Elements ──────────────────────────────────────────────────────────────────
+const apiKeyEl   = document.getElementById('api-key');
+const cityEl     = document.getElementById('city');
+const autoScanEl = document.getElementById('auto-scan');
+const loginEl    = document.getElementById('login');
+const licKeyEl   = document.getElementById('lic-key');
+const saveBtn    = document.getElementById('save-btn');
+const feedback   = document.getElementById('feedback');
+
+const planName    = document.getElementById('plan-name');
+const planDesc    = document.getElementById('plan-desc');
+const tierChip    = document.getElementById('tier-chip');
+const upgradeTiers = document.getElementById('upgrade-tiers');
+const planNote    = document.getElementById('plan-note');
+
+const claudeSec  = document.getElementById('claude-sec');
+const ollamaSec  = document.getElementById('ollama-sec');
+const modelSec   = document.getElementById('model-sec');
+const installSec = document.getElementById('install-sec');
+const olDot      = document.getElementById('ol-dot');
+const statusText = document.getElementById('status-text');
+const modelSel   = document.getElementById('ollama-model');
+const pills      = document.querySelectorAll('.pill');
+const pcards     = document.querySelectorAll('.pcard');
+
+let selectedInterval = 5;
+let selectedProvider = 'cloud';
+
+// ── Close ─────────────────────────────────────────────────────────────────────
+document.getElementById('x-btn').addEventListener('click', () => window.sk.closeSettings());
+
+// ── External links ────────────────────────────────────────────────────────────
+document.getElementById('console-link')?.addEventListener('click',  () => window.sk.openUrl('https://console.anthropic.com'));
+document.getElementById('ollama-dl-btn')?.addEventListener('click', () => window.sk.openUrl('https://ollama.com/download'));
+
+// ── Upgrade links — replace with your real Stripe Payment Links ───────────────
+document.getElementById('pro-btn').addEventListener('click', () =>
+  window.sk.openUrl('https://buy.stripe.com/YOUR_PRO_LINK'));
+document.getElementById('max-btn').addEventListener('click', () =>
+  window.sk.openUrl('https://buy.stripe.com/YOUR_MAX_LINK'));
+
+// ── Activate license (save immediately on click) ──────────────────────────────
+document.getElementById('activate-btn').addEventListener('click', async () => {
+  const key = licKeyEl.value.trim();
+  if (!key) return;
+  saveBtn.disabled = true;
+  await window.sk.saveSettings({ licenseKey: key });
+  const lic = await window.sk.checkLicense();
+  showTier(lic);
+  saveBtn.disabled = false;
+  feedback.textContent = lic.tier !== 'free' ? `✓ ${lic.tier === 'max' ? 'Max' : 'Pro'} activated!` : 'Key not recognised';
+  feedback.style.color = lic.tier !== 'free' ? 'var(--green)' : 'var(--red)';
+  setTimeout(() => { feedback.textContent = ''; }, 3000);
+});
+
+// ── Developer toggle ──────────────────────────────────────────────────────────
+const devToggle = document.getElementById('dev-toggle');
+const devBody   = document.getElementById('dev-body');
+devToggle.addEventListener('click', () => {
+  const open = devBody.classList.toggle('open');
+  devToggle.classList.toggle('open', open);
+});
+
+// ── Provider cards (inside developer section) ─────────────────────────────────
+function showProviderSection(prov) {
+  claudeSec.style.display = prov === 'claude' ? 'block' : 'none';
+  ollamaSec.style.display = prov === 'ollama' ? 'block' : 'none';
+  if (prov === 'ollama') checkOllama();
+}
+
+pcards.forEach(c => c.addEventListener('click', () => {
+  pcards.forEach(x => x.classList.remove('active'));
+  c.classList.add('active');
+  selectedProvider = c.dataset.prov;
+  showProviderSection(selectedProvider);
+}));
+
+// ── Password toggle ───────────────────────────────────────────────────────────
+document.getElementById('pw-eye')?.addEventListener('click', () => {
+  const show = apiKeyEl.type === 'password';
+  apiKeyEl.type = show ? 'text' : 'password';
+  document.getElementById('pw-eye').textContent = show ? '🙈' : '👁';
+});
+
+// ── Ollama ────────────────────────────────────────────────────────────────────
+async function checkOllama() {
+  statusText.textContent = 'Checking…';
+  olDot.className = 'sdot';
+  const s = await window.sk.checkOllama();
+  if (s.running) {
+    olDot.className        = 'sdot on';
+    statusText.textContent = `Running · ${s.models.length} model${s.models.length !== 1 ? 's' : ''} found`;
+    modelSec.style.display   = 'block';
+    installSec.style.display = 'none';
+    modelSel.innerHTML = '';
+    const models = s.models.length ? s.models : ['llava'];
+    models.forEach(m => {
+      const o = document.createElement('option');
+      o.value = m; o.textContent = m;
+      modelSel.appendChild(o);
+    });
+    const saved = (await window.sk.getSettings()).ollamaModel;
+    if (saved && [...modelSel.options].some(o => o.value === saved)) modelSel.value = saved;
+  } else {
+    olDot.className        = 'sdot off';
+    statusText.textContent = 'Not detected';
+    modelSec.style.display   = 'none';
+    installSec.style.display = 'block';
+  }
+}
+document.getElementById('refresh-btn').addEventListener('click', checkOllama);
+
+// ── Interval pills ────────────────────────────────────────────────────────────
+pills.forEach(p => p.addEventListener('click', () => {
+  pills.forEach(x => x.classList.remove('active'));
+  p.classList.add('active');
+  selectedInterval = Number(p.dataset.val);
+  if (selectedInterval === 0) autoScanEl.checked = false;
+}));
+
+// ── Tier display ──────────────────────────────────────────────────────────────
+function showTier(lic) {
+  tierChip.className = `tier-chip ${lic.tier}`;
+
+  if (lic.tier === 'max') {
+    tierChip.textContent  = 'Max ✦';
+    planName.textContent  = 'Sidekick Max';
+    planDesc.textContent  = 'Unlimited messages · Fastest model';
+    upgradeTiers.style.display = 'none';
+    planNote.textContent  = 'You have unlimited access. Thank you ✦';
+    return;
+  }
+  if (lic.tier === 'pro') {
+    tierChip.textContent  = 'Pro';
+    planName.textContent  = 'Sidekick Pro';
+    const rem = Math.max(0, lic.limit - lic.used);
+    planDesc.textContent  = `${rem} of ${lic.limit} messages left today`;
+    upgradeTiers.style.display = 'none';
+    planNote.textContent  = 'Resets every midnight. Upgrade to Max for unlimited.';
+    return;
+  }
+  // free
+  tierChip.textContent  = 'Free trial';
+  planName.textContent  = 'Sidekick';
+  const rem = Math.max(0, lic.limit - lic.used);
+  planDesc.textContent  = rem > 0
+    ? `${rem} free message${rem !== 1 ? 's' : ''} remaining`
+    : 'Free trial used up — upgrade to keep going';
+  upgradeTiers.style.display = 'grid';
+  planNote.textContent  = 'After payment your key is emailed instantly — paste it above.';
+}
+
+// ── Save ──────────────────────────────────────────────────────────────────────
+saveBtn.addEventListener('click', async () => {
+  saveBtn.disabled    = true;
+  saveBtn.textContent = 'Saving…';
+  feedback.textContent = '';
+
+  await window.sk.saveSettings({
+    apiKey:       apiKeyEl.value.trim(),
+    city:         cityEl.value.trim(),
+    scanInterval: selectedInterval,
+    autoScan:     selectedInterval === 0 ? false : autoScanEl.checked,
+    startOnLogin: loginEl.checked,
+    licenseKey:   licKeyEl.value.trim(),
+    provider:     selectedProvider,
+    ollamaModel:  modelSel.value || 'llava',
+  });
+
+  saveBtn.disabled    = false;
+  saveBtn.textContent = 'Save';
+  feedback.textContent = '✓ Saved';
+  feedback.style.color = 'var(--green)';
+  setTimeout(() => { feedback.textContent = ''; }, 2400);
+});
+
+// ── Load ──────────────────────────────────────────────────────────────────────
+async function load() {
+  const [s, lic] = await Promise.all([window.sk.getSettings(), window.sk.checkLicense()]);
+
+  apiKeyEl.value     = s.apiKey     || '';
+  cityEl.value       = s.city       || '';
+  licKeyEl.value     = s.licenseKey || '';
+  autoScanEl.checked = s.autoScan !== false;
+  loginEl.checked    = Boolean(s.startOnLogin);
+
+  selectedInterval = Number(s.scanInterval ?? 5);
+  pills.forEach(p => p.classList.toggle('active', Number(p.dataset.val) === selectedInterval));
+
+  selectedProvider = s.provider || 'cloud';
+  pcards.forEach(c => c.classList.toggle('active', c.dataset.prov === selectedProvider));
+  showProviderSection(selectedProvider);
+
+  showTier(lic);
+}
+
+load();
+</script>
+</body>
+</html>

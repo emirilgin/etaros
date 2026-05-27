@@ -1,0 +1,72 @@
+{
+  "name": "sidekick",
+  "version": "1.0.0",
+  "description": "AI sidekick that watches your screen — shopping, food, finance, anything",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "gen-icon": "electron scripts/gen-icon.js",
+    "build:mac": "electron-builder --mac --publish never",
+    "build:win": "electron-builder --win --publish never",
+    "build:all": "electron-builder --mac --win --publish never",
+    "release": "electron-builder --publish always"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.39.0",
+    "@google/generative-ai": "^0.24.1",
+    "electron-store": "8.2.0"
+  },
+  "devDependencies": {
+    "electron": "^33.4.0",
+    "electron-builder": "^25.1.8"
+  },
+  "build": {
+    "appId": "com.sidekick.ai",
+    "productName": "Sidekick",
+    "copyright": "Copyright © 2025 Sidekick",
+    "files": [
+      "main.js",
+      "preload.js",
+      "renderer.js",
+      "index.html",
+      "settings.html",
+      "setup.html",
+      "app.config.js"
+    ],
+    "publish": {
+      "provider": "github",
+      "releaseType": "release"
+    },
+    "mac": {
+      "icon": "build/icon.icns",
+      "target": [
+        { "target": "dmg", "arch": ["arm64"] },
+        { "target": "dmg", "arch": ["x64"] }
+      ],
+      "category": "public.app-category.productivity",
+      "identity": null,
+      "darkModeSupport": true,
+      "extendInfo": {
+        "NSScreenCaptureUsageDescription": "Sidekick needs screen access to give you real-time AI advice."
+      }
+    },
+    "win": {
+      "icon": "build/icon.ico",
+      "target": [
+        { "target": "nsis", "arch": ["x64"] }
+      ]
+    },
+    "dmg": {
+      "title": "Sidekick",
+      "background": null,
+      "window": { "width": 540, "height": 380 }
+    },
+    "nsis": {
+      "oneClick": true,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": false,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    }
+  }
+}

@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="en" data-mode="sidebar">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Sidekick</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root{
+  --bg:         #1a1815;
+  --bg-hi:      #1f1c19;
+  --surface:    #252220;
+  --card:       #2c2825;
+  --card-h:     #343028;
+  --border:     #302c28;
+  --border2:    #413c36;
+
+  --orange:     #d4703e;
+  --orange-dim: rgba(212,112,62,.14);
+  --orange-glow:rgba(212,112,62,.07);
+  --orange-t:   #de8860;
+
+  --green: #5ab47a; --green-bg: rgba(90,180,122,.11);
+  --red:   #d46868; --red-bg:   rgba(212,104,104,.11);
+  --blue:  #6896ce; --blue-bg:  rgba(104,150,206,.11);
+  --amber: #c49a3a; --amber-bg: rgba(196,154,58,.11);
+
+  --t1: #ede9e1;
+  --t2: #9a8b7c;
+  --t3: #5e5248;
+
+  --r:   12px;
+  --r-s:  8px;
+}
+
+html,body{
+  width:360px; height:100vh; overflow:hidden;
+  background:transparent;
+  font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;
+  font-size:13.5px; color:var(--t1);
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ═══ SHELL ═══════════════════════════════════════════════════════════════════ */
+#shell{
+  display:flex; width:360px; height:100vh;
+  background:var(--bg); border-left:1px solid var(--border);
+  overflow:hidden;
+}
+
+/* ── Collapsed strip ── */
+#strip{
+  display:none; flex-direction:column;
+  align-items:center; justify-content:center;
+  width:48px; height:100%; gap:20px; cursor:pointer;
+  background:var(--bg); border-left:1px solid var(--border);
+}
+#strip-word{
+  font-size:11px; font-weight:600; color:var(--orange); opacity:.6;
+  writing-mode:vertical-rl; letter-spacing:.2em;
+}
+#strip-arrow{color:var(--t3); font-size:11px; transition:color .2s;}
+#strip:hover #strip-arrow{color:var(--orange);}
+#shell.collapsed #strip{display:flex;}
+#shell.collapsed #panel{display:none;}
+
+/* ═══ FULLSCREEN NAV ════════════════════════════════════════════════════════ */
+#fs-nav{
+  display:none; /* shown only when data-mode="fullscreen" */
+  width:248px; flex-shrink:0; flex-direction:column;
+  background:var(--bg-hi); border-right:1px solid var(--border);
+  padding:16px 10px 12px; overflow-y:auto;
+}
+#fs-nav::-webkit-scrollbar{width:0;}
+
+.fs-brand{
+  display:flex; align-items:center; gap:9px;
+  padding:4px 6px 18px;
+}
+.fs-brand-hex{
+  width:30px; height:30px; flex-shrink:0;
+  clip-path:polygon(50% 0%,95% 25%,95% 75%,50% 100%,5% 75%,5% 25%);
+  background:var(--orange-dim);
+  display:flex; align-items:center; justify-content:center;
+  font-size:12px; font-weight:700; color:var(--orange);
+}
+.fs-brand-name{font-size:15px; font-weight:600; color:var(--t1); letter-spacing:.02em;}
+
+.fs-new-chat{
+  display:flex; align-items:center; gap:8px;
+  width:100%; padding:9px 13px;
+  background:var(--orange-dim); border:1px solid rgba(212,112,62,.22);
+  border-radius:var(--r-s); color:var(--orange-t);
+  font-family:inherit; font-size:13px; font-weight:500;
+  cursor:pointer; transition:background .15s; margin-bottom:20px;
+}
+.fs-new-chat:hover{background:rgba(212,112,62,.22);}
+
+.fs-section{
+  font-size:10px; font-weight:700; text-transform:uppercase;
+  letter-spacing:.1em; color:var(--t3); padding:0 7px 8px;
+}
+.fs-quick{
+  display:flex; align-items:center; gap:10px;
+  width:100%; padding:9px 13px;
+  background:none; border:none; border-radius:var(--r-s);
+  color:var(--t2); font-family:inherit; font-size:13px;
+  cursor:pointer; text-align:left; margin-bottom:2px;
+  transition:background .14s,color .14s;
+}
+.fs-quick:hover{background:var(--surface); color:var(--t1);}
+.fs-quick-icon{font-size:15px; flex-shrink:0; width:20px; text-align:center;}
+
+.fs-spacer{flex:1;}
+.fs-divider{height:1px; background:var(--border); margin:8px 0;}
+
+.fs-bottom-btn{
+  display:flex; align-items:center; gap:9px;
+  width:100%; padding:8px 13px;
+  background:none; border:none; border-radius:var(--r-s);
+  color:var(--t3); font-family:inherit; font-size:12.5px;
+  cursor:pointer; text-align:left; margin-bottom:2px;
+  transition:background .14s,color .14s;
+}
+.fs-bottom-btn:hover{background:var(--surface); color:var(--t2);}
+
+/* ═══ MAIN PANEL ════════════════════════════════════════════════════════════ */
+#panel{
+  flex:1; display:flex; flex-direction:column; height:100%; min-width:0;
+  background:linear-gradient(180deg,var(--bg-hi) 0%,var(--bg) 68px);
+}
+
+/* ── Header ── */
+#hdr{
+  display:flex; align-items:center; gap:7px;
+  padding:11px 11px 10px;
+  border-bottom:1px solid var(--border);
+  flex-shrink:0; -webkit-app-region:drag;
+}
+.hdr-hex{
+  width:24px; height:24px; flex-shrink:0;
+  clip-path:polygon(50% 0%,95% 25%,95% 75%,50% 100%,5% 75%,5% 25%);
+  background:var(--orange-dim);
+  display:flex; align-items:center; justify-content:center;
+  font-size:10px; font-weight:700; color:var(--orange);
+}
+#hdr-title{
+  font-size:12.5px; font-weight:600; color:var(--t1);
+  letter-spacing:.05em; flex:1;
+}
+#hdr-dot{
+  width:6px; height:6px; border-radius:50%;
+  background:var(--orange); opacity:0; flex-shrink:0;
+  transition:opacity .3s;
+}
+#hdr-dot.on{opacity:1; animation:pulse 1.6s ease-in-out infinite;}
+@keyframes pulse{
+  0%,100%{opacity:1;transform:scale(1)}
+  50%{opacity:.18;transform:scale(.55)}
+}
+#tier-badge{
+  font-size:10px; font-weight:600; letter-spacing:.05em;
+  padding:2px 8px; border-radius:20px;
+  background:var(--orange-dim); color:var(--orange-t);
+  border:1px solid rgba(212,112,62,.2);
+  display:none; flex-shrink:0; -webkit-app-region:no-drag;
+}
+#hdr-btns{display:flex; gap:1px; -webkit-app-region:no-drag;}
+.hbtn{
+  width:26px; height:26px; border-radius:6px;
+  background:none; border:1px solid transparent;
+  cursor:pointer; color:var(--t3); font-size:12px;
+  display:flex; align-items:center; justify-content:center;
+  transition:color .15s,border-color .15s,background .15s;
+}
+.hbtn:hover{color:var(--t2); border-color:var(--border); background:var(--surface);}
+.hbtn-close:hover{color:var(--red) !important; border-color:rgba(212,104,104,.35) !important; background:var(--red-bg) !important;}
+#shrink-btn{
+  width:auto; padding:0 9px; font-size:11px; font-weight:500;
+  color:var(--t2); gap:4px; letter-spacing:.01em;
+}
+
+/* ── Feed ── */
+#feed{
+  flex:1; overflow-y:auto;
+  padding:16px 14px 6px;
+  display:flex; flex-direction:column;
+  scroll-behavior:smooth;
+}
+#feed::-webkit-scrollbar{width:3px;}
+#feed::-webkit-scrollbar-thumb{background:var(--border); border-radius:2px;}
+
+/* ── Empty state ── */
+#empty{
+  flex:1; display:flex; flex-direction:column;
+  align-items:center; justify-content:center;
+  gap:14px; text-align:center; padding:28px 20px;
+}
+.empty-hex{
+  width:54px; height:54px;
+  clip-path:polygon(50% 0%,95% 25%,95% 75%,50% 100%,5% 75%,5% 25%);
+  background:var(--surface);
+  display:flex; align-items:center; justify-content:center;
+  font-size:20px; font-weight:700; color:var(--orange);
+  opacity:.5; margin-bottom:4px;
+}
+#empty h3{font-size:16px; font-weight:600; color:var(--t1);}
+#empty .empty-sub{font-size:13px; color:var(--t2); line-height:1.75; max-width:240px;}
+#trial-info{
+  font-size:11.5px; color:var(--t3);
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--r-s); padding:8px 14px; line-height:1.55; display:none;
+}
+.empty-chips{
+  display:flex; flex-wrap:wrap; gap:6px;
+  justify-content:center; margin-top:4px;
+}
+.empty-chip{
+  padding:7px 13px; border-radius:20px;
+  background:var(--surface); border:1px solid var(--border);
+  font-size:12.5px; color:var(--t2); cursor:pointer;
+  font-family:inherit;
+  transition:background .15s,color .15s,border-color .15s;
+}
+.empty-chip:hover{background:var(--card); color:var(--t1); border-color:var(--border2);}
+
+/* ── Time divider ── */
+.time-div{
+  display:flex; align-items:center; gap:10px;
+  margin:8px 0 16px; color:var(--t3); font-size:10.5px; flex-shrink:0;
+}
+.time-div::before,.time-div::after{content:''; flex:1; height:1px; background:var(--border);}
+
+/* ── AI group ── */
+.group{
+  display:flex; gap:10px;
+  margin-bottom:20px; flex-shrink:0;
+  animation:fadeUp .28s cubic-bezier(.2,.8,.3,1) both;
+}
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(6px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.avatar{
+  width:24px; height:24px; flex-shrink:0;
+  clip-path:polygon(50% 0%,95% 25%,95% 75%,50% 100%,5% 75%,5% 25%);
+  background:var(--orange-dim);
+  display:flex; align-items:center; justify-content:center;
+  font-size:10px; font-weight:700; color:var(--orange);
+  margin-top:1px;
+}
+.group-r{flex:1; min-width:0;}
+.g-meta{
+  font-size:12px; font-weight:600; color:var(--t2);
+  margin-bottom:6px; display:flex; align-items:baseline; gap:7px;
+}
+.g-time{font-size:10.5px; font-weight:400; color:var(--t3);}
+
+/* ── Chat message ── */
+.chat-msg{
+  font-size:14px; line-height:1.78; color:var(--t1); word-break:break-word;
+}
+.stream-cursor{
+  display:inline-block; width:2px; height:1.1em;
+  background:var(--orange); margin-left:1px;
+  vertical-align:text-bottom;
+  animation:blink .85s step-start infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+.chat-msg p{margin:0 0 .72em;}
+.chat-msg p:last-child{margin-bottom:0;}
+.chat-msg h1,.chat-msg h2,.chat-msg h3{
+  font-weight:600; color:var(--t1); margin:.85em 0 .32em; line-height:1.3;
+}
+.chat-msg h1{font-size:17px;} .chat-msg h2{font-size:15px;} .chat-msg h3{font-size:14px;}
+.chat-msg strong{font-weight:600;}
+.chat-msg em{font-style:italic; color:var(--t2);}
+.chat-msg code{
+  font-family:'SFMono-Regular',Consolas,Menlo,monospace; font-size:12px;
+  background:var(--card); border:1px solid var(--border2);
+  border-radius:4px; padding:1px 5px; color:var(--orange-t);
+}
+.chat-msg pre{
+  background:var(--card); border:1px solid var(--border2);
+  border-radius:var(--r-s); padding:12px 14px; margin:.5em 0 .75em; overflow-x:auto;
+}
+.chat-msg pre code{background:none; border:none; padding:0; font-size:12px; color:var(--t1); white-space:pre;}
+.chat-msg ul,.chat-msg ol{padding-left:1.3em; margin:.4em 0 .72em;}
+.chat-msg li{margin:.22em 0;}
+.chat-msg hr{border:none; border-top:1px solid var(--border); margin:.8em 0;}
+.chat-msg a{color:var(--orange-t); text-decoration:underline; text-underline-offset:2px;}
+
+/* ── Insight cards ── */
+.cards-wrap{display:flex; flex-direction:column; gap:6px;}
+.card{
+  background:var(--card); border:1px solid var(--border); border-left-width:3px;
+  border-radius:var(--r); padding:11px 13px 10px; transition:background .15s;
+}
+.card:hover{background:var(--card-h);}
+.card.save{border-left-color:var(--green);}
+.card.risk{border-left-color:var(--red);}
+.card.rec {border-left-color:var(--blue);}
+.card.tip {border-left-color:var(--orange);}
+.card.warn{border-left-color:var(--amber);}
+.card-top{display:flex; align-items:center; gap:7px; margin-bottom:5px;}
+.badge{
+  font-size:9px; font-weight:700; letter-spacing:.1em; text-transform:uppercase;
+  padding:2px 6px; border-radius:4px; flex-shrink:0;
+}
+.badge.save{background:var(--green-bg); color:var(--green);}
+.badge.risk{background:var(--red-bg);   color:var(--red);}
+.badge.rec {background:var(--blue-bg);  color:var(--blue);}
+.badge.tip {background:var(--orange-dim); color:var(--orange-t);}
+.badge.warn{background:var(--amber-bg); color:var(--amber);}
+.card-title{font-size:13px; font-weight:600; color:var(--t1); line-height:1.3; flex:1;}
+.card-detail{font-size:12.5px; color:var(--t2); line-height:1.6; margin-bottom:7px;}
+.card-action{
+  display:inline-flex; align-items:center; gap:5px;
+  font-size:12px; color:var(--orange-t); font-weight:500;
+  cursor:pointer; transition:opacity .15s;
+}
+.card-action::before{content:'→'; font-size:11px;}
+.card-action:hover{opacity:.65;}
+.g-summary{font-size:12px; color:var(--t3); padding:7px 2px 0; line-height:1.6;}
+
+/* ── Compare prices button ── */
+.compare-btn{
+  display:inline-flex; align-items:center; gap:6px;
+  margin-top:9px; padding:7px 13px;
+  background:var(--surface); border:1px solid var(--border2);
+  border-radius:20px; color:var(--t2);
+  font-family:inherit; font-size:12px; font-weight:500;
+  cursor:pointer; transition:background .15s,color .15s,border-color .15s;
+}
+.compare-btn:hover{
+  background:var(--orange-dim); color:var(--orange-t);
+  border-color:rgba(212,112,62,.35);
+}
+
+/* ── Thinking ── */
+#thinking{
+  display:none; flex-direction:column;
+  margin-bottom:20px; flex-shrink:0; animation:fadeUp .25s both;
+}
+.t-dots{display:flex; gap:5px; align-items:center; padding:3px 0 2px;}
+.t-dots span{
+  width:5px; height:5px; border-radius:50%;
+  background:var(--t3); display:block;
+  animation:tBounce 1.35s ease-in-out infinite;
+}
+.t-dots span:nth-child(2){animation-delay:.18s;}
+.t-dots span:nth-child(3){animation-delay:.36s;}
+@keyframes tBounce{
+  0%,60%,100%{transform:translateY(0);opacity:.22}
+  30%{transform:translateY(-5px);opacity:1}
+}
+
+/* ── User bubble ── */
+.user-bubble{
+  align-self:flex-end;
+  background:var(--surface); border:1px solid var(--border2);
+  border-radius:16px 16px 3px 16px;
+  padding:9px 14px 8px;
+  font-size:14px; color:var(--t1);
+  max-width:86%; word-break:break-word;
+  margin-bottom:20px; line-height:1.65;
+  animation:fadeUp .22s cubic-bezier(.2,.8,.3,1) both;
+}
+.bubble-time{font-size:10px; color:var(--t3); margin-top:4px; text-align:right; display:block;}
+
+/* ── Error ── */
+.err{
+  display:flex; align-items:flex-start; gap:8px;
+  background:var(--red-bg); border:1px solid rgba(212,104,104,.18);
+  border-radius:var(--r-s); padding:9px 12px;
+  margin-bottom:12px; animation:fadeUp .2s both;
+  font-size:12.5px; color:var(--red); flex-shrink:0;
+}
+.err span{color:var(--t3); font-size:11px; margin-top:2px; display:block;}
+
+/* ── Upgrade banner ── */
+#upgrade{
+  display:none; margin:0 0 10px;
+  background:linear-gradient(135deg,rgba(212,112,62,.1),rgba(212,112,62,.05));
+  border:1px solid rgba(212,112,62,.18);
+  border-radius:var(--r); padding:13px; text-align:center;
+  animation:fadeUp .25s both; flex-shrink:0;
+}
+#upgrade h4{font-size:14px; font-weight:600; color:var(--orange-t); margin-bottom:4px;}
+#upgrade p{color:var(--t2); font-size:12px; line-height:1.55; margin-bottom:9px;}
+#up-btn{
+  background:var(--orange); color:#fff;
+  border:none; border-radius:var(--r-s);
+  padding:7px 18px; font-size:12.5px; font-weight:600;
+  font-family:inherit; cursor:pointer; transition:opacity .15s;
+}
+#up-btn:hover{opacity:.85;}
+
+/* ── Counter ── */
+#counter{
+  display:none; text-align:center; font-size:11px;
+  color:var(--t3); padding:2px 0 3px; flex-shrink:0;
+}
+
+/* ── Input area ── */
+#input-area{
+  flex-shrink:0; padding:8px 12px 14px;
+  background:linear-gradient(to bottom,transparent,var(--bg) 28%);
+}
+.input-shell{
+  display:flex; align-items:flex-end; gap:8px;
+  background:var(--surface); border:1px solid var(--border2);
+  border-radius:22px; padding:8px 8px 8px 15px;
+  transition:border-color .2s,box-shadow .2s;
+}
+.input-shell:focus-within{
+  border-color:rgba(212,112,62,.45);
+  box-shadow:0 0 0 3px var(--orange-glow);
+}
+#msg{
+  flex:1; background:none; border:none; outline:none;
+  resize:none; overflow:hidden;
+  color:var(--t1); font-family:inherit;
+  font-size:13.5px; line-height:1.55; max-height:110px;
+}
+#msg::placeholder{color:var(--t3);}
+#send{
+  width:28px; height:28px; border-radius:50%;
+  background:var(--orange); border:none; cursor:pointer;
+  flex-shrink:0; display:flex; align-items:center;
+  justify-content:center; font-size:13px;
+  color:#fff; font-weight:700;
+  transition:opacity .15s,transform .1s;
+}
+#send:hover{opacity:.87; transform:scale(1.07);}
+#send:disabled{opacity:.2; cursor:default; transform:none;}
+
+/* ═══ FULLSCREEN MODE OVERRIDES ════════════════════════════════════════════ */
+html[data-mode="fullscreen"],
+html[data-mode="fullscreen"] body{
+  width:100vw !important;
+}
+html[data-mode="fullscreen"] #shell{
+  width:100vw; border-left:none;
+}
+html[data-mode="fullscreen"] #fs-nav{
+  display:flex;
+}
+html[data-mode="fullscreen"] #strip{
+  display:none !important;
+}
+html[data-mode="fullscreen"] .sidebar-only{
+  display:none !important;
+}
+html[data-mode="fullscreen"] .fullscreen-only{
+  display:flex !important;
+}
+/* Center content */
+html[data-mode="fullscreen"] #feed{
+  padding:28px max(20px,calc(50% - 380px)) 8px;
+  align-items:stretch;
+}
+html[data-mode="fullscreen"] .chat-msg{
+  font-size:15px; line-height:1.82;
+}
+html[data-mode="fullscreen"] .user-bubble{
+  font-size:15px;
+}
+html[data-mode="fullscreen"] #input-area{
+  padding:8px max(20px,calc(50% - 380px)) 22px;
+}
+html[data-mode="fullscreen"] #msg{
+  font-size:15px; max-height:180px;
+}
+html[data-mode="fullscreen"] #hdr{
+  padding:13px 18px 12px;
+}
+html[data-mode="fullscreen"] .empty-sub{
+  max-width:360px; font-size:14px;
+}
+html[data-mode="fullscreen"] .empty-chips{
+  max-width:560px;
+}
+html[data-mode="fullscreen"] #empty h3{
+  font-size:18px;
+}
+
+/* Visibility helpers */
+.fullscreen-only{display:none;}
+</style>
+</head>
+<body>
+<div id="shell">
+
+  <!-- ── Fullscreen left nav ──────────────────────────────────────────────── -->
+  <div id="fs-nav">
+    <div class="fs-brand">
+      <div class="fs-brand-hex">S</div>
+      <span class="fs-brand-name">Sidekick</span>
+    </div>
+
+    <button class="fs-new-chat" id="new-chat-btn">
+      ✦ &nbsp;New conversation
+    </button>
+
+    <div class="fs-section">Ask me about</div>
+
+    <button class="fs-quick" data-msg="What should I eat right now? Check what's on my screen and suggest something specific and good.">
+      <span class="fs-quick-icon">🍜</span> What to eat?
+    </button>
+    <button class="fs-quick" data-msg="I'm looking at something to buy. Is this a good deal? Show me real alternatives and prices.">
+      <span class="fs-quick-icon">🛍</span> Good deal?
+    </button>
+    <button class="fs-quick" data-msg="What's on my screen right now? Give me your honest, specific take.">
+      <span class="fs-quick-icon">👁</span> What do you see?
+    </button>
+    <button class="fs-quick" data-msg="Give me healthy alternatives to what I'm looking at right now.">
+      <span class="fs-quick-icon">💪</span> Healthier option?
+    </button>
+    <button class="fs-quick" data-msg="Help me find a great local restaurant near me. What do you recommend?">
+      <span class="fs-quick-icon">📍</span> Local spots
+    </button>
+    <button class="fs-quick" data-msg="Check my finances — any subscriptions, charges, or bills I should know about?">
+      <span class="fs-quick-icon">💳</span> Finance check
+    </button>
+    <button class="fs-quick" data-msg="I want to travel somewhere. What are the best options and deals right now?">
+      <span class="fs-quick-icon">✈️</span> Travel ideas
+    </button>
+
+    <div class="fs-spacer"></div>
+    <div class="fs-divider"></div>
+
+    <button class="fs-bottom-btn" id="scan-fs-btn">⟳  Scan screen now</button>
+    <button class="fs-bottom-btn" id="settings-fs-btn">⚙  Settings</button>
+  </div>
+
+  <!-- ── Collapsed strip (sidebar mode only) ──────────────────────────────── -->
+  <div id="strip">
+    <span id="strip-word">SK</span>
+    <span id="strip-arrow">▶</span>
+  </div>
+
+  <!-- ── Main panel ───────────────────────────────────────────────────────── -->
+  <div id="panel">
+
+    <!-- Header -->
+    <div id="hdr">
+      <div class="hdr-hex">S</div>
+      <span id="hdr-title">Sidekick</span>
+      <div id="hdr-dot"></div>
+      <span id="tier-badge"></span>
+      <div id="hdr-btns">
+        <!-- Fullscreen: back to sidebar -->
+        <button class="hbtn fullscreen-only" id="shrink-btn" title="Back to sidebar">← Sidebar</button>
+        <!-- Sidebar: expand to full screen -->
+        <button class="hbtn sidebar-only"    id="expand-btn"   title="Full screen">⛶</button>
+        <button class="hbtn"                 id="clear-btn"    title="Clear chat">⌫</button>
+        <button class="hbtn"                 id="scan-btn"     title="Scan now">⟳</button>
+        <button class="hbtn sidebar-only"    id="settings-btn" title="Settings">⚙</button>
+        <button class="hbtn sidebar-only"    id="collapse-btn" title="Collapse">◀</button>
+        <button class="hbtn hbtn-close"      id="hide-btn"     title="Hide Sidekick">✕</button>
+      </div>
+    </div>
+
+    <!-- Upgrade banner -->
+    <div id="upgrade">
+      <h4>You've hit your limit</h4>
+      <p>Free trial: 5 messages. Pro is 50/day · Max is unlimited.</p>
+      <button id="up-btn">Upgrade in Settings →</button>
+    </div>
+
+    <!-- Counter -->
+    <div id="counter"></div>
+
+    <!-- Chat feed -->
+    <div id="feed">
+
+      <!-- Empty state -->
+      <div id="empty">
+        <div class="empty-hex">S</div>
+        <h3>Hey, I'm Sidekick.</h3>
+        <p class="empty-sub">I'm watching your screen right now. Ask me anything — about what you're buying, eating, doing, or thinking about.</p>
+        <div class="empty-chips">
+          <button class="empty-chip" data-msg="What should I eat right now? Check what's nearby.">🍜 What to eat?</button>
+          <button class="empty-chip" data-msg="Is what I'm looking at a good deal? Show me alternatives.">🛍 Good deal?</button>
+          <button class="empty-chip" data-msg="What do you see on my screen right now?">👁 What's on screen?</button>
+          <button class="empty-chip" data-msg="Give me a health check on my current choices.">💪 Health check</button>
+        </div>
+        <div id="trial-info"></div>
+      </div>
+
+      <!-- Thinking indicator -->
+      <div id="thinking">
+        <div class="group" style="margin-bottom:0;animation:none">
+          <div class="avatar">S</div>
+          <div class="group-r">
+            <div class="g-meta">Sidekick <span class="g-time" id="think-time"></span></div>
+            <div class="t-dots"><span></span><span></span><span></span></div>
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /feed -->
+
+    <!-- Input -->
+    <div id="input-area">
+      <div class="input-shell">
+        <textarea id="msg" rows="1" placeholder="Ask me anything…"></textarea>
+        <button id="send">↑</button>
+      </div>
+    </div>
+
+  </div><!-- /panel -->
+</div><!-- /shell -->
+<script src="renderer.js"></script>
+</body>
+</html>

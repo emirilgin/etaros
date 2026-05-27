@@ -1,0 +1,118 @@
+name: Build & Release
+
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:       # lets you trigger a build manually from GitHub
+
+permissions:
+  contents: write          # needed to upload release assets
+
+jobs:
+  # ── macOS: arm64 DMG + x64 DMG ─────────────────────────────────────────────
+  build-mac:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate app icon (.png + .icns)
+        run: npm run gen-icon
+
+      - name: Build Mac DMGs (arm64 + x64)
+        run: npm run build:mac
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_IDENTITY_AUTO_DISCOVERY: false   # skip code signing
+
+      - name: Upload Mac DMGs
+        uses: actions/upload-artifact@v4
+        with:
+          name: Sidekick-mac
+          path: dist/*.dmg
+
+  # ── Windows: x64 EXE installer ─────────────────────────────────────────────
+  build-win:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Generate app icon (.png + .ico via Electron)
+        shell: pwsh
+        run: |
+          # Run gen-icon; electron-builder will convert icon.png → icon.ico
+          # on Windows if icon.ico is missing
+          npm run gen-icon
+        continue-on-error: true   # icon.ico auto-created by electron-builder anyway
+
+      - name: Build Windows EXE
+        run: npm run build:win
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          CSC_IDENTITY_AUTO_DISCOVERY: false
+
+      - name: Upload Windows EXE
+        uses: actions/upload-artifact@v4
+        with:
+          name: Sidekick-win
+          path: dist/*.exe
+
+  # ── GitHub Release: attach all files ───────────────────────────────────────
+  release:
+    needs: [build-mac, build-win]
+    runs-on: ubuntu-latest
+    if: startsWith(github.ref, 'refs/tags/')
+    steps:
+      - name: Download Mac artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: Sidekick-mac
+          path: artifacts/mac
+
+      - name: Download Win artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: Sidekick-win
+          path: artifacts/win
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: "Sidekick ${{ github.ref_name }}"
+          body: |
+            ## Sidekick ${{ github.ref_name }}
+
+            ### Download
+            | Platform | File |
+            |----------|------|
+            | 🍎 macOS Apple Silicon (M1/M2/M3/M4) | `Sidekick-*-arm64.dmg` |
+            | 🍎 macOS Intel | `Sidekick-*-x64.dmg` |
+            | 🪟 Windows 10/11 | `Sidekick-*-Setup.exe` |
+
+            ### Install
+            **Mac:** Open the DMG, drag Sidekick to Applications.
+            > First launch: right-click → Open to bypass the unverified developer warning.
+
+            **Windows:** Run the installer. Windows may show a SmartScreen warning — click "More info" → "Run anyway".
+          files: |
+            artifacts/mac/*.dmg
+            artifacts/win/*.exe
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
