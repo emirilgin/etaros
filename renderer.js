@@ -231,6 +231,7 @@ async function doScan(btn) {
 scanBtn.addEventListener('click',    () => doScan(scanBtn));
 scanFsBtn?.addEventListener('click', () => doScan(scanFsBtn));
 document.getElementById('scan-sidebar-btn')?.addEventListener('click', () => doScan(scanBtn));
+document.getElementById('scan-input-btn')?.addEventListener('click',   () => doScan(scanBtn));
 
 // ─── Quick messages (chips + fs-nav) ─────────────────────────────────────────
 function sendQuickMsg(text) {
@@ -246,10 +247,11 @@ document.querySelectorAll('.empty-chip').forEach(chip =>
 document.querySelectorAll('.fs-quick').forEach(btn =>
   btn.addEventListener('click', () => sendQuickMsg(btn.dataset.msg)));
 
-// ─── Input auto-grow ──────────────────────────────────────────────────────────
+// ─── Input auto-grow + send button state ─────────────────────────────────────
 msg.addEventListener('input', () => {
   msg.style.height = 'auto';
   msg.style.height = Math.min(msg.scrollHeight, 160) + 'px';
+  send.disabled = !msg.value.trim() && !pendingDropB64;
 });
 
 // ─── Send ─────────────────────────────────────────────────────────────────────
@@ -296,7 +298,8 @@ function showDropPreview(file, b64) {
   dropPreviewImg.src  = `data:${file.type};base64,${b64}`;
   dropPreviewName.textContent = file.name || 'image';
   dropPreviewBar.style.display = 'block';
-  msg.placeholder = 'Ask about this image, or just hit ↑ to analyze…';
+  msg.placeholder = 'Ask about this image, or send to analyze…';
+  send.disabled = false; // enable send when image attached
 }
 
 function clearDropPreview() {
@@ -304,8 +307,9 @@ function clearDropPreview() {
   dropPreviewBar.style.display = 'none';
   dropPreviewImg.src  = '';
   dropPreviewName.textContent = '';
-  msg.placeholder = 'Message Sidekick… or drop a screenshot';
+  msg.placeholder = 'Ask anything — or drop a screenshot…';
   fileInput.value = '';
+  send.disabled = !msg.value.trim();
 }
 
 async function analyzeDropped(b64, labelText) {
@@ -1561,4 +1565,43 @@ async function init() {
   }
 }
 
+// ─── Profile (avatar + name) ──────────────────────────────────────────────────
+const sbUserRow    = document.getElementById('sb-user-row');
+const sbUserAvatar = document.getElementById('sb-user-avatar');
+const sbUserName   = document.getElementById('sb-user-name');
+
+function applyProfile({ name, avatar }) {
+  if (name)   sbUserName.textContent = name;
+  if (avatar) {
+    sbUserAvatar.innerHTML = `<img src="${avatar}" alt="avatar"/>`;
+  }
+}
+
+// Click avatar row → open hidden file picker to change pfp
+const pfpInput = document.createElement('input');
+pfpInput.type = 'file'; pfpInput.accept = 'image/*'; pfpInput.style.display = 'none';
+document.body.appendChild(pfpInput);
+
+sbUserRow?.addEventListener('click', () => pfpInput.click());
+pfpInput.addEventListener('change', async () => {
+  const file = pfpInput.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = async e => {
+    const dataUrl = e.target.result;
+    applyProfile({ avatar: dataUrl });
+    await window.sk.saveProfile({ avatar: dataUrl });
+  };
+  reader.readAsDataURL(file);
+  pfpInput.value = '';
+});
+
+window.sk.on('profile-updated', applyProfile);
+
+async function loadProfile() {
+  const p = await window.sk.getProfile();
+  applyProfile(p);
+}
+
 init();
+loadProfile();
