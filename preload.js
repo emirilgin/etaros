@@ -29,7 +29,8 @@ contextBridge.exposeInMainWorld('sk', {
   getMode:      ()     => ipcRenderer.invoke('get-mode'),
   setMode:      (id)   => ipcRenderer.invoke('set-mode', id),
   chat:         (text) => ipcRenderer.invoke('chat', text),
-  manualScan:   ()     => ipcRenderer.invoke('manual-scan'),
+  manualScan:   ()        => ipcRenderer.invoke('manual-scan'),
+  analyzeImage: (b64)     => ipcRenderer.invoke('analyze-image', b64),
 
   // Fire and forget
   hideWindow:     ()       => ipcRenderer.send('hide-window'),

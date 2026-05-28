@@ -924,6 +924,46 @@ function registerIPC() {
     return { ok: true };
   });
 
+  // Analyze a user-provided image (drag & drop or file picker)
+  ipcMain.handle('analyze-image', async (_, b64) => {
+    if (isStreaming) return { ok: false, reason: 'busy' };
+    const limitHit = checkLimits();
+    if (limitHit) { push('upgrade-prompt', getLicenseInfo()); return { ok: false, reason: 'limit' }; }
+
+    isStreaming = true;
+    push('stream-start', {});
+    try {
+      const scanPrompt  = getScanPrompt();
+      const userPrompt  = 'Analyse this image the user provided. Respond ONLY with valid JSON.';
+      const scanHistory = [{ role: 'user', content: userPrompt, _b64: b64 }];
+      const raw = await streamAI(scanPrompt, scanHistory);
+
+      let parsed = null;
+      try { const m = raw.match(/\{[\s\S]*\}/); if (m) parsed = JSON.parse(m[0]); } catch {}
+
+      if (parsed?.items?.length) {
+        journalEntry(parsed.summary, parsed.context);
+        const scans   = Number(store.get('statScans')   ?? 0) + 1;
+        const threats = Number(store.get('statThreats') ?? 0)
+          + parsed.items.filter(i => i.type === 'risk' || i.type === 'warn').length;
+        store.set('statScans',   scans);
+        store.set('statThreats', threats);
+        push('stats-updated', getStats());
+        push('analysis', parsed);
+      }
+
+      chatHistory.push({ role: 'assistant', content: raw });
+      const usage = bumpUsage();
+      push('stream-done', { _tier: usage.tier, _used: usage.used, _limit: usage.limit });
+    } catch (err) {
+      console.error('[analyze-image]', err.message);
+      push('stream-error', { message: err.message });
+    } finally {
+      isStreaming = false;
+    }
+    return { ok: true };
+  });
+
   ipcMain.on('clear-history', () => {
     chatHistory = [];
     push('history-cleared', {});

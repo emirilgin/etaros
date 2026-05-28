@@ -268,6 +268,129 @@ msg.addEventListener('keydown', e => {
   if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMsg(); }
 });
 
+// ─── Drag & Drop image analysis ──────────────────────────────────────────────
+const dropZone       = document.getElementById('drop-zone');
+const dropPreviewBar = document.getElementById('drop-preview-bar');
+const dropPreviewImg = document.getElementById('drop-preview-img');
+const dropPreviewName= document.getElementById('drop-preview-name');
+const dropClose      = document.getElementById('drop-preview-close');
+const attachBtn      = document.getElementById('attach-btn');
+const fileInput      = document.getElementById('file-input');
+
+let pendingDropB64   = null;
+let dragCounter      = 0;
+
+function readFileAsB64(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload  = e => {
+      // Strip data URL prefix → raw base64
+      resolve(e.target.result.split(',')[1]);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function showDropPreview(file, b64) {
+  pendingDropB64 = b64;
+  dropPreviewImg.src  = `data:${file.type};base64,${b64}`;
+  dropPreviewName.textContent = file.name || 'image';
+  dropPreviewBar.style.display = 'block';
+  msg.placeholder = 'Ask about this image, or just hit ↑ to analyze…';
+}
+
+function clearDropPreview() {
+  pendingDropB64  = null;
+  dropPreviewBar.style.display = 'none';
+  dropPreviewImg.src  = '';
+  dropPreviewName.textContent = '';
+  msg.placeholder = 'Message Sidekick… or drop a screenshot';
+  fileInput.value = '';
+}
+
+async function analyzeDropped(b64, labelText) {
+  if (!b64) return;
+  const text = msg.value.trim() || 'Analyze this image.';
+  appendUser(text + (labelText ? ` [image: ${labelText}]` : ''));
+  msg.value = ''; msg.style.height = 'auto';
+  clearDropPreview();
+  send.disabled = true;
+  // Show preview thumbnail in feed
+  push_screen_preview(b64);
+  await window.sk.analyzeImage(b64);
+  send.disabled = false;
+}
+
+function push_screen_preview(b64) {
+  // Reuse existing screen-preview mechanism
+  const event = new CustomEvent('sidekick-preview', { detail: { b64 } });
+  document.dispatchEvent(event);
+}
+document.addEventListener('sidekick-preview', ({ detail }) => { pendingPreview = detail.b64; });
+
+// Override sendMsg to include attached image
+const _origSendMsg = sendMsg;
+async function sendMsg() {
+  if (pendingDropB64) {
+    await analyzeDropped(pendingDropB64, dropPreviewName.textContent);
+  } else {
+    await _origSendMsg();
+  }
+}
+
+// Drag events — whole window
+document.addEventListener('dragenter', e => {
+  if (!e.dataTransfer.types.includes('Files')) return;
+  dragCounter++;
+  dropZone.classList.add('active');
+  e.preventDefault();
+});
+document.addEventListener('dragleave', e => {
+  dragCounter--;
+  if (dragCounter <= 0) { dragCounter = 0; dropZone.classList.remove('active'); }
+});
+document.addEventListener('dragover', e => {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'copy';
+});
+document.addEventListener('drop', async e => {
+  e.preventDefault();
+  dragCounter = 0;
+  dropZone.classList.remove('active');
+
+  const file = e.dataTransfer.files[0];
+  if (!file || !file.type.startsWith('image/')) return;
+
+  try {
+    const b64 = await readFileAsB64(file);
+    const text = msg.value.trim();
+    if (text) {
+      // Has message → analyze immediately
+      await analyzeDropped(b64, file.name);
+    } else {
+      // No message → show preview, let user add context
+      showDropPreview(file, b64);
+    }
+  } catch (err) {
+    console.error('Drop read error:', err);
+  }
+});
+
+// 📎 attach button → file picker
+attachBtn.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', async () => {
+  const file = fileInput.files[0];
+  if (!file) return;
+  try {
+    const b64 = await readFileAsB64(file);
+    showDropPreview(file, b64);
+  } catch (err) { console.error('File read error:', err); }
+});
+
+// Remove attached image
+dropClose.addEventListener('click', clearDropPreview);
+
 // ─── Render: user bubble ──────────────────────────────────────────────────────
 function appendUser(text) {
   showFeed();
