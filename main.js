@@ -1,5 +1,10 @@
 'use strict';
 
+const { init: sentryInit } = require('@sentry/electron/main');
+sentryInit({
+  dsn: 'https://e43ea3481b44b42aebfaf0723599733e@o4511469742391296.ingest.de.sentry.io/4511469748355152',
+});
+
 const {
   app, BrowserWindow, desktopCapturer, ipcMain,
   Tray, Menu, nativeImage, Notification, screen, globalShortcut, shell,
@@ -284,14 +289,41 @@ let chatHistory    = [];
 let lastNotifyTime = 0;
 const NOTIFY_COOLDOWN_MS = 5 * 60_000; // max 1 OS notification per 5 min
 
-// ─── Tier system (local, no server needed) ────────────────────────────────────
+// ─── Tier system — HMAC-signed key validation ─────────────────────────────────
+// Keys are signed at generation time using a secret in app.config.js.
+// Format: PREFIX-R1-R2-C3 where C3 = first 4 hex of HMAC-SHA256(secret, R1+R2)
+// Random guesses that match the prefix pattern will fail the checksum with >99.99% prob.
+const { createHmac } = require('crypto');
+
+function verifyKeyHmac(key) {
+  const secret = APP_CONFIG.licenseSecret;
+  if (!secret || secret === 'YOUR_64_CHAR_HEX_SECRET_HERE') {
+    // No secret configured — fall through to pattern-only (dev/test mode)
+    return true;
+  }
+  // Parse: PREFIX-R1-R2-C3
+  const m = key.match(/^(SMAX|SIDE|STEST)-([A-F0-9]{4})-([A-F0-9]{4})-([A-F0-9]{4})$/);
+  if (!m) return false;
+  const [, , r1, r2, given] = m;
+  const expected = createHmac('sha256', secret)
+    .update(r1 + r2)
+    .digest('hex')
+    .slice(0, 4)
+    .toUpperCase();
+  return given === expected;
+}
+
 function getTier() {
-  if (APP_CONFIG.ownerMode) return 'max';  // dev/owner build
-  const key = String(store.get('licenseKey') ?? '').trim();
+  if (APP_CONFIG.ownerMode) return 'max';  // dev/owner build — local only, never commit
+  const key = String(store.get('licenseKey') ?? '').trim().toUpperCase();
   if (!key) return 'free';
-  if (/^SMAX-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(key))  return 'max';
-  if (/^SIDE-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(key))  return 'pro';
-  if (/^STEST-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(key)) return 'max'; // tester
+
+  // Verify HMAC signature before accepting tier
+  if (!verifyKeyHmac(key)) return 'free'; // failed signature = not a valid key
+
+  if (/^SMAX-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}$/.test(key))  return 'max';
+  if (/^SIDE-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}$/.test(key))  return 'pro';
+  if (/^STEST-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}$/.test(key)) return 'max'; // beta tester
   return 'free';
 }
 
