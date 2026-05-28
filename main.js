@@ -326,16 +326,6 @@ function fireNotification(title, body) {
       if (mainWindow && !mainWindow.isDestroyed()) {
         mainWindow.show();
         mainWindow.focus();
-        // Uncollapse if collapsed
-        const mode = String(store.get('windowMode') || 'sidebar');
-        if (mode !== 'fullscreen') {
-          mainWindow.setResizable(false);
-          mainWindow.setMovable(false);
-          mainWindow.setBounds(dockedBounds(false), true);
-          if (process.platform === 'darwin') mainWindow.setAlwaysOnTop(true, 'screen-saver');
-          else mainWindow.setAlwaysOnTop(true);
-          store.set('windowMode', 'sidebar');
-        }
       }
     });
     n.show();
@@ -761,20 +751,24 @@ function dockedBounds(collapsed = false) {
 }
 
 function createMainWindow() {
+  const saved = store.get('windowBounds', {});
+  const bounds = (saved.width && saved.height) ? saved : fullscreenBounds();
   mainWindow = new BrowserWindow({
-    ...dockedBounds(),
-    frame: false, transparent: true, alwaysOnTop: true,
-    skipTaskbar: false, resizable: false, movable: false, hasShadow: false,
+    ...bounds,
+    minWidth: 700, minHeight: 500,
+    frame: false, transparent: false,
+    alwaysOnTop: Boolean(store.get('alwaysOnTop') ?? false),
+    skipTaskbar: false, resizable: true, movable: true, hasShadow: true,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true, nodeIntegration: false, sandbox: false,
     },
   });
   mainWindow.loadFile('index.html');
-  if (process.platform === 'darwin') {
-    mainWindow.setVisibleOnAllWorkspaces(true, { visibleOnFullScreen: true });
-    mainWindow.setAlwaysOnTop(true, 'screen-saver');
-  }
+  // Persist window bounds
+  const saveBounds = () => { if (!mainWindow.isDestroyed()) store.set('windowBounds', mainWindow.getBounds()); };
+  mainWindow.on('resize', saveBounds);
+  mainWindow.on('move',   saveBounds);
   // Close button hides to tray — doesn't quit
   mainWindow.on('close', e => {
     if (!app.isQuitting) {
@@ -1043,7 +1037,7 @@ function registerIPC() {
     // Open multiple URLs as separate tabs — stagger slightly so browser groups them
     urls.forEach((u, i) => setTimeout(() => shell.openExternal(u), i * 120));
   });
-  ipcMain.handle('get-window-mode', () => String(store.get('windowMode') || 'sidebar'));
+  ipcMain.handle('get-window-mode', () => 'fullscreen');
 }
 
 // ─── Auto-updater ─────────────────────────────────────────────────────────────

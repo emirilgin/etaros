@@ -109,13 +109,11 @@ function maybeTimeDivider() {
 }
 
 // ─── Mode ─────────────────────────────────────────────────────────────────────
-function applyMode(mode) {
-  currentMode = mode;
-  document.documentElement.dataset.mode = mode;
-  if (mode === 'fullscreen') {
-    shell.classList.remove('collapsed');
-    collapsed = false;
-  }
+function applyMode(_mode) {
+  currentMode = 'fullscreen'; // always fullscreen layout
+  document.documentElement.dataset.mode = 'fullscreen';
+  shell?.classList.remove('collapsed');
+  collapsed = false;
 }
 
 // ─── Collapse ─────────────────────────────────────────────────────────────────
@@ -214,7 +212,9 @@ window.sk.on('mode-changed', ({ mode, icon, name, color }) => {
 // ─── Traffic lights (fullscreen macOS titlebar) ───────────────────────────────
 document.getElementById('tl-close')?.addEventListener('click', () => window.sk.hideWindow());
 document.getElementById('tl-min')  ?.addEventListener('click', () => window.sk.minimizeWindow());
-document.getElementById('tl-max')  ?.addEventListener('click', () => window.sk.setMode('sidebar'));
+document.getElementById('tl-max')  ?.addEventListener('click', () => {
+  if (document.getElementById('tl-max')) window.sk.minimizeWindow();
+});
 
 // ─── Buttons ──────────────────────────────────────────────────────────────────
 settingsBtn.addEventListener('click',    () => window.sk.openSettings());
@@ -231,7 +231,8 @@ async function doScan(btn) {
   btn.disabled = false; btn.textContent = orig;
 }
 scanBtn.addEventListener('click',    () => doScan(scanBtn));
-scanFsBtn.addEventListener('click',  () => doScan(scanFsBtn));
+scanFsBtn?.addEventListener('click', () => doScan(scanFsBtn));
+document.getElementById('scan-sidebar-btn')?.addEventListener('click', () => doScan(scanBtn));
 
 // ─── Quick messages (chips + fs-nav) ─────────────────────────────────────────
 function sendQuickMsg(text) {
@@ -377,8 +378,12 @@ document.addEventListener('drop', async e => {
   }
 });
 
-// 📎 attach button → file picker
-attachBtn.addEventListener('click', () => fileInput.click());
+// 📎 attach buttons → file picker
+attachBtn?.addEventListener('click', () => fileInput?.click());
+document.getElementById('upload-sidebar-btn')?.addEventListener('click', () => {
+  fileInput?.click();
+  switchTab('chat'); // switch to chat so the preview shows
+});
 fileInput.addEventListener('change', async () => {
   const file = fileInput.files[0];
   if (!file) return;
@@ -907,15 +912,17 @@ function fmtDate(ts) {
 const tabBtns = document.querySelectorAll('.tab-btn');
 
 function switchTab(name) {
-  tabBtns.forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
   document.querySelectorAll('.tab-panel').forEach(p =>
     p.classList.toggle('active', p.id === name + '-panel'));
-  if (name === 'notes')  { loadNotes(); setTimeout(() => noteInput?.focus(), 60); }
-  if (name === 'life')   { loadLife().then(() => setTimeout(() => document.getElementById('saving-item')?.focus(), 60)); }
-  if (name === 'search') { loadSearch(); }
-  if (name === 'chat')   { setTimeout(() => msg?.focus(), 60); }
+  if (name === 'notes')   { loadNotes();   setTimeout(() => noteInput?.focus(), 60); }
+  if (name === 'savings') { loadSavings(); setTimeout(() => document.getElementById('saving-item')?.focus(), 60); }
+  if (name === 'diet')    { loadDiet();    setTimeout(() => document.getElementById('diet-item')?.focus(), 60); }
+  if (name === 'life')    { loadLife(); }
+  if (name === 'search')  { loadSearch(); }
+  if (name === 'chat')    { setTimeout(() => msg?.focus(), 60); }
 }
-tabBtns.forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
 
 // ─── Search input wiring ──────────────────────────────────────────────────────
 document.getElementById('search-go-btn')?.addEventListener('click', () => doSearch());
@@ -984,15 +991,393 @@ noteInput?.addEventListener('input', () => {
   noteInput.style.height = Math.min(noteInput.scrollHeight, 100) + 'px';
 });
 
-// ─── Life (Savings + Diet) ────────────────────────────────────────────────────
-const lifeList = document.getElementById('life-list');
+// ─── Canvas charts ────────────────────────────────────────────────────────────
+function drawAreaChart(canvasId, labels, values, color) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width  = rect.width  * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+  const W = rect.width, H = rect.height;
+  const PAD = { top: 8, right: 12, bottom: 28, left: 46 };
+  const cW = W - PAD.left - PAD.right;
+  const cH = H - PAD.top  - PAD.bottom;
+  const max = Math.max(...values, 1);
+  const step = cW / Math.max(labels.length - 1, 1);
 
+  ctx.clearRect(0, 0, W, H);
+
+  // Grid lines
+  ctx.strokeStyle = 'rgba(255,255,255,.055)';
+  ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = PAD.top + (cH / 4) * i;
+    ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(PAD.left + cW, y); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,.28)';
+    ctx.font = `10px system-ui`;
+    ctx.textAlign = 'right';
+    const val = max * (1 - i / 4);
+    ctx.fillText(val >= 1000 ? `${(val/1000).toFixed(1)}k` : Math.round(val), PAD.left - 6, y + 3.5);
+  }
+
+  // Points
+  const pts = values.map((v, i) => ({
+    x: PAD.left + i * step,
+    y: PAD.top + cH * (1 - v / max),
+  }));
+
+  // Fill
+  const grad = ctx.createLinearGradient(0, PAD.top, 0, PAD.top + cH);
+  grad.addColorStop(0, color.replace(')', ', .35)').replace('rgb', 'rgba'));
+  grad.addColorStop(1, color.replace(')', ', .0)').replace('rgb', 'rgba'));
+  ctx.beginPath();
+  ctx.moveTo(pts[0].x, PAD.top + cH);
+  pts.forEach(p => ctx.lineTo(p.x, p.y));
+  ctx.lineTo(pts[pts.length-1].x, PAD.top + cH);
+  ctx.closePath();
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // Line
+  ctx.beginPath();
+  pts.forEach((p, i) => i === 0 ? ctx.moveTo(p.x, p.y) : ctx.lineTo(p.x, p.y));
+  ctx.strokeStyle = color;
+  ctx.lineWidth = 2; ctx.lineJoin = 'round'; ctx.stroke();
+
+  // Dots
+  pts.forEach(p => {
+    ctx.beginPath(); ctx.arc(p.x, p.y, 3.5, 0, Math.PI * 2);
+    ctx.fillStyle = color; ctx.fill();
+    ctx.strokeStyle = '#1a1714'; ctx.lineWidth = 1.5; ctx.stroke();
+  });
+
+  // X labels
+  ctx.fillStyle = 'rgba(255,255,255,.3)';
+  ctx.font = '10px system-ui'; ctx.textAlign = 'center';
+  labels.forEach((l, i) => {
+    ctx.fillText(l, PAD.left + i * step, H - 8);
+  });
+}
+
+function drawBarChart(canvasId, labels, values, color) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = window.devicePixelRatio || 1;
+  const rect = canvas.getBoundingClientRect();
+  canvas.width  = rect.width  * dpr;
+  canvas.height = rect.height * dpr;
+  ctx.scale(dpr, dpr);
+  const W = rect.width, H = rect.height;
+  const PAD = { top: 8, right: 12, bottom: 28, left: 46 };
+  const cW = W - PAD.left - PAD.right;
+  const cH = H - PAD.top  - PAD.bottom;
+  const max = Math.max(...values, 1);
+  const barW = cW / labels.length;
+  const gap  = Math.min(barW * .18, 6);
+
+  ctx.clearRect(0, 0, W, H);
+
+  // Grid
+  ctx.strokeStyle = 'rgba(255,255,255,.055)'; ctx.lineWidth = 1;
+  for (let i = 0; i <= 4; i++) {
+    const y = PAD.top + (cH / 4) * i;
+    ctx.beginPath(); ctx.moveTo(PAD.left, y); ctx.lineTo(PAD.left + cW, y); ctx.stroke();
+    ctx.fillStyle = 'rgba(255,255,255,.28)';
+    ctx.font = '10px system-ui'; ctx.textAlign = 'right';
+    const val = max * (1 - i / 4);
+    ctx.fillText(val >= 1000 ? `${(val/1000).toFixed(1)}k` : Math.round(val), PAD.left - 6, y + 3.5);
+  }
+
+  // Bars
+  values.forEach((v, i) => {
+    const bH = (v / max) * cH;
+    const x  = PAD.left + i * barW + gap;
+    const y  = PAD.top  + cH - bH;
+    const bw = barW - gap * 2;
+    const r  = Math.min(4, bw / 2, bH / 2);
+
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + bw, y, x + bw, y + bH, r);
+    ctx.arcTo(x + bw, y + bH, x, y + bH, 0);
+    ctx.arcTo(x, y + bH, x, y, 0);
+    ctx.arcTo(x, y, x + bw, y, r);
+    ctx.closePath();
+
+    const g = ctx.createLinearGradient(0, y, 0, y + bH);
+    g.addColorStop(0, color.replace(')', ', .9)').replace('rgb', 'rgba'));
+    g.addColorStop(1, color.replace(')', ', .4)').replace('rgb', 'rgba'));
+    ctx.fillStyle = v > 0 ? g : 'rgba(255,255,255,.04)';
+    ctx.fill();
+
+    ctx.fillStyle = 'rgba(255,255,255,.3)';
+    ctx.font = '10px system-ui'; ctx.textAlign = 'center';
+    ctx.fillText(labels[i], PAD.left + i * barW + barW / 2, H - 8);
+  });
+}
+
+// ─── Savings ──────────────────────────────────────────────────────────────────
+async function loadSavings() {
+  const savings = await window.sk.getSavings();
+  renderSavings(savings);
+}
+
+function renderSavings(savings) {
+  const totalSaved  = savings.reduce((s,e) => s + (parseFloat(e.amount)||0), 0);
+  const thisMonth   = savings
+    .filter(e => new Date(e.date) >= new Date(new Date().getFullYear(), new Date().getMonth(), 1))
+    .reduce((s,e) => s + (parseFloat(e.amount)||0), 0);
+
+  // Stats
+  const statsRow = document.getElementById('savings-stats-row');
+  if (statsRow) statsRow.innerHTML = `
+    <div class="stat-card green">
+      <div class="stat-icon">💰</div>
+      <div class="stat-body">
+        <div class="stat-label">Total saved</div>
+        <div class="stat-value">$${totalSaved.toFixed(2)}</div>
+        <div class="stat-sub">${savings.length} saving${savings.length!==1?'s':''} logged</div>
+      </div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-icon">📅</div>
+      <div class="stat-body">
+        <div class="stat-label">This month</div>
+        <div class="stat-value">$${thisMonth.toFixed(2)}</div>
+        <div class="stat-sub">${new Date().toLocaleDateString([],{month:'long'})}</div>
+      </div>
+    </div>`;
+
+  // Chart — cumulative savings over last 14 days
+  const days = 14;
+  const labels = []; const vals = [];
+  let cumulative = 0;
+  const all14 = savings.filter(s => {
+    const d = new Date(s.date);
+    return d >= new Date(Date.now() - (days-1)*864e5);
+  });
+  for (let i = days-1; i >= 0; i--) {
+    const d = new Date(Date.now() - i*864e5);
+    const label = d.toLocaleDateString([],{month:'short',day:'numeric'});
+    const dayStr = d.toDateString();
+    const daySum = all14
+      .filter(s => new Date(s.date).toDateString() === dayStr)
+      .reduce((sum,s) => sum + (parseFloat(s.amount)||0), 0);
+    cumulative += daySum;
+    labels.push(i === 0 ? 'Today' : d.toLocaleDateString([],{month:'short',day:'numeric'}));
+    vals.push(cumulative);
+  }
+  // Offset to start at base
+  const base = vals[0];
+  const relVals = vals.map(v => v - base + (base > 0 ? base * .05 : 0));
+  setTimeout(() => drawAreaChart('savings-chart', labels.filter((_,i) => i % 2 === 0 || i === labels.length-1).map((_,i) => labels[i*2] || labels[labels.length-1]), relVals.filter((_,i) => i % 2 === 0 || i === relVals.length-1), 'rgb(82,168,110)'), 50);
+
+  // Chips
+  const recentSavings = [...new Map(savings.map(s => [s.item, s])).values()].slice(0, 5);
+  const chipsEl = document.getElementById('savings-chips');
+  if (chipsEl) chipsEl.innerHTML = recentSavings.length ? `
+    <div class="life-recent-chips">
+      ${recentSavings.map(s => `
+        <button class="life-chip" data-type="saving" data-item="${esc(s.item)}" data-amount="${s.amount}">
+          💰 ${esc(s.item)}
+        </button>`).join('')}
+    </div>` : '';
+
+  // Entries
+  const entriesEl = document.getElementById('savings-entries');
+  if (entriesEl) {
+    if (!savings.length) {
+      entriesEl.innerHTML = '<div class="life-empty">No savings yet.<br>Log what you saved on — or let a scan catch it for you!</div>';
+    } else {
+      entriesEl.innerHTML = savings.map(s => `
+        <div class="life-entry">
+          <div class="life-entry-icon">💰</div>
+          <div class="life-entry-body">
+            <div class="life-entry-name">${esc(s.item)}</div>
+            <div class="life-entry-date">${fmtDate(s.date)}</div>
+          </div>
+          <div class="life-entry-val green">+$${parseFloat(s.amount).toFixed(2)}</div>
+          <button class="life-entry-del" data-id="${s.id}" data-type="saving">✕</button>
+        </div>`).join('');
+    }
+  }
+
+  wireSavingsHandlers();
+}
+
+function wireSavingsHandlers() {
+  function smartParseEl(itemId, numId) {
+    const it = document.getElementById(itemId), nu = document.getElementById(numId);
+    if (!it || !nu) return;
+    it.addEventListener('blur', () => {
+      if (it.value.trim() && !nu.value) {
+        const { name, num } = smartSplit(it.value);
+        if (num) { it.value = name; nu.value = num; }
+      }
+    });
+  }
+  smartParseEl('saving-item', 'saving-amount');
+
+  async function doAddSaving() {
+    let item   = document.getElementById('saving-item')?.value.trim();
+    let amount = parseFloat(document.getElementById('saving-amount')?.value) || 0;
+    if (item && !amount) { const p = smartSplit(item); if (p.num) { item = p.name; amount = p.num; } }
+    if (!item || !amount) return;
+    await window.sk.logSaving({ item, amount });
+    document.getElementById('saving-item').value   = '';
+    document.getElementById('saving-amount').value = '';
+    loadSavings();
+  }
+
+  document.getElementById('saving-add-btn')?.addEventListener('click', doAddSaving);
+  ['saving-item','saving-amount'].forEach(id =>
+    document.getElementById(id)?.addEventListener('keydown', e => { if (e.key==='Enter') doAddSaving(); }));
+
+  document.getElementById('savings-chips')?.querySelectorAll('.life-chip').forEach(chip => {
+    chip.addEventListener('click', async () => {
+      chip.textContent = '✓'; chip.style.pointerEvents = 'none';
+      await window.sk.logSaving({ item: chip.dataset.item, amount: parseFloat(chip.dataset.amount)||0 });
+      loadSavings();
+    });
+  });
+
+  document.getElementById('savings-entries')?.querySelectorAll('.life-entry-del').forEach(btn =>
+    btn.addEventListener('click', async () => {
+      await window.sk.deleteSaving(btn.dataset.id);
+      loadSavings();
+    }));
+}
+
+// ─── Diet ─────────────────────────────────────────────────────────────────────
+async function loadDiet() {
+  const diet = await window.sk.getDiet();
+  renderDiet(diet);
+}
+
+function renderDiet(diet) {
+  const todayStr  = new Date().toDateString();
+  const todayKcal = diet
+    .filter(d => new Date(d.date).toDateString() === todayStr)
+    .reduce((s,d) => s + (parseInt(d.kcal)||0), 0);
+  const totalKcal = diet.reduce((s,d) => s + (parseInt(d.kcal)||0), 0);
+
+  // Stats
+  const statsRow = document.getElementById('diet-stats-row');
+  if (statsRow) statsRow.innerHTML = `
+    <div class="stat-card orange">
+      <div class="stat-icon">🔥</div>
+      <div class="stat-body">
+        <div class="stat-label">Today</div>
+        <div class="stat-value">${todayKcal > 0 ? todayKcal.toLocaleString() : '—'}</div>
+        <div class="stat-sub">kcal today</div>
+      </div>
+    </div>
+    <div class="stat-card green">
+      <div class="stat-icon">📊</div>
+      <div class="stat-body">
+        <div class="stat-label">Total tracked</div>
+        <div class="stat-value">${totalKcal > 0 ? (totalKcal >= 1000 ? (totalKcal/1000).toFixed(1)+'k' : totalKcal) : '—'}</div>
+        <div class="stat-sub">${diet.length} meal${diet.length!==1?'s':''} logged</div>
+      </div>
+    </div>`;
+
+  // Chart — daily calories last 7 days
+  const labels7 = []; const vals7 = [];
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(Date.now() - i*864e5);
+    const dayStr = d.toDateString();
+    const label  = i === 0 ? 'Today' : d.toLocaleDateString([],{weekday:'short'});
+    const daySum = diet
+      .filter(e => new Date(e.date).toDateString() === dayStr)
+      .reduce((sum,e) => sum + (parseInt(e.kcal)||0), 0);
+    labels7.push(label);
+    vals7.push(daySum);
+  }
+  setTimeout(() => drawBarChart('diet-chart', labels7, vals7, 'rgb(200,98,46)'), 50);
+
+  // Chips
+  const recentDiet = [...new Map(diet.map(d => [d.item, d])).values()].slice(0, 5);
+  const chipsEl = document.getElementById('diet-chips');
+  if (chipsEl) chipsEl.innerHTML = recentDiet.length ? `
+    <div class="life-recent-chips">
+      ${recentDiet.map(d => `
+        <button class="life-chip" data-type="diet" data-item="${esc(d.item)}" data-kcal="${d.kcal||0}">
+          🥗 ${esc(d.item)}${d.kcal ? ` · ${d.kcal}` : ''}
+        </button>`).join('')}
+    </div>` : '';
+
+  // Entries
+  const entriesEl = document.getElementById('diet-entries');
+  if (entriesEl) {
+    if (!diet.length) {
+      entriesEl.innerHTML = '<div class="life-empty">No meals yet.<br>Type "big mac 550" and it auto-fills for you!</div>';
+    } else {
+      entriesEl.innerHTML = diet.map(d => `
+        <div class="life-entry">
+          <div class="life-entry-icon">🥗</div>
+          <div class="life-entry-body">
+            <div class="life-entry-name">${esc(d.item)}</div>
+            <div class="life-entry-date">${fmtDate(d.date)}</div>
+          </div>
+          <div class="life-entry-val blue">${d.kcal ? d.kcal+' kcal' : '—'}</div>
+          <button class="life-entry-del" data-id="${d.id}" data-type="diet">✕</button>
+        </div>`).join('');
+    }
+  }
+
+  wireDietHandlers();
+}
+
+function wireDietHandlers() {
+  function smartParseEl(itemId, numId) {
+    const it = document.getElementById(itemId), nu = document.getElementById(numId);
+    if (!it || !nu) return;
+    it.addEventListener('blur', () => {
+      if (it.value.trim() && !nu.value) {
+        const { name, num } = smartSplit(it.value);
+        if (num) { it.value = name; nu.value = num; }
+      }
+    });
+  }
+  smartParseEl('diet-item', 'diet-kcal');
+
+  async function doAddDiet() {
+    let item = document.getElementById('diet-item')?.value.trim();
+    let kcal = parseInt(document.getElementById('diet-kcal')?.value) || 0;
+    if (item && !kcal) { const p = smartSplit(item); if (p.num) { item = p.name; kcal = p.num; } }
+    if (!item) return;
+    await window.sk.logDiet({ item, kcal });
+    document.getElementById('diet-item').value = '';
+    document.getElementById('diet-kcal').value = '';
+    loadDiet();
+  }
+
+  document.getElementById('diet-add-btn')?.addEventListener('click', doAddDiet);
+  ['diet-item','diet-kcal'].forEach(id =>
+    document.getElementById(id)?.addEventListener('keydown', e => { if (e.key==='Enter') doAddDiet(); }));
+
+  document.getElementById('diet-chips')?.querySelectorAll('.life-chip').forEach(chip => {
+    chip.addEventListener('click', async () => {
+      chip.textContent = '✓'; chip.style.pointerEvents = 'none';
+      await window.sk.logDiet({ item: chip.dataset.item, kcal: parseInt(chip.dataset.kcal)||0 });
+      loadDiet();
+    });
+  });
+
+  document.getElementById('diet-entries')?.querySelectorAll('.life-entry-del').forEach(btn =>
+    btn.addEventListener('click', async () => {
+      await window.sk.deleteDiet(btn.dataset.id);
+      loadDiet();
+    }));
+}
+
+// ─── Life (legacy stub — kept for backward compat) ───────────────────────────
 async function loadLife() {
-  const [savings, diet] = await Promise.all([
-    window.sk.getSavings(),
-    window.sk.getDiet(),
-  ]);
-  renderLife(savings, diet);
+  await Promise.all([loadSavings(), loadDiet()]);
 }
 
 function renderLife(savings, diet) {
