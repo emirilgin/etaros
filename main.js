@@ -36,7 +36,7 @@ const RETRY_MS        = 15_000;
 const OLLAMA_BASE     = 'http://localhost:11434';
 
 // Tier limits
-const FREE_TOTAL = 3;   // lifetime free messages (just enough to try)
+const FREE_TOTAL = 15;  // beta: enough messages to properly evaluate the app
 // Pro = unlimited daily — no cap. Max = unlimited + better model.
 
 // ─── System prompts ───────────────────────────────────────────────────────────
@@ -388,10 +388,10 @@ async function streamGemini(systemPrompt, history) {
     }
   }
 
-  // All models exhausted — show helpful message
+  // All models exhausted — show helpful message with self-serve fix
   const retryMatch = String(lastErr?.message ?? '').match(/retry[^0-9]*(\d+)/i);
-  const wait = retryMatch ? ` Try again in ${retryMatch[1]}s.` : '';
-  throw new Error(`Gemini rate limit hit on all models.${wait} Your API key may be from a billing-enabled project — create a new key at aistudio.google.com in a project WITHOUT billing enabled.`);
+  const wait = retryMatch ? ` Try again in ${retryMatch[1]}s.` : ' Try again in a few minutes.';
+  throw new Error(`Daily AI limit reached.${wait}\n\nTo keep using Sidekick: open Settings → paste your own free Gemini key from aistudio.google.com (free, takes 30 seconds).`);
 }
 
 // ─── Stream: Claude (optional, for Pro/Max if Anthropic key is set) ───────────
