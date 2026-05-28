@@ -8,6 +8,7 @@ const path           = require('path');
 const os             = require('os');
 const { randomUUID } = require('crypto');
 const Store          = require('electron-store');
+const { autoUpdater } = require('electron-updater');
 
 // Machine fingerprint — encrypts the store so users can't manually reset usage
 function machineKey() {
@@ -716,7 +717,7 @@ async function runScan() {
 
 function startScanLoop() {
   stopScanLoop();
-  const secs = Number(store.get('scanInterval') ?? 5);
+  const secs = Number(store.get('scanInterval') ?? 30);
   if (!secs) return;
   scanTimer = setInterval(runScan, secs * 1000);
 }
@@ -997,7 +998,6 @@ function registerIPC() {
   });
   ipcMain.on('toggle-scan',    (_, on) => { store.set('autoScan', on); on ? startScanLoop() : stopScanLoop(); });
   ipcMain.on('set-collapsed',  (_, c)  => setWindowMode(c ? 'collapsed' : 'sidebar'));
-  ipcMain.on('set-mode',       (_, m)  => setWindowMode(m));
   ipcMain.on('open-url',       (_, u)  => shell.openExternal(u));
   ipcMain.on('open-urls',      (_, urls) => {
     // Open multiple URLs as separate tabs — stagger slightly so browser groups them
@@ -1006,11 +1006,35 @@ function registerIPC() {
   ipcMain.handle('get-window-mode', () => String(store.get('windowMode') || 'sidebar'));
 }
 
+// ─── Auto-updater ─────────────────────────────────────────────────────────────
+function setupAutoUpdater() {
+  // Don't check for updates in dev (no app.asar)
+  if (!app.isPackaged) return;
+
+  autoUpdater.autoDownload     = true;
+  autoUpdater.autoInstallOnAppQuit = true;
+
+  autoUpdater.on('checking-for-update',  ()      => push('update-status', { status: 'checking' }));
+  autoUpdater.on('update-available',     (info)  => push('update-status', { status: 'available',    version: info.version }));
+  autoUpdater.on('update-not-available', ()      => push('update-status', { status: 'up-to-date' }));
+  autoUpdater.on('download-progress',    (prog)  => push('update-status', { status: 'downloading', percent: Math.round(prog.percent) }));
+  autoUpdater.on('update-downloaded',    (info)  => push('update-status', { status: 'ready',       version: info.version }));
+  autoUpdater.on('error',                (err)   => console.warn('[updater]', err.message));
+
+  // Check on launch, then every 4 hours
+  setTimeout(() => autoUpdater.checkForUpdatesAndNotify().catch(() => {}), 10_000);
+  setInterval(() => autoUpdater.checkForUpdatesAndNotify().catch(() => {}), 4 * 60 * 60 * 1000);
+
+  // IPC: renderer can trigger install-and-restart
+  ipcMain.on('install-update', () => autoUpdater.quitAndInstall(false, true));
+}
+
 // ─── Boot ─────────────────────────────────────────────────────────────────────
 app.whenReady().then(() => {
   createMainWindow();
   createTray();
   registerIPC();
+  setupAutoUpdater();
 
   // Show setup screen on first run
   if (!store.get('setupDone')) {

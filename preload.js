@@ -44,6 +44,7 @@ contextBridge.exposeInMainWorld('sk', {
   openUrls:      (urls)    => ipcRenderer.send('open-urls', urls),
   clearHistory:  ()        => ipcRenderer.send('clear-history'),
   getWindowMode: ()        => ipcRenderer.invoke('get-window-mode'),
+  installUpdate: ()        => ipcRenderer.send('install-update'),
 
   // Events from main → renderer
   on: (ch, fn) => {

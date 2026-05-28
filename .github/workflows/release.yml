@@ -23,8 +23,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Icons already committed to build/ — no gen-icon needed in CI
-
       - name: Write app config
         shell: bash
         run: |
@@ -48,11 +46,14 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_IDENTITY_AUTO_DISCOVERY: false
 
-      - name: Upload Mac DMGs
+      - name: Upload Mac artifacts
         uses: actions/upload-artifact@v4
         with:
           name: Sidekick-mac
-          path: dist/*.dmg
+          path: |
+            dist/*.dmg
+            dist/*.dmg.blockmap
+            dist/latest-mac.yml
 
   # ── Windows: x64 NSIS installer ────────────────────────────────────────────
   build-win:
@@ -68,8 +69,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Icons already committed to build/ — no gen-icon needed in CI
-
       - name: Write app config
         shell: bash
         run: |
@@ -84,24 +83,23 @@ jobs:
       - name: Generate build/icon.ico from PNG
         shell: node {0}
         run: |
-          // Embed PNG inside ICO container (Vista+ format — supported by Windows 10/11)
           const fs = require('fs');
           const png = fs.readFileSync('build/icon.png');
 
           const hdr = Buffer.allocUnsafe(6);
-          hdr.writeUInt16LE(0, 0);   // reserved
-          hdr.writeUInt16LE(1, 2);   // type: 1 = icon
-          hdr.writeUInt16LE(1, 4);   // image count: 1
+          hdr.writeUInt16LE(0, 0);
+          hdr.writeUInt16LE(1, 2);
+          hdr.writeUInt16LE(1, 4);
 
           const img = Buffer.allocUnsafe(16);
-          img.writeUInt8(0, 0);       // width  0 = 256px
-          img.writeUInt8(0, 1);       // height 0 = 256px
-          img.writeUInt8(0, 2);       // colour palette
-          img.writeUInt8(0, 3);       // reserved
-          img.writeUInt16LE(1, 4);    // colour planes
-          img.writeUInt16LE(32, 6);   // bits per pixel
-          img.writeUInt32LE(png.length, 8);   // PNG data size
-          img.writeUInt32LE(22, 12);  // offset of PNG data (6 hdr + 16 img entry)
+          img.writeUInt8(0, 0);
+          img.writeUInt8(0, 1);
+          img.writeUInt8(0, 2);
+          img.writeUInt8(0, 3);
+          img.writeUInt16LE(1, 4);
+          img.writeUInt16LE(32, 6);
+          img.writeUInt32LE(png.length, 8);
+          img.writeUInt32LE(22, 12);
 
           fs.writeFileSync('build/icon.ico', Buffer.concat([hdr, img, png]));
           console.log('✓  build/icon.ico  (' + png.length + ' bytes)');
@@ -112,11 +110,14 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           CSC_IDENTITY_AUTO_DISCOVERY: false
 
-      - name: Upload Windows EXE
+      - name: Upload Windows artifacts
         uses: actions/upload-artifact@v4
         with:
           name: Sidekick-win
-          path: dist/*.exe
+          path: |
+            dist/*.exe
+            dist/*.exe.blockmap
+            dist/latest.yml
 
   # ── GitHub Release — only on real version tags ──────────────────────────────
   release:
@@ -156,10 +157,17 @@ jobs:
             ### Install
             **Mac:** Open `.dmg` → drag to Applications → right-click → Open → Open anyway (unsigned build).
             **Windows:** Run `Sidekick-*-Setup.exe` → if SmartScreen appears → More info → Run anyway.
+
+            ---
+            ✦ Sidekick will auto-update in the background. You'll see a notification when the next version is ready.
           files: |
             artifacts/mac/*.dmg
+            artifacts/mac/*.blockmap
+            artifacts/mac/latest-mac.yml
             artifacts/win/*.exe
+            artifacts/win/*.blockmap
+            artifacts/win/latest.yml
           draft: false
-          prerelease: false
+          prerelease: ${{ contains(github.ref_name, 'beta') || contains(github.ref_name, 'alpha') }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

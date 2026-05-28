@@ -1,6 +1,6 @@
 {
   "name": "sidekick",
-  "version": "0.1.0",
+  "version": "0.4.0",
   "description": "AI sidekick that watches your screen — shopping, food, finance, anything",
   "main": "main.js",
   "scripts": {
@@ -17,7 +17,8 @@
   "dependencies": {
     "@anthropic-ai/sdk": "^0.39.0",
     "@google/generative-ai": "^0.24.1",
-    "electron-store": "8.2.0"
+    "electron-store": "8.2.0",
+    "electron-updater": "^6.8.3"
   },
   "devDependencies": {
     "electron": "^33.4.0",
@@ -43,8 +44,18 @@
     "mac": {
       "icon": "build/icon.icns",
       "target": [
-        { "target": "dmg", "arch": ["arm64"] },
-        { "target": "dmg", "arch": ["x64"] }
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64"
+          ]
+        },
+        {
+          "target": "dmg",
+          "arch": [
+            "x64"
+          ]
+        }
       ],
       "category": "public.app-category.productivity",
       "identity": null,
@@ -56,16 +67,33 @@
     "win": {
       "icon": "build/icon.ico",
       "target": [
-        { "target": "nsis", "arch": ["x64"] }
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
       ]
     },
     "dmg": {
       "title": "Sidekick",
       "background": "build/dmg-bg.png",
-      "window": { "width": 540, "height": 380 },
+      "window": {
+        "width": 540,
+        "height": 380
+      },
       "contents": [
-        { "x": 140, "y": 155, "type": "file" },
-        { "x": 400, "y": 155, "type": "link", "path": "/Applications" }
+        {
+          "x": 140,
+          "y": 155,
+          "type": "file"
+        },
+        {
+          "x": 400,
+          "y": 155,
+          "type": "link",
+          "path": "/Applications"
+        }
       ],
       "iconSize": 96
     },

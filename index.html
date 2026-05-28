@@ -980,6 +980,22 @@ html[data-mode="fullscreen"] #titlebar{ display:flex; }
 .stat-pill .stat-n.green{ color:var(--green); }
 #stats-bar[data-empty="true"]{ display:none; }
 
+/* ═══ UPDATE BANNER ══════════════════════════════════════════════════════════ */
+#update-banner{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:8px; padding:7px 12px;
+  background:linear-gradient(90deg,rgba(139,127,212,.18),rgba(90,180,122,.1));
+  border-bottom:1px solid rgba(139,127,212,.35);
+  font-size:12px; flex-shrink:0;
+}
+#update-msg{ color:var(--t1); font-weight:600; }
+#update-btn{
+  background:var(--accent); color:#fff; border:none; border-radius:6px;
+  padding:4px 10px; font-size:11px; font-weight:700; cursor:pointer;
+  white-space:nowrap; transition:opacity .15s;
+}
+#update-btn:hover{ opacity:.85; }
+
 /* ═══ MODE BAR ════════════════════════════════════════════════════════════════ */
 #mode-bar{
   display:flex; align-items:center; gap:4px;
@@ -1123,6 +1139,12 @@ html[data-mode="fullscreen"] #titlebar{ display:flex; }
       <!-- populated by renderer.js -->
     </div>
     <div id="mode-tagline"></div>
+
+    <!-- Update banner -->
+    <div id="update-banner" style="display:none;">
+      <span id="update-msg">✦ Update available</span>
+      <button id="update-btn">Install &amp; restart</button>
+    </div>
 
     <!-- Upgrade banner -->
     <div id="upgrade">

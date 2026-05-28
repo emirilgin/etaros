@@ -492,6 +492,42 @@ window.sk.on('scan-status', ({ scanning }) => {
   }
 });
 
+// ─── Auto-update banner ───────────────────────────────────────────────────────
+const updateBanner = document.getElementById('update-banner');
+const updateMsg    = document.getElementById('update-msg');
+const updateBtn    = document.getElementById('update-btn');
+
+window.sk.on('update-status', ({ status, version, percent }) => {
+  if (!updateBanner) return;
+  switch (status) {
+    case 'available':
+      updateMsg.textContent = `✦ v${version} available — downloading…`;
+      updateBanner.style.display = 'flex';
+      updateBtn.style.display = 'none';
+      break;
+    case 'downloading':
+      updateMsg.textContent = `⬇ Downloading update… ${percent}%`;
+      updateBanner.style.display = 'flex';
+      updateBtn.style.display = 'none';
+      break;
+    case 'ready':
+      updateMsg.textContent = `✦ v${version} ready to install`;
+      updateBtn.style.display = '';
+      updateBanner.style.display = 'flex';
+      break;
+    default:
+      break; // checking / up-to-date: stay hidden
+  }
+});
+
+if (updateBtn) {
+  updateBtn.addEventListener('click', () => {
+    updateBtn.textContent = 'Restarting…';
+    updateBtn.disabled = true;
+    window.sk.installUpdate();
+  });
+}
+
 window.sk.on('error',          ({ message })       => appendError(message));
 window.sk.on('upgrade-prompt', ({ tier, used, limit }) => {
   setTierDisplay(tier || 'free', used, limit);
