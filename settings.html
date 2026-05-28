@@ -412,12 +412,12 @@ html,body{
     <div class="sec">
       <div class="sec-label">Scan Interval</div>
       <div class="pills">
-        <div class="pill" data-val="3">3s<small>Fast</small></div>
-        <div class="pill active" data-val="5">5s<small>Default</small></div>
-        <div class="pill" data-val="10">10s<small>Gentle</small></div>
+        <div class="pill" data-val="15">15s<small>Fast</small></div>
+        <div class="pill active" data-val="30">30s<small>Default</small></div>
+        <div class="pill" data-val="60">60s<small>Gentle</small></div>
         <div class="pill" data-val="0">Off<small>Manual</small></div>
       </div>
-      <div class="hint">How often Sidekick checks your screen for new insights.</div>
+      <div class="hint">How often Sidekick silently scans your screen. Use the ⟳ button to scan manually anytime.</div>
     </div>
 
     <!-- ── Behaviour ── -->
@@ -560,7 +560,7 @@ const modelSel   = document.getElementById('ollama-model');
 const pills      = document.querySelectorAll('.pill');
 const pcards     = document.querySelectorAll('.pcard');
 
-let selectedInterval = 5;
+let selectedInterval = 30;
 let selectedProvider = 'cloud';
 
 // ── Close ─────────────────────────────────────────────────────────────────────
@@ -753,7 +753,7 @@ async function load() {
   autoScanEl.checked = s.autoScan !== false;
   loginEl.checked    = Boolean(s.startOnLogin);
 
-  selectedInterval = Number(s.scanInterval ?? 5);
+  selectedInterval = Number(s.scanInterval ?? 30);
   pills.forEach(p => p.classList.toggle('active', Number(p.dataset.val) === selectedInterval));
 
   selectedProvider = s.provider || 'cloud';
