@@ -486,6 +486,164 @@ memClearBtn?.addEventListener('click', async () => {
   openMemory();
 });
 
+// ─── Search engine ───────────────────────────────────────────────────────────
+const enc = encodeURIComponent;
+
+const SEARCH_CATS = [
+  { id:'food',    icon:'🍜', label:'Food',
+    sites:(q,loc)=>[
+      `https://www.google.com/maps/search/${enc(loc?q+' near '+loc:q)}`,
+      `https://www.yelp.com/search?find_desc=${enc(q)}&find_loc=${enc(loc||'')}`,
+      `https://www.ubereats.com/search?q=${enc(q)}`,
+    ]},
+  { id:'shop',    icon:'🛍', label:'Shop',
+    sites:(q)=>[
+      `https://www.google.com/search?q=${enc(q)}&tbm=shop`,
+      `https://www.amazon.com/s?k=${enc(q)}`,
+      `https://www.ebay.com/sch/i.html?_nkw=${enc(q)}`,
+    ]},
+  { id:'travel',  icon:'✈️', label:'Travel',
+    sites:(q)=>[
+      `https://www.google.com/travel/flights?q=${enc(q)}`,
+      `https://www.skyscanner.com/transport/flights/search/?query=${enc(q)}`,
+      `https://www.booking.com/searchresults.html?ss=${enc(q)}`,
+    ]},
+  { id:'tech',    icon:'💻', label:'Tech',
+    sites:(q)=>[
+      `https://www.google.com/search?q=${enc(q)}`,
+      `https://www.amazon.com/s?k=${enc(q)}`,
+      `https://www.rtings.com/search#q=${enc(q)}`,
+    ]},
+  { id:'finance', icon:'💹', label:'Finance',
+    sites:(q)=>[
+      `https://finance.yahoo.com/search/?p=${enc(q)}`,
+      `https://www.google.com/search?q=${enc(q)}+stock`,
+      `https://www.investopedia.com/search/?q=${enc(q)}`,
+    ]},
+  { id:'health',  icon:'💊', label:'Health',
+    sites:(q)=>[
+      `https://www.google.com/search?q=${enc(q)}`,
+      `https://www.webmd.com/search/search_results/default.aspx?query=${enc(q)}`,
+      `https://www.nhs.uk/search/results?q=${enc(q)}`,
+    ]},
+  { id:'home',    icon:'🏠', label:'Home',
+    sites:(q,loc)=>[
+      `https://www.airbnb.com/s/${enc(loc?q+' '+loc:q)}/homes`,
+      `https://www.rightmove.co.uk/search.html#/for-sale?keywords=${enc(q)}`,
+      `https://www.zillow.com/search/homes/${enc(q)}/`,
+    ]},
+  { id:'fun',     icon:'🎬', label:'Fun',
+    sites:(q)=>[
+      `https://www.rottentomatoes.com/search?search=${enc(q)}`,
+      `https://open.spotify.com/search/${enc(q)}`,
+      `https://www.google.com/search?q=${enc(q)}`,
+    ]},
+];
+
+const CAT_KEYS = {
+  food:    /restaurant|cafe|pizza|sushi|burger|coffee|lunch|dinner|breakfast|takeaway|delivery|eat near|where to eat/i,
+  shop:    /\bbuy\b|price|cheap|deal|amazon|ebay|discount|sale|coupon|order online/i,
+  travel:  /flight|hotel|hostel|travel|trip|vacation|airbnb|booking\.com|resort/i,
+  tech:    /\bphone\b|laptop|computer|gpu|cpu|headphones?|monitor|keyboard|iphone|macbook|review|specs/i,
+  finance: /stock|crypto|bitcoin|invest|dividend|nasdaq|portfolio|\betf\b|btc|eth|forex/i,
+  health:  /symptom|medicine|doctor|pain|workout|fitness|calorie|nutrition|side effect/i,
+  home:    /\brent\b|apartment|flat|studio|house for sale|property|airbnb near/i,
+  fun:     /\bmovie\b|film|series|netflix|spotify|anime|game\b|concert|ticket/i,
+};
+
+function detectCat(q) {
+  for (const [id, rx] of Object.entries(CAT_KEYS)) if (rx.test(q)) return id;
+  return null;
+}
+
+let selectedCat  = null;
+let srchRecent   = JSON.parse(localStorage.getItem('sk-searches') || '[]');
+
+function saveSrchRecent(q, catId) {
+  srchRecent = [{ q, catId, ts: Date.now() },
+    ...srchRecent.filter(r => r.q !== q)].slice(0, 12);
+  localStorage.setItem('sk-searches', JSON.stringify(srchRecent));
+}
+
+function doSearch(query, catOverride) {
+  const q = (query || document.getElementById('search-input')?.value || '').trim();
+  if (!q) return;
+  const catId = catOverride !== undefined ? catOverride : (selectedCat || detectCat(q));
+  const cat   = SEARCH_CATS.find(c => c.id === catId);
+  saveSrchRecent(q, catId);
+  const urls = cat
+    ? cat.sites(q, '')
+    : [`https://www.google.com/search?q=${enc(q)}`, `https://duckduckgo.com/?q=${enc(q)}`];
+  window.sk.openUrls(urls);
+  renderSearch();
+}
+
+function doAiSearch() {
+  const q = document.getElementById('search-input')?.value.trim();
+  if (!q) return;
+  switchTab('chat');
+  setTimeout(() => { msg.value = q; msg.style.height = 'auto'; sendMsg(); }, 80);
+}
+
+function renderSearch() {
+  const body = document.getElementById('search-body');
+  if (!body) return;
+
+  const catGrid = SEARCH_CATS.map(c => `
+    <button class="search-cat-btn${selectedCat===c.id?' sel':''}" data-cat="${c.id}">
+      <span class="search-cat-icon">${c.icon}</span>
+      <span class="search-cat-label">${c.label}</span>
+    </button>`).join('');
+
+  const recentHtml = srchRecent.length ? `
+    <div class="srch-hdr">Recent</div>
+    ${srchRecent.slice(0,8).map((r,i)=>{
+      const cat = SEARCH_CATS.find(c=>c.id===r.catId);
+      return `<div class="srch-row" data-q="${esc(r.q)}" data-cat="${r.catId||''}">
+        <span class="srch-row-icon">${cat?.icon||'🔍'}</span>
+        <span class="srch-row-text">${esc(r.q)}</span>
+        <span class="srch-row-cat">${cat?.label||''}</span>
+        <button class="srch-row-del" data-idx="${i}">✕</button>
+      </div>`;
+    }).join('')}` : `
+    <div class="srch-empty">
+      Search restaurants, deals, flights, health — anything.<br>
+      <span style="font-size:11.5px">Pick a category or just type — Sidekick routes<br>your query to the best sites automatically.</span>
+    </div>`;
+
+  body.innerHTML = `
+    <div class="srch-hdr" style="padding-top:2px">Category</div>
+    <div class="search-cat-grid">${catGrid}</div>
+    ${recentHtml}`;
+
+  body.querySelectorAll('.search-cat-btn').forEach(btn =>
+    btn.addEventListener('click', () => {
+      selectedCat = (selectedCat === btn.dataset.cat) ? null : btn.dataset.cat;
+      renderSearch();
+      document.getElementById('search-input')?.focus();
+    }));
+
+  body.querySelectorAll('.srch-row').forEach(row =>
+    row.addEventListener('click', e => {
+      if (e.target.classList.contains('srch-row-del')) return;
+      document.getElementById('search-input').value = row.dataset.q;
+      doSearch(row.dataset.q, row.dataset.cat || null);
+    }));
+
+  body.querySelectorAll('.srch-row-del').forEach(btn =>
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      srchRecent.splice(+btn.dataset.idx, 1);
+      localStorage.setItem('sk-searches', JSON.stringify(srchRecent));
+      renderSearch();
+    }));
+}
+
+function loadSearch() {
+  renderSearch();
+  setTimeout(() => document.getElementById('search-input')?.focus(), 60);
+}
+
 // ─── Smart split: "big mac 550" → { name:"big mac", num:550 } ─────────────────
 function smartSplit(val) {
   val = val.trim();
@@ -514,15 +672,20 @@ function switchTab(name) {
   tabBtns.forEach(b => b.classList.toggle('active', b.dataset.tab === name));
   document.querySelectorAll('.tab-panel').forEach(p =>
     p.classList.toggle('active', p.id === name + '-panel'));
-  if (name === 'notes') {
-    loadNotes();
-    setTimeout(() => noteInput?.focus(), 60);
-  }
-  if (name === 'life') {
-    loadLife().then(() => setTimeout(() => document.getElementById('saving-item')?.focus(), 60));
-  }
+  if (name === 'notes')  { loadNotes(); setTimeout(() => noteInput?.focus(), 60); }
+  if (name === 'life')   { loadLife().then(() => setTimeout(() => document.getElementById('saving-item')?.focus(), 60)); }
+  if (name === 'search') { loadSearch(); }
+  if (name === 'chat')   { setTimeout(() => msg?.focus(), 60); }
 }
 tabBtns.forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+
+// ─── Search input wiring ──────────────────────────────────────────────────────
+document.getElementById('search-go-btn')?.addEventListener('click', () => doSearch());
+document.getElementById('search-ai-btn')?.addEventListener('click', doAiSearch);
+document.getElementById('search-input')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && e.shiftKey)  { e.preventDefault(); doAiSearch(); }
+  else if (e.key === 'Enter')           { e.preventDefault(); doSearch(); }
+});
 
 // ─── Notes ────────────────────────────────────────────────────────────────────
 const noteInput   = document.getElementById('note-input');

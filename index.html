@@ -489,7 +489,9 @@ html,body{
 #tab-bar{
   display:flex; flex-shrink:0; border-bottom:1px solid var(--border);
   background:var(--bg); padding:0 8px;
+  overflow-x:auto; scrollbar-width:none;
 }
+#tab-bar::-webkit-scrollbar{display:none;}
 .tab-btn{
   display:flex; align-items:center; gap:5px;
   padding:8px 12px; font-family:inherit; font-size:12px; font-weight:500;
@@ -652,6 +654,93 @@ html,body{
   cursor:pointer; white-space:nowrap; transition:background .14s;
 }
 .life-add-btn:hover{ background:var(--orange-dim); }
+
+/* ═══ SEARCH PANEL ════════════════════════════════════════════════════════ */
+#search-panel{ background:var(--bg); }
+.search-top{
+  padding:10px 12px 8px; flex-shrink:0;
+  background:linear-gradient(to bottom,var(--bg-hi),var(--bg));
+  border-bottom:1px solid var(--border);
+}
+.srch-shell{
+  display:flex; align-items:center; gap:8px;
+  background:var(--surface); border:1px solid var(--border2);
+  border-radius:14px; padding:8px 8px 8px 13px;
+  transition:border-color .2s,box-shadow .2s;
+}
+.srch-shell:focus-within{
+  border-color:rgba(200,98,46,.45);
+  box-shadow:0 0 0 3px var(--orange-glow);
+}
+#search-input{
+  flex:1; background:none; border:none; outline:none;
+  color:var(--t1); font-family:inherit; font-size:13.5px;
+}
+#search-input::placeholder{color:var(--t3);}
+#search-go-btn{
+  width:28px; height:28px; border-radius:50%;
+  background:linear-gradient(135deg,var(--orange),#8a3c18);
+  border:none; cursor:pointer; color:#fff; font-size:14px;
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; transition:opacity .15s,transform .12s;
+  box-shadow:0 2px 8px rgba(200,98,46,.4);
+}
+#search-go-btn:hover{opacity:.88; transform:scale(1.08);}
+#search-ai-btn{
+  display:flex; align-items:center; gap:6px;
+  width:100%; padding:6px 2px 0;
+  background:none; border:none; cursor:pointer;
+  color:var(--t3); font-family:inherit; font-size:12px; text-align:left;
+  transition:color .14s;
+}
+#search-ai-btn:hover{color:var(--orange-t);}
+.search-body{
+  flex:1; overflow-y:auto; padding:10px 12px;
+  display:flex; flex-direction:column; gap:0;
+}
+.search-body::-webkit-scrollbar{width:3px;}
+.search-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.srch-hdr{
+  font-size:10.5px; font-weight:700; text-transform:uppercase;
+  letter-spacing:.1em; color:var(--t3); padding:8px 2px 7px;
+}
+.srch-hdr:first-child{padding-top:2px;}
+.search-cat-grid{
+  display:grid; grid-template-columns:repeat(4,1fr); gap:6px; margin-bottom:4px;
+}
+.search-cat-btn{
+  display:flex; flex-direction:column; align-items:center; gap:4px;
+  padding:10px 4px 8px;
+  background:var(--card); border:1px solid var(--border);
+  border-radius:var(--r-s); cursor:pointer; font-family:inherit;
+  transition:background .13s,border-color .13s,transform .1s;
+  -webkit-app-region:no-drag;
+}
+.search-cat-btn:hover{background:var(--card-h); border-color:var(--border2); transform:translateY(-1px);}
+.search-cat-btn.sel{border-color:rgba(200,98,46,.4); background:var(--orange-dim);}
+.search-cat-icon{font-size:18px; line-height:1;}
+.search-cat-label{font-size:10px; font-weight:500; color:var(--t2); letter-spacing:.01em;}
+.search-cat-btn.sel .search-cat-label{color:var(--orange-t);}
+.srch-row{
+  display:flex; align-items:center; gap:10px;
+  padding:8px 10px; border-radius:var(--r-xs); cursor:pointer;
+  transition:background .12s; margin-bottom:1px;
+}
+.srch-row:hover{background:var(--surface);}
+.srch-row-icon{font-size:13px; flex-shrink:0; width:18px; text-align:center;}
+.srch-row-text{flex:1; font-size:13px; color:var(--t2);}
+.srch-row-cat{font-size:10px; color:var(--t3); flex-shrink:0;}
+.srch-row-del{
+  background:none; border:none; cursor:pointer; color:var(--t3);
+  font-size:10px; padding:2px 5px; border-radius:3px; opacity:0;
+  transition:opacity .12s,color .12s;
+}
+.srch-row:hover .srch-row-del{opacity:1;}
+.srch-row-del:hover{color:var(--red);}
+.srch-empty{
+  font-size:12.5px; color:var(--t3); text-align:center;
+  padding:24px 8px; line-height:1.85;
+}
 
 /* ── Input area ── */
 #input-area{
@@ -968,6 +1057,7 @@ html[data-mode="fullscreen"] #titlebar{ display:flex; }
       <button class="tab-btn active" data-tab="chat">💬 Chat</button>
       <button class="tab-btn" data-tab="notes">📝 Notes</button>
       <button class="tab-btn" data-tab="life">🌱 Life</button>
+      <button class="tab-btn" data-tab="search">🔍 Search</button>
     </div>
 
     <!-- ── Chat panel ──────────────────────────────────────────────────────── -->
@@ -1042,6 +1132,21 @@ html[data-mode="fullscreen"] #titlebar{ display:flex; }
     <!-- ── Life panel ──────────────────────────────────────────────────────── -->
     <div id="life-panel" class="tab-panel">
       <div class="life-list" id="life-list"></div>
+    </div>
+
+    <!-- ── Search panel ─────────────────────────────────────────────────────── -->
+    <div id="search-panel" class="tab-panel">
+      <div class="search-top">
+        <div class="srch-shell">
+          <span style="font-size:14px;flex-shrink:0;opacity:.6">🔍</span>
+          <input id="search-input" type="text"
+            placeholder="Restaurants, deals, flights, health…"
+            autocomplete="off" spellcheck="false">
+          <button id="search-go-btn" title="Search (Enter)">↗</button>
+        </div>
+        <button id="search-ai-btn">✦ Ask Sidekick AI &nbsp;<span style="opacity:.45;font-size:10px">Shift+Enter</span></button>
+      </div>
+      <div class="search-body" id="search-body"></div>
     </div>
 
   </div><!-- /panel -->
