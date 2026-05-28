@@ -487,6 +487,46 @@ html[data-mode="fullscreen"] #empty h3{
   font-size:18px;
 }
 
+html[data-mode="fullscreen"] #hdr{
+  padding-left: 18px;
+}
+
+/* ── Traffic lights (macOS, fullscreen only) ── */
+#titlebar{
+  display:none; align-items:center; gap:8px;
+  padding:4px 6px 16px; -webkit-app-region:no-drag;
+  flex-shrink:0;
+}
+html[data-mode="fullscreen"] #titlebar{ display:flex; }
+.tl-btn{
+  width:12px; height:12px; border-radius:50%;
+  cursor:default; flex-shrink:0;
+  box-shadow:0 0 0 0.5px rgba(0,0,0,.18) inset;
+  transition:filter .12s;
+}
+.tl-btn:hover{ filter:brightness(.78); }
+.tl-close{ background:#ff5f57; }
+.tl-min  { background:#febc2e; }
+.tl-max  { background:#28c840; }
+
+/* ── Screen capture thumbnail in chat ── */
+.screen-thumb-wrap{
+  margin-bottom:7px; position:relative; display:inline-block;
+}
+.screen-thumb{
+  max-width:220px; max-height:130px; object-fit:cover;
+  border-radius:8px; border:1px solid var(--border2);
+  display:block; opacity:.72; cursor:pointer;
+  transition:opacity .15s;
+}
+.screen-thumb:hover{ opacity:1; }
+.screen-thumb-label{
+  position:absolute; bottom:5px; left:7px;
+  font-size:9px; font-weight:600; letter-spacing:.06em;
+  color:rgba(255,255,255,.7); background:rgba(0,0,0,.45);
+  border-radius:3px; padding:1px 5px; pointer-events:none;
+}
+
 /* Visibility helpers */
 .fullscreen-only{display:none;}
 </style>
@@ -496,6 +536,13 @@ html[data-mode="fullscreen"] #empty h3{
 
   <!-- ── Fullscreen left nav ──────────────────────────────────────────────── -->
   <div id="fs-nav">
+    <!-- macOS traffic lights (fullscreen only) -->
+    <div id="titlebar">
+      <div class="tl-btn tl-close" id="tl-close" title="Hide"></div>
+      <div class="tl-btn tl-min"   id="tl-min"   title="Minimize"></div>
+      <div class="tl-btn tl-max"   id="tl-max"   title="Back to sidebar"></div>
+    </div>
+
     <div class="fs-brand">
       <div class="fs-brand-hex">S</div>
       <span class="fs-brand-name">Sidekick</span>
@@ -607,7 +654,7 @@ html[data-mode="fullscreen"] #empty h3{
     <!-- Input -->
     <div id="input-area">
       <div class="input-shell">
-        <textarea id="msg" rows="1" placeholder="Ask me anything…"></textarea>
+        <textarea id="msg" rows="1" placeholder="Message Sidekick…"></textarea>
         <button id="send">↑</button>
       </div>
     </div>

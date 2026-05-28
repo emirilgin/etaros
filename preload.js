@@ -12,7 +12,8 @@ contextBridge.exposeInMainWorld('sk', {
   manualScan:   ()     => ipcRenderer.invoke('manual-scan'),
 
   // Fire and forget
-  hideWindow:    ()        => ipcRenderer.send('hide-window'),
+  hideWindow:     ()       => ipcRenderer.send('hide-window'),
+  minimizeWindow: ()       => ipcRenderer.send('minimize-window'),
   openSettings:  ()        => ipcRenderer.send('open-settings'),
   closeSettings: ()        => ipcRenderer.send('close-settings'),
   closeSetup:    ()        => ipcRenderer.send('close-setup'),

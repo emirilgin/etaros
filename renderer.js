@@ -27,13 +27,14 @@ const scanFsBtn    = document.getElementById('scan-fs-btn');
 const settingsFsBtn= document.getElementById('settings-fs-btn');
 
 // ─── State ────────────────────────────────────────────────────────────────────
-let collapsed    = false;
-let hasMessages  = false;
-let userScrolled = false;
-let lastMsgTime  = 0;
-let streamEl     = null;
-let streamBuffer = '';
-let currentMode  = 'sidebar';
+let collapsed      = false;
+let hasMessages    = false;
+let userScrolled   = false;
+let lastMsgTime    = 0;
+let streamEl       = null;
+let streamBuffer   = '';
+let currentMode    = 'sidebar';
+let pendingPreview = null; // screenshot b64 to attach to next user bubble
 
 // ─── Time utils ───────────────────────────────────────────────────────────────
 const fmt = new Intl.DateTimeFormat([], { hour: 'numeric', minute: '2-digit' });
@@ -123,6 +124,11 @@ expandBtn.addEventListener('click', () => window.sk.setMode('fullscreen'));
 shrinkBtn.addEventListener('click', () => window.sk.setMode('sidebar'));
 hideBtn.addEventListener('click',   () => window.sk.hideWindow());
 
+// ─── Traffic lights (fullscreen macOS titlebar) ───────────────────────────────
+document.getElementById('tl-close')?.addEventListener('click', () => window.sk.hideWindow());
+document.getElementById('tl-min')  ?.addEventListener('click', () => window.sk.minimizeWindow());
+document.getElementById('tl-max')  ?.addEventListener('click', () => window.sk.setMode('sidebar'));
+
 // ─── Buttons ──────────────────────────────────────────────────────────────────
 settingsBtn.addEventListener('click',    () => window.sk.openSettings());
 settingsFsBtn.addEventListener('click',  () => window.sk.openSettings());
@@ -181,7 +187,16 @@ function appendUser(text) {
   maybeTimeDivider();
   const el = document.createElement('div');
   el.className = 'user-bubble';
-  el.innerHTML = `${esc(text)}<span class="bubble-time">${now()}</span>`;
+  let inner = '';
+  if (pendingPreview) {
+    inner += `<div class="screen-thumb-wrap">
+      <img class="screen-thumb" src="data:image/jpeg;base64,${pendingPreview}" alt="screen">
+      <span class="screen-thumb-label">SCREEN</span>
+    </div>`;
+    pendingPreview = null;
+  }
+  inner += `${esc(text)}<span class="bubble-time">${now()}</span>`;
+  el.innerHTML = inner;
   feed.insertBefore(el, thinking);
   scrollBottom(true);
 }
@@ -338,6 +353,7 @@ window.sk.on('stream-error', ({ message }) => {
 });
 
 window.sk.on('analysis', renderAnalysis);
+window.sk.on('screen-preview', ({ b64 }) => { pendingPreview = b64; });
 
 window.sk.on('scan-status', ({ scanning }) => {
   hdrDot.classList.toggle('on', scanning);

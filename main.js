@@ -79,6 +79,7 @@ function getTier() {
   // Max keys start with SMAX-, Pro keys with SIDE-
   if (/^SMAX-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(key)) return 'max';
   if (/^SIDE-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(key)) return 'pro';
+  if (/^STEST-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(key)) return 'max'; // tester key
   return 'free';
 }
 
@@ -651,6 +652,11 @@ function registerIPC() {
 
   ipcMain.handle('chat', async (_, text) => {
     const thumb = await captureScreen();
+    // Send thumb preview to renderer so user bubble shows screenshot context
+    if (thumb) {
+      const previewB64 = thumb.resize({ width: 280, quality: 'good' }).toJPEG(60).toString('base64');
+      push('screen-preview', { b64: previewB64 });
+    }
     await chat(text, thumb);
     return { ok: true };
   });
@@ -666,7 +672,8 @@ function registerIPC() {
     push('history-cleared', {});
   });
 
-  ipcMain.on('hide-window',    () => mainWindow?.hide());
+  ipcMain.on('hide-window',     () => mainWindow?.hide());
+  ipcMain.on('minimize-window', () => mainWindow?.minimize());
   ipcMain.on('open-settings',  openSettings);
   ipcMain.on('close-settings', () => settingsWindow?.close());
   ipcMain.on('close-setup',    () => setupWindow?.close());
