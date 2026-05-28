@@ -1,0 +1,131 @@
+name: Weekly Social Post
+
+on:
+  schedule:
+    - cron: '0 9 * * 1'   # Every Monday 09:00 UTC
+  workflow_dispatch:        # Manual trigger with custom inputs
+    inputs:
+      threats:
+        description: 'Threats caught this week'
+        default: '0'
+      saved:
+        description: 'Money saved (€)'
+        default: '0'
+      scans:
+        description: 'Scans run'
+        default: '0'
+      highlight:
+        description: 'Weekly highlight (e.g. caught a Netflix phishing page)'
+        default: ''
+      post_twitter:
+        description: 'Actually post to Twitter? (true/false)'
+        default: 'false'
+      gen_video:
+        description: 'Generate AI video? (true/false)'
+        default: 'false'
+
+permissions:
+  contents: write
+
+jobs:
+  social:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Write app config
+        run: |
+          cat > app.config.js << 'CONF'
+          module.exports = {
+            geminiKey: '${{ secrets.GEMINI_KEY }}',
+            anthropicKey: '',
+            ownerMode: false,
+          };
+          CONF
+
+      # ── Read stats from GitHub Release data ────────────────────────────────
+      # (Later: pull from a real analytics endpoint)
+      - name: Set stats
+        id: stats
+        run: |
+          echo "threats=${{ github.event.inputs.threats || '0' }}"  >> $GITHUB_OUTPUT
+          echo "saved=${{ github.event.inputs.saved || '0' }}"      >> $GITHUB_OUTPUT
+          echo "scans=${{ github.event.inputs.scans || '0' }}"      >> $GITHUB_OUTPUT
+          echo "highlight=${{ github.event.inputs.highlight || '' }}" >> $GITHUB_OUTPUT
+
+      # ── Generate stat card image ───────────────────────────────────────────
+      - name: Generate stat card
+        run: |
+          node social-bot/gen-card.js \
+            --threats ${{ steps.stats.outputs.threats }} \
+            --saved   ${{ steps.stats.outputs.saved }} \
+            --scans   ${{ steps.stats.outputs.scans }} \
+            --out     social-bot/card.png
+
+      # ── Generate AI post copy ──────────────────────────────────────────────
+      - name: Generate post copy
+        env:
+          GEMINI_KEY: ${{ secrets.GEMINI_KEY }}
+        run: |
+          node social-bot/gen-post.js \
+            --threats   ${{ steps.stats.outputs.threats }} \
+            --saved     ${{ steps.stats.outputs.saved }} \
+            --scans     ${{ steps.stats.outputs.scans }} \
+            --highlight "${{ steps.stats.outputs.highlight }}" \
+            --out       social-bot/posts.json
+
+      # ── Generate AI video (optional) ──────────────────────────────────────
+      - name: Generate AI video
+        if: ${{ github.event.inputs.gen_video == 'true' && secrets.RUNWAY_API_KEY != '' }}
+        env:
+          RUNWAY_API_KEY: ${{ secrets.RUNWAY_API_KEY }}
+        run: |
+          node social-bot/gen-video.js \
+            --type    weekly \
+            --threats ${{ steps.stats.outputs.threats }} \
+            --saved   ${{ steps.stats.outputs.saved }} \
+            --out     social-bot/video.mp4
+
+      # ── Post to Twitter (optional — only if flag set) ──────────────────────
+      - name: Post to Twitter
+        if: ${{ github.event.inputs.post_twitter == 'true' }}
+        env:
+          TW_API_KEY:      ${{ secrets.TW_API_KEY }}
+          TW_API_SECRET:   ${{ secrets.TW_API_SECRET }}
+          TW_ACCESS_TOKEN: ${{ secrets.TW_ACCESS_TOKEN }}
+          TW_ACCESS_SECRET:${{ secrets.TW_ACCESS_SECRET }}
+        run: |
+          TWEET=$(node -e "const p=require('./social-bot/posts.json'); console.log(p.twitter)")
+          node social-bot/post-twitter.js \
+            --text  "$TWEET" \
+            --image social-bot/card.png
+
+      # ── Upload card + posts as artifact ───────────────────────────────────
+      - name: Upload social assets
+        uses: actions/upload-artifact@v4
+        with:
+          name: social-assets-${{ github.run_number }}
+          path: |
+            social-bot/card.png
+            social-bot/posts.json
+            social-bot/video.mp4
+          if-no-files-found: ignore
+          retention-days: 30
+
+      # ── Print posts to log (always visible) ───────────────────────────────
+      - name: Print generated posts
+        run: |
+          echo "══════════════════════════════════════"
+          echo "GENERATED POSTS FOR THIS WEEK:"
+          echo "══════════════════════════════════════"
+          cat social-bot/posts.json
+          echo ""
+          echo "✓ Card: social-bot/card.png (download from artifacts)"
