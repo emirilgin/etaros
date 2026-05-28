@@ -94,18 +94,26 @@ jobs:
             --saved   ${{ steps.stats.outputs.saved }} \
             --out     social-bot/video.mp4
 
-      # ── Post to Twitter (optional — only if flag set) ──────────────────────
-      - name: Post to Twitter
+      # ── Post everywhere (optional — only if flag set) ─────────────────────
+      - name: Post to all platforms
         if: ${{ github.event.inputs.post_twitter == 'true' }}
         env:
-          TW_API_KEY:      ${{ secrets.TW_API_KEY }}
-          TW_API_SECRET:   ${{ secrets.TW_API_SECRET }}
-          TW_ACCESS_TOKEN: ${{ secrets.TW_ACCESS_TOKEN }}
-          TW_ACCESS_SECRET:${{ secrets.TW_ACCESS_SECRET }}
+          TW_API_KEY:          ${{ secrets.TW_API_KEY }}
+          TW_API_SECRET:       ${{ secrets.TW_API_SECRET }}
+          TW_ACCESS_TOKEN:     ${{ secrets.TW_ACCESS_TOKEN }}
+          TW_ACCESS_SECRET:    ${{ secrets.TW_ACCESS_SECRET }}
+          REDDIT_CLIENT_ID:    ${{ secrets.REDDIT_CLIENT_ID }}
+          REDDIT_CLIENT_SECRET:${{ secrets.REDDIT_CLIENT_SECRET }}
+          REDDIT_USERNAME:     ${{ secrets.REDDIT_USERNAME }}
+          REDDIT_PASSWORD:     ${{ secrets.REDDIT_PASSWORD }}
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          TELEGRAM_BOT_TOKEN:  ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHANNEL_ID: ${{ secrets.TELEGRAM_CHANNEL_ID }}
+          BSKY_HANDLE:         ${{ secrets.BSKY_HANDLE }}
+          BSKY_PASSWORD:       ${{ secrets.BSKY_PASSWORD }}
         run: |
-          TWEET=$(node -e "const p=require('./social-bot/posts.json'); console.log(p.twitter)")
-          node social-bot/post-twitter.js \
-            --text  "$TWEET" \
+          node social-bot/post-all.js \
+            --stats social-bot/posts.json \
             --image social-bot/card.png
 
       # ── Upload card + posts as artifact ───────────────────────────────────
