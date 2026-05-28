@@ -103,18 +103,23 @@ jobs:
           body: |
             ## Sidekick ${{ github.ref_name }}
 
-            ### Download
-            | Platform | File |
-            |----------|------|
-            | 🍎 macOS Apple Silicon (M1/M2/M3/M4) | `Sidekick-*-arm64.dmg` |
-            | 🍎 macOS Intel | `Sidekick-*-x64.dmg` |
-            | 🪟 Windows 10/11 | `Sidekick-*-Setup.exe` |
+            ## ⬇️ Download — pick the right file
+
+            | # | Platform | File to download |
+            |---|----------|-----------------|
+            | 1 | 🍎 **Mac — Apple Silicon** (M1 / M2 / M3 / M4) | `Sidekick-*-arm64.dmg` |
+            | 2 | 🍎 **Mac — Intel** (older Macs, pre-2020) | `Sidekick-*-x64.dmg` |
+            | 3 | 🪟 **Windows** 10 / 11 | `Sidekick-*-Setup.exe` |
+
+            > **Not sure which Mac?** Click 🍎 → About This Mac → chip says M1/M2/M3/M4 → use `arm64.dmg`. Says Intel Core i5/i7/i9 → use `x64.dmg`.
+
+            ---
 
             ### Install
-            **Mac:** Open the DMG, drag Sidekick to Applications.
-            > First launch: right-click → Open to bypass the unverified developer warning.
+            **Mac:** Open the `.dmg` → drag Sidekick to Applications → launch.
+            First time: right-click the app → Open → Open anyway (Gatekeeper bypass, unsigned build).
 
-            **Windows:** Run the installer. Windows may show a SmartScreen warning — click "More info" → "Run anyway".
+            **Windows:** Run `Sidekick-*-Setup.exe`. If SmartScreen appears → More info → Run anyway.
           files: |
             artifacts/mac/*.dmg
             artifacts/win/*.exe

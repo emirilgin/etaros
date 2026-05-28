@@ -46,16 +46,18 @@ No setup. No API key. Download, open, done.
 
 ## Download
 
-Go to **[Releases](https://github.com/emirilgin/sidekick/releases/latest)**:
+Go to **[Releases](https://github.com/emirilgin/sidekick/releases/latest)** and pick your file:
 
-| Platform | File |
-|----------|------|
-| 🍎 macOS Apple Silicon (M1/M2/M3/M4) | `Sidekick-x.x.x-arm64.dmg` |
-| 🍎 macOS Intel | `Sidekick-x.x.x.dmg` |
-| 🪟 Windows 10/11 | `Sidekick-x.x.x-Setup.exe` |
+| # | Platform | File |
+|---|----------|------|
+| 1 | 🍎 **Mac — Apple Silicon** (M1 / M2 / M3 / M4) | `Sidekick-x.x.x-arm64.dmg` |
+| 2 | 🍎 **Mac — Intel** (pre-2020, Core i5/i7/i9) | `Sidekick-x.x.x-x64.dmg` |
+| 3 | 🪟 **Windows** 10 / 11 | `Sidekick-x.x.x-Setup.exe` |
 
-> **macOS:** Right-click → Open on first launch to bypass Gatekeeper.  
-> **Windows:** Click "More info → Run anyway" on the SmartScreen warning.
+> **Not sure which Mac?** Click  → About This Mac. Chip = M1/M2/M3/M4 → use `arm64.dmg`. Processor = Intel → use `x64.dmg`.
+
+**macOS install:** Open DMG → drag to Applications → right-click → Open on first launch.  
+**Windows install:** Run the `.exe` → More info → Run anyway if SmartScreen appears.
 
 ---
 
