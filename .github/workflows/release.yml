@@ -3,10 +3,10 @@ name: Build & Release
 on:
   push:
     tags: ["v*.*.*"]
-  workflow_dispatch:       # lets you trigger a build manually from GitHub
+  workflow_dispatch:       # manual trigger for testing — no tag needed
 
 permissions:
-  contents: write          # needed to upload release assets
+  contents: write
 
 jobs:
   # ── macOS: arm64 DMG + x64 DMG ─────────────────────────────────────────────
@@ -23,8 +23,18 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Generate app icon (.png + .icns)
-        run: npm run gen-icon
+      # Icons already committed to build/ — no gen-icon needed in CI
+
+      - name: Write app config
+        shell: bash
+        run: |
+          cat > app.config.js << 'CONF'
+          module.exports = {
+            geminiKey:    '${{ secrets.GEMINI_KEY }}',
+            anthropicKey: '${{ secrets.ANTHROPIC_KEY }}',
+            ownerMode: false,
+          };
+          CONF
 
       - name: Build arm64 DMG
         run: npx electron-builder --mac dmg --arm64 --publish never
@@ -44,7 +54,7 @@ jobs:
           name: Sidekick-mac
           path: dist/*.dmg
 
-  # ── Windows: x64 EXE installer ─────────────────────────────────────────────
+  # ── Windows: x64 NSIS installer ────────────────────────────────────────────
   build-win:
     runs-on: windows-latest
     steps:
@@ -58,13 +68,43 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Generate app icon (.png + .ico via Electron)
-        shell: pwsh
+      # Icons already committed to build/ — no gen-icon needed in CI
+
+      - name: Write app config
+        shell: bash
         run: |
-          # Run gen-icon; electron-builder will convert icon.png → icon.ico
-          # on Windows if icon.ico is missing
-          npm run gen-icon
-        continue-on-error: true   # icon.ico auto-created by electron-builder anyway
+          cat > app.config.js << 'CONF'
+          module.exports = {
+            geminiKey:    '${{ secrets.GEMINI_KEY }}',
+            anthropicKey: '${{ secrets.ANTHROPIC_KEY }}',
+            ownerMode: false,
+          };
+          CONF
+
+      - name: Generate build/icon.ico from PNG
+        shell: node {0}
+        run: |
+          // Embed PNG inside ICO container (Vista+ format — supported by Windows 10/11)
+          const fs = require('fs');
+          const png = fs.readFileSync('build/icon.png');
+
+          const hdr = Buffer.allocUnsafe(6);
+          hdr.writeUInt16LE(0, 0);   // reserved
+          hdr.writeUInt16LE(1, 2);   // type: 1 = icon
+          hdr.writeUInt16LE(1, 4);   // image count: 1
+
+          const img = Buffer.allocUnsafe(16);
+          img.writeUInt8(0, 0);       // width  0 = 256px
+          img.writeUInt8(0, 1);       // height 0 = 256px
+          img.writeUInt8(0, 2);       // colour palette
+          img.writeUInt8(0, 3);       // reserved
+          img.writeUInt16LE(1, 4);    // colour planes
+          img.writeUInt16LE(32, 6);   // bits per pixel
+          img.writeUInt32LE(png.length, 8);   // PNG data size
+          img.writeUInt32LE(22, 12);  // offset of PNG data (6 hdr + 16 img entry)
+
+          fs.writeFileSync('build/icon.ico', Buffer.concat([hdr, img, png]));
+          console.log('✓  build/icon.ico  (' + png.length + ' bytes)');
 
       - name: Build Windows EXE
         run: npm run build:win
@@ -78,7 +118,7 @@ jobs:
           name: Sidekick-win
           path: dist/*.exe
 
-  # ── GitHub Release: attach all files ───────────────────────────────────────
+  # ── GitHub Release — only on real version tags ──────────────────────────────
   release:
     needs: [build-mac, build-win]
     runs-on: ubuntu-latest
@@ -105,21 +145,17 @@ jobs:
 
             ## ⬇️ Download — pick the right file
 
-            | # | Platform | File to download |
-            |---|----------|-----------------|
-            | 1 | 🍎 **Mac — Apple Silicon** (M1 / M2 / M3 / M4) | `Sidekick-*-arm64.dmg` |
-            | 2 | 🍎 **Mac — Intel** (older Macs, pre-2020) | `Sidekick-*-x64.dmg` |
-            | 3 | 🪟 **Windows** 10 / 11 | `Sidekick-*-Setup.exe` |
+            | # | Platform | File |
+            |---|----------|------|
+            | 1 | 🍎 **Mac — Apple Silicon** (M1/M2/M3/M4) | `Sidekick-*-arm64.dmg` |
+            | 2 | 🍎 **Mac — Intel** (pre-2020) | `Sidekick-*-x64.dmg` |
+            | 3 | 🪟 **Windows** 10/11 | `Sidekick-*-Setup.exe` |
 
-            > **Not sure which Mac?** Click 🍎 → About This Mac → chip says M1/M2/M3/M4 → use `arm64.dmg`. Says Intel Core i5/i7/i9 → use `x64.dmg`.
-
-            ---
+            > **Not sure which Mac?** 🍎 → About This Mac → chip says M1/M2/M3/M4 → use `arm64.dmg`. Says Intel Core → use `x64.dmg`.
 
             ### Install
-            **Mac:** Open the `.dmg` → drag Sidekick to Applications → launch.
-            First time: right-click the app → Open → Open anyway (Gatekeeper bypass, unsigned build).
-
-            **Windows:** Run `Sidekick-*-Setup.exe`. If SmartScreen appears → More info → Run anyway.
+            **Mac:** Open `.dmg` → drag to Applications → right-click → Open → Open anyway (unsigned build).
+            **Windows:** Run `Sidekick-*-Setup.exe` → if SmartScreen appears → More info → Run anyway.
           files: |
             artifacts/mac/*.dmg
             artifacts/win/*.exe
