@@ -186,6 +186,22 @@ function updateModeTagline(m) {
   document.documentElement.style.setProperty('--mode-color', m.color);
 }
 
+// ─── Stats bar ────────────────────────────────────────────────────────────────
+const statsBar = document.getElementById('stats-bar');
+
+function renderStats(s) {
+  if (!s) return;
+  const hasAny = s.threats > 0 || s.saved > 0 || s.scans > 0;
+  statsBar.dataset.empty = hasAny ? 'false' : 'true';
+  if (!hasAny) return;
+  document.getElementById('stat-threats-n').textContent = s.threats;
+  document.getElementById('stat-saved-n').textContent   =
+    s.saved >= 1000 ? `$${(s.saved/1000).toFixed(1)}k` : `$${s.saved.toFixed(s.saved < 10 ? 2 : 0)}`;
+  document.getElementById('stat-scans-n').textContent   = s.scans >= 1000 ? `${(s.scans/1000).toFixed(1)}k` : s.scans;
+}
+
+window.sk.on('stats-updated', renderStats);
+
 // Listen for mode changes pushed from main
 window.sk.on('mode-changed', ({ mode, icon, name, color }) => {
   document.querySelectorAll('.mode-btn').forEach(b => {
@@ -988,14 +1004,16 @@ async function init() {
   upgrade.style.display   = 'none';
   tierBadge.style.display = 'none';
 
-  const [lic, mode, focusMode] = await Promise.all([
+  const [lic, mode, focusMode, stats] = await Promise.all([
     window.sk.checkLicense(),
     window.sk.getWindowMode(),
     window.sk.getMode(),
+    window.sk.getStats(),
   ]);
 
   applyMode(mode || 'sidebar');
   renderModeBar(focusMode);
+  renderStats(stats);
   setTierDisplay(lic.tier, lic.used, lic.limit);
 
   if (lic.tier === 'free' && lic.used < lic.limit) {

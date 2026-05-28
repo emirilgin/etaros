@@ -679,6 +679,14 @@ async function proactiveScan(thumbnail) {
       }`,
     });
 
+    // Track stats: scan count + threats caught
+    const scans   = Number(store.get('statScans')   ?? 0) + 1;
+    const threats = Number(store.get('statThreats') ?? 0)
+      + parsed.items.filter(i => i.type === 'risk' || i.type === 'warn').length;
+    store.set('statScans',   scans);
+    store.set('statThreats', threats);
+    push('stats-updated', getStats());
+
     push('analysis', parsed);
 
   } catch (err) {
@@ -714,6 +722,16 @@ function startScanLoop() {
 }
 function stopScanLoop() {
   if (scanTimer) { clearInterval(scanTimer); scanTimer = null; }
+}
+
+// ─── Stats ────────────────────────────────────────────────────────────────────
+function getStats() {
+  const savings = (store.get('savings') ?? []).reduce((s, e) => s + (Number(e.amount) || 0), 0);
+  return {
+    threats: Number(store.get('statThreats') ?? 0),
+    scans:   Number(store.get('statScans')   ?? 0),
+    saved:   Math.round(savings * 100) / 100,
+  };
 }
 
 // ─── Push to renderer ─────────────────────────────────────────────────────────
@@ -861,6 +879,8 @@ function registerIPC() {
 
   // Returns { tier, used, limit } — no server call needed
   ipcMain.handle('check-license', () => getLicenseInfo());
+
+  ipcMain.handle('get-stats', () => getStats());
 
   // Mode system
   ipcMain.handle('get-mode',  () => {

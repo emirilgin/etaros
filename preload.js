@@ -25,6 +25,7 @@ contextBridge.exposeInMainWorld('sk', {
   saveSettings: (s)    => ipcRenderer.invoke('save-settings', s),
   checkLicense: ()     => ipcRenderer.invoke('check-license'),
   checkOllama:  ()     => ipcRenderer.invoke('check-ollama'),
+  getStats:     ()     => ipcRenderer.invoke('get-stats'),
   getMode:      ()     => ipcRenderer.invoke('get-mode'),
   setMode:      (id)   => ipcRenderer.invoke('set-mode', id),
   chat:         (text) => ipcRenderer.invoke('chat', text),

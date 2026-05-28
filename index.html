@@ -960,6 +960,26 @@ html[data-mode="fullscreen"] #titlebar{ display:flex; }
 /* Visibility helpers */
 .fullscreen-only{display:none;}
 
+/* ═══ STATS BAR ═══════════════════════════════════════════════════════════════ */
+#stats-bar{
+  display:flex; align-items:center; gap:0;
+  background:var(--surface); border-bottom:1px solid var(--border);
+  flex-shrink:0; overflow:hidden;
+}
+.stat-pill{
+  flex:1; display:flex; align-items:center; justify-content:center; gap:5px;
+  padding:5px 8px; font-size:11px; color:var(--t2); font-weight:500;
+  transition:background .14s; cursor:default;
+  border-right:1px solid var(--border);
+}
+.stat-pill:last-child{ border-right:none; }
+.stat-pill .stat-n{
+  font-size:12.5px; font-weight:700;
+  color:var(--orange-t);
+}
+.stat-pill .stat-n.green{ color:var(--green); }
+#stats-bar[data-empty="true"]{ display:none; }
+
 /* ═══ MODE BAR ════════════════════════════════════════════════════════════════ */
 #mode-bar{
   display:flex; align-items:center; gap:4px;
@@ -1085,6 +1105,19 @@ html[data-mode="fullscreen"] #titlebar{ display:flex; }
       </div>
     </div>
 
+    <!-- Stats bar: threats caught / money saved -->
+    <div id="stats-bar" data-empty="true">
+      <div class="stat-pill" id="stat-threats">
+        <span>🛡</span><span class="stat-n" id="stat-threats-n">0</span><span>threats caught</span>
+      </div>
+      <div class="stat-pill" id="stat-saved">
+        <span>💰</span><span class="stat-n green" id="stat-saved-n">$0</span><span>saved</span>
+      </div>
+      <div class="stat-pill" id="stat-scans">
+        <span>👁</span><span class="stat-n" id="stat-scans-n">0</span><span>scans</span>
+      </div>
+    </div>
+
     <!-- Mode bar -->
     <div id="mode-bar">
       <!-- populated by renderer.js -->
@@ -1093,8 +1126,8 @@ html[data-mode="fullscreen"] #titlebar{ display:flex; }
 
     <!-- Upgrade banner -->
     <div id="upgrade">
-      <h4>Free trial complete</h4>
-      <p>Pro is $19/mo — unlimited messages, real-time screen AI. Max adds Claude Sonnet for deeper analysis.</p>
+      <h4>Your free trial is up</h4>
+      <p>Ghost has been watching. Unlock Vault, Bloom, Flow & Hawk — Pro is <strong>$9/mo</strong>. Pays for itself the first time it catches a subscription trap.</p>
       <button id="up-btn">Upgrade in Settings →</button>
     </div>
 
@@ -1118,8 +1151,8 @@ html[data-mode="fullscreen"] #titlebar{ display:flex; }
         <!-- Empty state -->
         <div id="empty">
           <div class="empty-hex">S</div>
-          <h3>Hey, I'm Sidekick.</h3>
-          <p class="empty-sub">Watching your screen right now. Ask anything — buying, eating, finance, or just what you see.</p>
+          <h3>Your digital bodyguard.</h3>
+          <p class="empty-sub">Watching your screen silently. Catches scams, subscription traps, and bad deals before they cost you. Ask anything.</p>
 
           <div class="empty-chips">
             <button class="empty-chip" data-msg="What should I eat right now? Check what's nearby.">🍜 What to eat?</button>

@@ -570,9 +570,9 @@ document.getElementById('x-btn').addEventListener('click', () => window.sk.close
 document.getElementById('console-link')?.addEventListener('click',  () => window.sk.openUrl('https://console.anthropic.com'));
 document.getElementById('ollama-dl-btn')?.addEventListener('click', () => window.sk.openUrl('https://ollama.com/download'));
 
-// ── Stripe Payment Links — swap in real URLs Monday ──────────────────────────
+// ── Stripe Payment Links ──────────────────────────────────────────────────────
 const STRIPE = {
-  pro:  { monthly: 'https://buy.stripe.com/4gM8wQa3k77644l60s14400', yearly: 'https://buy.stripe.com/cNi9AUcbsdvugR7agI14401' },
+  pro:  { monthly: 'https://buy.stripe.com/fZu5kEgrI7766ct9cE14405', yearly: 'https://buy.stripe.com/cNi9AUcbsdvugR7agI14401' },
   max:  { monthly: 'https://buy.stripe.com/eVqaEY1wOajicAR88A14402', yearly: 'https://buy.stripe.com/5kQ28sdfw4YY58p60s14403' },
 };
 
@@ -589,10 +589,10 @@ function setBilling(period) {
   billMo.classList.toggle('active', period === 'monthly');
   billYr.classList.toggle('active', period === 'yearly');
   if (period === 'monthly') {
-    proPrice.innerHTML = '<sup>$</sup>19<sub>/mo</sub>';
+    proPrice.innerHTML = '<sup>$</sup>9<sub>/mo</sub>';
     maxPrice.innerHTML = '<sup>$</sup>39<sub>/mo</sub>';
   } else {
-    proPrice.innerHTML = '<sup>$</sup>15<sub>/mo · billed $182/yr</sub>';
+    proPrice.innerHTML = '<sup>$</sup>8<sub>/mo · billed $96/yr</sub>';
     maxPrice.innerHTML = '<sup>$</sup>32<sub>/mo · billed $384/yr</sub>';
   }
 }
