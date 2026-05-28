@@ -2,10 +2,11 @@
 
 require('dotenv').config();
 
-const express = require('express');
-const cors    = require('cors');
-const fs      = require('fs');
-const path    = require('path');
+const express                    = require('express');
+const cors                       = require('cors');
+const fs                         = require('fs');
+const path                       = require('path');
+const { randomBytes, createHmac } = require('crypto');
 
 const _sdk      = require('@anthropic-ai/sdk');
 const Anthropic = _sdk.default ?? _sdk.Anthropic ?? _sdk;
@@ -40,10 +41,17 @@ function getLicense(key) {
   return lic?.isActive ? lic : null;
 }
 
-function generateKey() {
-  // Format: SIDE-XXXX-XXXX-XXXX
-  const seg = () => Math.random().toString(36).toUpperCase().slice(2,6).padEnd(4,'X');
-  return `SIDE-${seg()}-${seg()}-${seg()}`;
+const LICENSE_SECRET = process.env.LICENSE_SECRET || '';
+
+function generateKey(tier = 'pro') {
+  // HMAC-signed — must match verifyKeyHmac() in app's main.js
+  const r1 = randomBytes(2).toString('hex').toUpperCase();
+  const r2 = randomBytes(2).toString('hex').toUpperCase();
+  const c3 = LICENSE_SECRET
+    ? createHmac('sha256', LICENSE_SECRET).update(r1 + r2).digest('hex').slice(0,4).toUpperCase()
+    : randomBytes(2).toString('hex').toUpperCase(); // fallback if secret not set
+  const prefix = tier === 'max' ? 'SMAX' : 'SIDE';
+  return `${prefix}-${r1}-${r2}-${c3}`;
 }
 
 // ─── Usage helpers ────────────────────────────────────────────────────────────
@@ -202,9 +210,13 @@ app.post('/api/chat', async (req, res) => {
 app.post('/api/checkout', async (req, res) => {
   const { tier, email } = req.body; // tier: 'pro' | 'max'
 
-  const priceId = tier === 'max'
-    ? process.env.STRIPE_PRICE_MAX_MONTHLY
-    : process.env.STRIPE_PRICE_PRO_MONTHLY;
+  const period  = (req.body.period === 'yearly') ? 'yearly' : 'monthly';
+  const keyMap  = {
+    pro:  { monthly: 'STRIPE_PRICE_PRO_MONTHLY',  yearly: 'STRIPE_PRICE_PRO_YEARLY'  },
+    max:  { monthly: 'STRIPE_PRICE_MAX_MONTHLY',  yearly: 'STRIPE_PRICE_MAX_YEARLY'  },
+  };
+  const envKey  = keyMap[tier]?.[period] || keyMap.pro.monthly;
+  const priceId = process.env[envKey] || process.env.STRIPE_PRICE_PRO_MONTHLY;
 
   if (!priceId) return res.status(500).json({ error: 'Stripe price not configured' });
 
@@ -239,12 +251,22 @@ async function handleStripeWebhook(req, res) {
   }
 
   if (event.type === 'checkout.session.completed') {
-    const session = event.data.object;
-    const tier    = session.metadata?.tier || 'pro';
-    const email   = session.customer_email || session.customer_details?.email;
+    // Expand line_items so we can infer tier from price ID when metadata missing
+    const session = await stripe.checkout.sessions.retrieve(event.data.object.id, {
+      expand: ['line_items'],
+    });
+    // Infer tier: prefer explicit metadata, fall back to price ID match
+    let tier = session.metadata?.tier;
+    if (!tier) {
+      const lineItems = session.line_items?.data || [];
+      const priceIds  = lineItems.map(i => i.price?.id).filter(Boolean);
+      const maxIds    = [process.env.STRIPE_PRICE_MAX_MONTHLY, process.env.STRIPE_PRICE_MAX_YEARLY].filter(Boolean);
+      tier = priceIds.some(id => maxIds.includes(id)) ? 'max' : 'pro';
+    }
+    const email = session.customer_email || session.customer_details?.email;
     const subId   = session.subscription;
 
-    const key  = generateKey();
+    const key  = generateKey(tier);
     const data = readDB();
     data.licenses[key] = {
       email, tier, stripeSubId: subId,

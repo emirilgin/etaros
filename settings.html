@@ -47,13 +47,11 @@ html,body{
   padding:14px 16px 13px;border-bottom:1px solid var(--border);
   -webkit-app-region:drag;flex-shrink:0;
 }
-.hdr-hex{
-  width:28px;height:28px;flex-shrink:0;
-  clip-path:polygon(50% 0%,95% 25%,95% 75%,50% 100%,5% 75%,5% 25%);
-  background:var(--orange-dim);
+.hdr-mark{
+  width:26px;height:26px;flex-shrink:0;
   display:flex;align-items:center;justify-content:center;
-  font-size:11px;font-weight:700;color:var(--orange);
 }
+.hdr-mark svg{width:26px;height:26px;display:block;}
 #hdr h1{flex:1;font-size:14px;font-weight:600;color:var(--t1);letter-spacing:.03em;}
 #x-btn{
   -webkit-app-region:no-drag;
@@ -96,13 +94,11 @@ html,body{
   display:flex;align-items:center;gap:12px;
   padding:15px 16px;border-bottom:1px solid var(--border);
 }
-.plan-hex{
+.plan-mark{
   width:36px;height:36px;flex-shrink:0;
-  clip-path:polygon(50% 0%,95% 25%,95% 75%,50% 100%,5% 75%,5% 25%);
-  background:var(--orange-dim);
   display:flex;align-items:center;justify-content:center;
-  font-size:14px;font-weight:700;color:var(--orange);
 }
+.plan-mark svg{width:36px;height:36px;display:block;}
 .plan-info{flex:1;}
 .plan-name{font-size:14px;font-weight:600;color:var(--t1);display:block;}
 .plan-desc{font-size:12px;color:var(--t3);margin-top:2px;display:block;}
@@ -335,7 +331,9 @@ html,body{
 <div id="win">
 
   <div id="hdr">
-    <div class="hdr-hex">S</div>
+    <div class="hdr-mark">
+      <svg viewBox="0 0 26 26" fill="none"><path d="M2 13C2 13 6.5 6 13 6C19.5 6 24 13 24 13C24 13 19.5 20 13 20C6.5 20 2 13 2 13Z" stroke="url(#sg1)" stroke-width="1.7" fill="none" stroke-linejoin="round" stroke-linecap="round"/><circle cx="13" cy="13" r="4" stroke="url(#sg1)" stroke-width="1.7" fill="none"/><circle cx="13" cy="13" r="1.8" fill="url(#sg1)"/><defs><linearGradient id="sg1" x1="2" y1="6" x2="24" y2="20" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#f0a070"/><stop offset="100%" stop-color="#c85828"/></linearGradient></defs></svg>
+    </div>
     <h1>Settings</h1>
     <button id="x-btn">✕</button>
   </div>
@@ -349,7 +347,9 @@ html,body{
 
         <!-- Current tier -->
         <div class="plan-top">
-          <div class="plan-hex">S</div>
+          <div class="plan-mark">
+            <svg viewBox="0 0 36 36" fill="none"><path d="M3 18C3 18 8.5 8 18 8C27.5 8 33 18 33 18C33 18 27.5 28 18 28C8.5 28 3 18 3 18Z" stroke="url(#pm1)" stroke-width="1.8" fill="none" stroke-linejoin="round" stroke-linecap="round"/><circle cx="18" cy="18" r="5.5" stroke="url(#pm1)" stroke-width="1.8" fill="none"/><circle cx="18" cy="18" r="2.5" fill="url(#pm1)"/><defs><linearGradient id="pm1" x1="3" y1="8" x2="33" y2="28" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#f0a070"/><stop offset="100%" stop-color="#c85828"/></linearGradient></defs></svg>
+          </div>
           <div class="plan-info">
             <span class="plan-name" id="plan-name">Sidekick</span>
             <span class="plan-desc" id="plan-desc">Loading…</span>
@@ -417,7 +417,7 @@ html,body{
         <div class="pill" data-val="60">60s<small>Gentle</small></div>
         <div class="pill" data-val="0">Off<small>Manual</small></div>
       </div>
-      <div class="hint">How often Sidekick silently scans your screen. Use the ⟳ button to scan manually anytime.</div>
+      <div class="hint">How often Sidekick silently scans your screen. Use the ↺ button to scan manually anytime.</div>
     </div>
 
     <!-- ── Behaviour ── -->
@@ -437,6 +437,23 @@ html,body{
             <span class="tsub">Start when you sign in to your Mac</span>
           </div>
           <label class="sw"><input type="checkbox" id="login"/><span class="sw-t"></span></label>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Profile ── -->
+    <div class="sec">
+      <div class="sec-label">Profile</div>
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:8px">
+        <div id="profile-avatar-preview" style="width:52px;height:52px;border-radius:50%;background:var(--surface);border:1px solid var(--border2);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;flex-shrink:0;color:var(--t2);font-size:16px;font-weight:600;" title="Click to change photo">
+          <svg viewBox="0 0 20 20" fill="none" style="width:22px;height:22px"><circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.3"/><path d="M3 17c0-3.3 3.1-6 7-6s7 2.7 7 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </div>
+        <input id="profile-avatar-input" type="file" accept="image/*" style="display:none"/>
+        <div style="flex:1">
+          <div class="field">
+            <input id="profile-name" type="text" placeholder="Your name" autocomplete="off"/>
+          </div>
+          <div class="hint" style="margin-top:5px">Shown in sidebar. Click the photo to change it.</div>
         </div>
       </div>
     </div>
@@ -464,17 +481,17 @@ html,body{
           <div class="sec-label">AI Provider</div>
           <div class="prov-grid">
             <div class="pcard active" data-prov="cloud">
-              <span class="pcard-icon">✦</span>
+              <span class="pcard-icon">◉</span>
               <span class="pcard-name">Sidekick Cloud</span>
               <span class="pcard-sub">Default · No setup</span>
             </div>
             <div class="pcard" data-prov="ollama">
-              <span class="pcard-icon">🦙</span>
+              <span class="pcard-icon">○</span>
               <span class="pcard-name">Ollama</span>
               <span class="pcard-sub">Local · Private</span>
             </div>
             <div class="pcard" data-prov="claude">
-              <span class="pcard-icon">☁</span>
+              <span class="pcard-icon">◈</span>
               <span class="pcard-name">Own Key</span>
               <span class="pcard-sub">Your Anthropic key</span>
             </div>
@@ -486,7 +503,7 @@ html,body{
           <div class="sec-label">Gemini API Key</div>
           <div class="field">
             <input id="gemini-key" type="password" placeholder="AIzaSy…" autocomplete="off" spellcheck="false"/>
-            <button class="field-btn" id="gemini-eye">👁</button>
+            <button class="field-btn" id="gemini-eye">○</button>
           </div>
           <div class="hint">
             Free key from <button class="hint-link" id="aistudio-link">aistudio.google.com ↗</button>
@@ -500,7 +517,7 @@ html,body{
             <div class="sec-label">Anthropic API Key</div>
             <div class="field">
               <input id="api-key" type="password" placeholder="sk-ant-api03-…" autocomplete="off" spellcheck="false"/>
-              <button class="field-btn" id="pw-eye">👁</button>
+              <button class="field-btn" id="pw-eye">○</button>
             </div>
             <div class="hint">
               Get yours at <button class="hint-link" id="console-link">console.anthropic.com ↗</button>
@@ -515,7 +532,7 @@ html,body{
             <div class="status-row">
               <div class="sdot" id="ol-dot"></div>
               <span id="status-text">Checking…</span>
-              <button class="sm-btn" id="refresh-btn">⟳ Refresh</button>
+              <button class="sm-btn" id="refresh-btn">↺ Refresh</button>
             </div>
           </div>
           <div id="model-sec" style="display:none;margin-top:12px;">
@@ -550,8 +567,26 @@ html,body{
 
 // ── Elements ──────────────────────────────────────────────────────────────────
 const apiKeyEl   = document.getElementById('api-key');
-const geminiKeyEl= document.getElementById('gemini-key');
-const cityEl     = document.getElementById('city');
+const geminiKeyEl    = document.getElementById('gemini-key');
+const cityEl         = document.getElementById('city');
+const profileNameEl  = document.getElementById('profile-name');
+const profileAvInput = document.getElementById('profile-avatar-input');
+const profileAvPrev  = document.getElementById('profile-avatar-preview');
+let   profileAvatar  = '';
+
+// Profile avatar picker
+profileAvPrev?.addEventListener('click', () => profileAvInput?.click());
+profileAvInput?.addEventListener('change', () => {
+  const file = profileAvInput.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    profileAvatar = e.target.result;
+    profileAvPrev.innerHTML = `<img src="${profileAvatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>`;
+  };
+  reader.readAsDataURL(file);
+  profileAvInput.value = '';
+});
 const autoScanEl = document.getElementById('auto-scan');
 const loginEl    = document.getElementById('login');
 const licKeyEl   = document.getElementById('lic-key');
@@ -589,7 +624,7 @@ document.getElementById('ollama-dl-btn')?.addEventListener('click', () => window
 document.getElementById('gemini-eye')?.addEventListener('click', () => {
   const show = geminiKeyEl.type === 'password';
   geminiKeyEl.type = show ? 'text' : 'password';
-  document.getElementById('gemini-eye').textContent = show ? '🙈' : '👁';
+  document.getElementById('gemini-eye').textContent = show ? '◉' : '○';
 });
 
 // ── Stripe Payment Links ──────────────────────────────────────────────────────
@@ -636,7 +671,7 @@ document.getElementById('activate-btn').addEventListener('click', async () => {
   const lic = await window.sk.checkLicense();
   showTier(lic);
   saveBtn.disabled = false;
-  feedback.textContent = lic.tier !== 'free' ? `✓ ${lic.tier === 'max' ? 'Max' : 'Pro'} activated!` : 'Key not recognised';
+  feedback.textContent = lic.tier !== 'free' ? `${lic.tier === 'max' ? 'Max' : 'Pro'} activated` : 'Key not recognised';
   feedback.style.color = lic.tier !== 'free' ? 'var(--green)' : 'var(--red)';
   setTimeout(() => { feedback.textContent = ''; }, 3000);
 });
@@ -667,7 +702,7 @@ pcards.forEach(c => c.addEventListener('click', () => {
 document.getElementById('pw-eye')?.addEventListener('click', () => {
   const show = apiKeyEl.type === 'password';
   apiKeyEl.type = show ? 'text' : 'password';
-  document.getElementById('pw-eye').textContent = show ? '🙈' : '👁';
+  document.getElementById('pw-eye').textContent = show ? '◉' : '○';
 });
 
 // ── Ollama ────────────────────────────────────────────────────────────────────
@@ -712,12 +747,12 @@ function showTier(lic) {
 
   const billingEl = document.getElementById('billing-toggle');
   if (lic.tier === 'max') {
-    tierChip.textContent  = 'Max ✦';
+    tierChip.textContent  = 'Max';
     planName.textContent  = 'Sidekick Max';
     planDesc.textContent  = 'Unlimited messages · Fastest model';
     upgradeTiers.style.display = 'none';
     billingEl.style.display    = 'none';
-    planNote.textContent  = 'You have unlimited access. Thank you ✦';
+    planNote.textContent  = 'You have unlimited access.';
     return;
   }
   if (lic.tier === 'pro') {
@@ -747,17 +782,23 @@ saveBtn.addEventListener('click', async () => {
   saveBtn.textContent = 'Saving…';
   feedback.textContent = '';
 
-  await window.sk.saveSettings({
-    apiKey:       apiKeyEl.value.trim(),
-    geminiKey:    geminiKeyEl.value.trim(),
-    city:         cityEl.value.trim(),
-    scanInterval: selectedInterval,
-    autoScan:     selectedInterval === 0 ? false : autoScanEl.checked,
-    startOnLogin: loginEl.checked,
-    licenseKey:   licKeyEl.value.trim(),
-    provider:     selectedProvider,
-    ollamaModel:  modelSel.value || 'llava',
-  });
+  await Promise.all([
+    window.sk.saveSettings({
+      apiKey:       apiKeyEl.value.trim(),
+      geminiKey:    geminiKeyEl.value.trim(),
+      city:         cityEl.value.trim(),
+      scanInterval: selectedInterval,
+      autoScan:     selectedInterval === 0 ? false : autoScanEl.checked,
+      startOnLogin: loginEl.checked,
+      licenseKey:   licKeyEl.value.trim(),
+      provider:     selectedProvider,
+      ollamaModel:  modelSel.value || 'llava',
+    }),
+    window.sk.saveProfile({
+      name:   profileNameEl?.value.trim() || '',
+      avatar: profileAvatar || undefined,
+    }),
+  ]);
 
   saveBtn.disabled    = false;
   saveBtn.textContent = 'Save';
@@ -768,12 +809,23 @@ saveBtn.addEventListener('click', async () => {
 
 // ── Load ──────────────────────────────────────────────────────────────────────
 async function load() {
-  const [s, lic] = await Promise.all([window.sk.getSettings(), window.sk.checkLicense()]);
+  const [s, lic, profile] = await Promise.all([
+    window.sk.getSettings(),
+    window.sk.checkLicense(),
+    window.sk.getProfile(),
+  ]);
 
   apiKeyEl.value     = s.apiKey     || '';
   geminiKeyEl.value  = s.geminiKey  || '';
   cityEl.value       = s.city       || '';
   licKeyEl.value     = s.licenseKey || '';
+
+  // Profile
+  if (profileNameEl) profileNameEl.value = profile.name || '';
+  if (profile.avatar && profileAvPrev) {
+    profileAvatar = profile.avatar;
+    profileAvPrev.innerHTML = `<img src="${profile.avatar}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>`;
+  }
   autoScanEl.checked = s.autoScan !== false;
   loginEl.checked    = Boolean(s.startOnLogin);
 
