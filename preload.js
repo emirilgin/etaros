@@ -25,6 +25,8 @@ contextBridge.exposeInMainWorld('sk', {
   saveSettings: (s)    => ipcRenderer.invoke('save-settings', s),
   checkLicense: ()     => ipcRenderer.invoke('check-license'),
   checkOllama:  ()     => ipcRenderer.invoke('check-ollama'),
+  getMode:      ()     => ipcRenderer.invoke('get-mode'),
+  setMode:      (id)   => ipcRenderer.invoke('set-mode', id),
   chat:         (text) => ipcRenderer.invoke('chat', text),
   manualScan:   ()     => ipcRenderer.invoke('manual-scan'),
 
@@ -37,7 +39,6 @@ contextBridge.exposeInMainWorld('sk', {
   requestScreenPermission: () => ipcRenderer.invoke('request-screen-permission'),
   toggleScan:    (on)      => ipcRenderer.send('toggle-scan', on),
   setCollapsed:  (bool)    => ipcRenderer.send('set-collapsed', bool),
-  setMode:       (mode)    => ipcRenderer.send('set-mode', mode),
   openUrl:       (url)     => ipcRenderer.send('open-url', url),
   openUrls:      (urls)    => ipcRenderer.send('open-urls', urls),
   clearHistory:  ()        => ipcRenderer.send('clear-history'),

@@ -127,10 +127,73 @@ function setCollapsed(v) {
   window.sk.setCollapsed(v);
 }
 
-// ─── Mode toggle ──────────────────────────────────────────────────────────────
+// ─── Window mode toggle ────────────────────────────────────────────────────────
 expandBtn.addEventListener('click', () => window.sk.setMode('fullscreen'));
 shrinkBtn.addEventListener('click', () => window.sk.setMode('sidebar'));
 hideBtn.addEventListener('click',   () => window.sk.hideWindow());
+
+// ─── Focus mode bar ───────────────────────────────────────────────────────────
+const modeBar     = document.getElementById('mode-bar');
+const modeTagline = document.getElementById('mode-tagline');
+
+function renderModeBar(modeData) {
+  if (!modeData) return;
+  modeBar.innerHTML = '';
+  const { active, modes } = modeData;
+
+  modes.forEach(m => {
+    const btn = document.createElement('button');
+    btn.className = 'mode-btn' +
+      (m.id === active  ? ' active'  : '') +
+      (m.locked         ? ' locked'  : '');
+    btn.style.setProperty('--mode-color', m.color);
+    btn.title = m.locked ? `${m.name} — Pro/Max only` : m.tagline;
+    btn.innerHTML = `
+      <span class="mode-icon">${m.icon}</span>
+      <span class="mode-name">${m.name}</span>
+      ${m.locked ? '<span class="mode-lock">🔒</span>' : ''}
+    `;
+
+    if (!m.locked) {
+      btn.addEventListener('click', async () => {
+        const res = await window.sk.setMode(m.id);
+        if (res?.reason === 'upgrade') {
+          window.sk.openSettings();
+          return;
+        }
+        if (res?.ok) {
+          document.querySelectorAll('.mode-btn').forEach(b => {
+            b.classList.toggle('active', b.querySelector('.mode-name').textContent === m.name);
+          });
+          updateModeTagline(m);
+        }
+      });
+    } else {
+      btn.addEventListener('click', () => window.sk.openSettings());
+    }
+
+    modeBar.appendChild(btn);
+  });
+
+  const activeModeObj = modes.find(m => m.id === active);
+  if (activeModeObj) updateModeTagline(activeModeObj);
+}
+
+function updateModeTagline(m) {
+  modeTagline.innerHTML = `<span>${m.icon} ${m.name}</span> — ${m.tagline}`;
+  modeTagline.style.display = 'block';
+  // Use mode color as CSS custom prop on root
+  document.documentElement.style.setProperty('--mode-color', m.color);
+}
+
+// Listen for mode changes pushed from main
+window.sk.on('mode-changed', ({ mode, icon, name, color }) => {
+  document.querySelectorAll('.mode-btn').forEach(b => {
+    b.classList.toggle('active', b.querySelector('.mode-name')?.textContent === name);
+  });
+  modeTagline.innerHTML = `<span>${icon} ${name}</span> — `;
+  document.documentElement.style.setProperty('--mode-color', color);
+});
 
 // ─── Traffic lights (fullscreen macOS titlebar) ───────────────────────────────
 document.getElementById('tl-close')?.addEventListener('click', () => window.sk.hideWindow());
@@ -925,12 +988,14 @@ async function init() {
   upgrade.style.display   = 'none';
   tierBadge.style.display = 'none';
 
-  const [lic, mode] = await Promise.all([
+  const [lic, mode, focusMode] = await Promise.all([
     window.sk.checkLicense(),
     window.sk.getWindowMode(),
+    window.sk.getMode(),
   ]);
 
   applyMode(mode || 'sidebar');
+  renderModeBar(focusMode);
   setTierDisplay(lic.tier, lic.used, lic.limit);
 
   if (lic.tier === 'free' && lic.used < lic.limit) {
