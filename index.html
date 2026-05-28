@@ -225,6 +225,27 @@ html,body{
 }
 .empty-chip:hover{background:var(--card); color:var(--t1); border-color:var(--border2);}
 
+/* ── Empty tips ── */
+.empty-tips{
+  width:100%; margin-top:6px;
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--r); overflow:hidden;
+}
+.tip-row{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:8px 14px; border-bottom:1px solid var(--border);
+  gap:12px;
+}
+.tip-row:last-child{ border-bottom:none; }
+.tip-key{
+  font-size:11px; font-weight:600; color:var(--orange-t);
+  background:var(--orange-dim); border:1px solid rgba(212,112,62,.18);
+  border-radius:5px; padding:2px 7px; white-space:nowrap; flex-shrink:0;
+}
+.tip-val{
+  font-size:12px; color:var(--t3); text-align:right;
+}
+
 /* ── Time divider ── */
 .time-div{
   display:flex; align-items:center; gap:10px;
@@ -628,13 +649,23 @@ html[data-mode="fullscreen"] #titlebar{ display:flex; }
       <div id="empty">
         <div class="empty-hex">S</div>
         <h3>Hey, I'm Sidekick.</h3>
-        <p class="empty-sub">I'm watching your screen right now. Ask me anything — about what you're buying, eating, doing, or thinking about.</p>
+        <p class="empty-sub">Watching your screen right now. Ask anything — buying, eating, finance, or just what you see.</p>
+
         <div class="empty-chips">
           <button class="empty-chip" data-msg="What should I eat right now? Check what's nearby.">🍜 What to eat?</button>
-          <button class="empty-chip" data-msg="Is what I'm looking at a good deal? Show me alternatives.">🛍 Good deal?</button>
-          <button class="empty-chip" data-msg="What do you see on my screen right now?">👁 What's on screen?</button>
-          <button class="empty-chip" data-msg="Give me a health check on my current choices.">💪 Health check</button>
+          <button class="empty-chip" data-msg="Is what I'm looking at a good deal? Show me alternatives and real prices.">🛍 Good deal?</button>
+          <button class="empty-chip" data-msg="What do you see on my screen right now? Give me your honest take.">👁 What's on screen?</button>
+          <button class="empty-chip" data-msg="Check my finances — any subscriptions or charges I should know about?">💳 Finance check</button>
         </div>
+
+        <!-- Tips -->
+        <div class="empty-tips">
+          <div class="tip-row"><span class="tip-key">⟳ Scan</span><span class="tip-val">Analyse screen instantly</span></div>
+          <div class="tip-row"><span class="tip-key">⛶ Full screen</span><span class="tip-val">Bigger chat, left nav</span></div>
+          <div class="tip-row"><span class="tip-key">⌘⇧S</span><span class="tip-val">Show / hide from anywhere</span></div>
+          <div class="tip-row"><span class="tip-key">◀ Collapse</span><span class="tip-val">Thin strip, stays out of way</span></div>
+        </div>
+
         <div id="trial-info"></div>
       </div>
 

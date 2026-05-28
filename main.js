@@ -5,8 +5,17 @@ const {
   Tray, Menu, nativeImage, Notification, screen, globalShortcut, shell,
 } = require('electron');
 const path           = require('path');
+const os             = require('os');
 const { randomUUID } = require('crypto');
 const Store          = require('electron-store');
+
+// Machine fingerprint — encrypts the store so users can't manually reset usage
+function machineKey() {
+  const seed = `${os.hostname()}-${(os.cpus()[0]?.model || 'cpu')}-${os.platform()}`;
+  let h = 5381;
+  for (const c of seed) { h = ((h << 5) + h) ^ c.charCodeAt(0); h = h >>> 0; }
+  return h.toString(36).padStart(8, '0');
+}
 
 const _sdk      = require('@anthropic-ai/sdk');
 const Anthropic = _sdk.default ?? _sdk.Anthropic ?? _sdk;
@@ -27,8 +36,8 @@ const RETRY_MS        = 15_000;
 const OLLAMA_BASE     = 'http://localhost:11434';
 
 // Tier limits
-const FREE_TOTAL = 5;   // lifetime free messages
-const PRO_LIMIT  = 50;  // messages per day on Pro
+const FREE_TOTAL = 3;   // lifetime free messages (just enough to try)
+// Pro = unlimited daily — no cap. Max = unlimited + better model.
 
 // ─── System prompts ───────────────────────────────────────────────────────────
 const SCAN_PROMPT = `You are Sidekick — a sharp, real-time AI companion watching the user's screen.
@@ -54,8 +63,8 @@ If they want to chat: be warm, engaging, human.
 
 Use markdown for structure when helpful. Go deep when asked. Keep it conversational.`;
 
-// ─── Store ────────────────────────────────────────────────────────────────────
-const store = new Store();
+// ─── Store (encrypted — machine-specific key prevents manual resets) ──────────
+const store = new Store({ encryptionKey: machineKey() });
 
 // ─── State ────────────────────────────────────────────────────────────────────
 let mainWindow     = null;
@@ -74,30 +83,27 @@ const NOTIFY_COOLDOWN_MS = 5 * 60_000; // max 1 OS notification per 5 min
 
 // ─── Tier system (local, no server needed) ────────────────────────────────────
 function getTier() {
+  if (APP_CONFIG.ownerMode) return 'max';  // dev/owner build
   const key = String(store.get('licenseKey') ?? '').trim();
   if (!key) return 'free';
-  // Max keys start with SMAX-, Pro keys with SIDE-
-  if (/^SMAX-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(key)) return 'max';
-  if (/^SIDE-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(key)) return 'pro';
-  if (/^STEST-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(key)) return 'max'; // tester key
+  if (/^SMAX-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(key))  return 'max';
+  if (/^SIDE-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(key))  return 'pro';
+  if (/^STEST-[A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4}$/.test(key)) return 'max'; // tester
   return 'free';
 }
 
 function getFreeUsed()  { return Number(store.get('freeUsed') ?? 0); }
 function bumpFreeUsed() { const n = getFreeUsed() + 1; store.set('freeUsed', n); return n; }
 
-function getProUsed() {
-  const today = new Date().toISOString().slice(0, 10);
-  if (store.get('proDate') !== today) { store.set('proDate', today); store.set('proUsed', 0); }
-  return Number(store.get('proUsed') ?? 0);
-}
+// Pro is now unlimited — no daily counter needed, but we track for display
+function getProUsed() { return Number(store.get('proUsed') ?? 0); }
 function bumpProUsed() { const n = getProUsed() + 1; store.set('proUsed', n); return n; }
 
 function getLicenseInfo() {
   const tier = getTier();
-  if (tier === 'max') return { tier, used: 0, limit: 0 };
-  if (tier === 'pro') return { tier, used: getProUsed(),  limit: PRO_LIMIT  };
-  return                      { tier, used: getFreeUsed(), limit: FREE_TOTAL };
+  if (tier === 'max') return { tier, used: 0,            limit: 0          };
+  if (tier === 'pro') return { tier, used: getProUsed(), limit: 0          }; // 0 limit = unlimited
+  return                     { tier, used: getFreeUsed(), limit: FREE_TOTAL };
 }
 
 // ─── Notifications ────────────────────────────────────────────────────────────
@@ -382,15 +388,15 @@ async function streamOllama(systemPrompt, history) {
 function checkLimits() {
   const tier = getTier();
   if (tier === 'max') return null; // unlimited
-  if (tier === 'pro' && getProUsed() >= PRO_LIMIT)  return 'pro';
+  if (tier === 'pro') return null; // unlimited
   if (tier === 'free' && getFreeUsed() >= FREE_TOTAL) return 'free';
   return null; // ok
 }
 
 function bumpUsage() {
   const tier = getTier();
-  if (tier === 'pro')  return { tier, used: bumpProUsed(),  limit: PRO_LIMIT  };
-  if (tier === 'free') return { tier, used: bumpFreeUsed(), limit: FREE_TOTAL  };
+  if (tier === 'pro')  return { tier, used: bumpProUsed(), limit: 0 };         // 0 = unlimited
+  if (tier === 'free') return { tier, used: bumpFreeUsed(), limit: FREE_TOTAL };
   return                      { tier: 'max', used: 0, limit: 0 };
 }
 

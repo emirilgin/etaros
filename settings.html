@@ -377,21 +377,23 @@ html,body{
         <div class="plan-tiers" id="upgrade-tiers">
           <div class="tier-opt">
             <div class="tier-opt-name">Pro</div>
-            <div class="tier-opt-price" id="pro-price"><sup>$</sup>9<sub>/mo</sub></div>
+            <div class="tier-opt-price" id="pro-price"><sup>€</sup>9<sub>/mo</sub></div>
             <ul class="tier-opt-features">
-              <li>50 messages per day</li>
-              <li>Claude Sonnet vision</li>
-              <li>Priority responses</li>
+              <li>Unlimited messages</li>
+              <li>Real-time screen AI</li>
+              <li>Shopping comparisons</li>
+              <li>Cancel anytime</li>
             </ul>
             <button class="tier-btn pro-btn" id="pro-btn">Get Pro</button>
           </div>
           <div class="tier-opt">
             <div class="tier-opt-name">Max</div>
-            <div class="tier-opt-price" id="max-price"><sup>$</sup>19<sub>/mo</sub></div>
+            <div class="tier-opt-price" id="max-price"><sup>€</sup>19<sub>/mo</sub></div>
             <ul class="tier-opt-features">
-              <li>Unlimited messages</li>
-              <li>Fastest model</li>
               <li>Everything in Pro</li>
+              <li>Claude Sonnet model</li>
+              <li>Smarter responses</li>
+              <li>Fastest analysis</li>
             </ul>
             <button class="tier-btn max-btn" id="max-btn">Get Max</button>
           </div>
@@ -587,11 +589,11 @@ function setBilling(period) {
   billMo.classList.toggle('active', period === 'monthly');
   billYr.classList.toggle('active', period === 'yearly');
   if (period === 'monthly') {
-    proPrice.innerHTML = '<sup>$</sup>9<sub>/mo</sub>';
-    maxPrice.innerHTML = '<sup>$</sup>19<sub>/mo</sub>';
+    proPrice.innerHTML = '<sup>€</sup>9<sub>/mo</sub>';
+    maxPrice.innerHTML = '<sup>€</sup>19<sub>/mo</sub>';
   } else {
-    proPrice.innerHTML = '<sup>$</sup>7<sub>/mo · billed $86/yr</sub>';
-    maxPrice.innerHTML = '<sup>$</sup>15<sub>/mo · billed $182/yr</sub>';
+    proPrice.innerHTML = '<sup>€</sup>7<sub>/mo · billed €86/yr</sub>';
+    maxPrice.innerHTML = '<sup>€</sup>15<sub>/mo · billed €182/yr</sub>';
   }
 }
 
@@ -699,11 +701,10 @@ function showTier(lic) {
   if (lic.tier === 'pro') {
     tierChip.textContent  = 'Pro';
     planName.textContent  = 'Sidekick Pro';
-    const rem = Math.max(0, lic.limit - lic.used);
-    planDesc.textContent  = `${rem} of ${lic.limit} messages left today`;
+    planDesc.textContent  = `Unlimited messages · ${lic.used} sent`;
     upgradeTiers.style.display = 'none';
     billingEl.style.display    = 'none';
-    planNote.textContent  = 'Resets every midnight. Upgrade to Max for unlimited.';
+    planNote.textContent  = 'Upgrade to Max for Claude Sonnet — smarter at complex questions.';
     return;
   }
   // free

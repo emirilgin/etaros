@@ -319,8 +319,8 @@ function setTierDisplay(tier, used, limit) {
   }
   if (tier === 'pro') {
     tierBadge.textContent = 'Pro';
-    counter.textContent   = `Pro · ${used} / ${limit} today`;
-    counter.style.color   = (limit - used <= 5) ? 'var(--red)' : 'var(--t3)';
+    counter.textContent   = `Pro · unlimited`;
+    counter.style.color   = 'var(--t3)';
     upgrade.style.display = 'none';
     return;
   }
