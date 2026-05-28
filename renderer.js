@@ -481,7 +481,7 @@ function renderAnalysis(data) {
       const q   = encodeURIComponent(item.query);
       const btn = document.createElement('button');
       btn.className   = 'compare-btn';
-      btn.textContent = '🔍 Compare prices';
+      btn.textContent = 'Compare prices →';
       btn.addEventListener('click', () => {
         window.sk.openUrls([
           `https://www.google.com/search?q=${q}&tbm=shop`,
@@ -499,7 +499,7 @@ function renderAnalysis(data) {
       const amount   = amtMatch ? parseFloat(amtMatch[1]) : null;
       const logBtn   = document.createElement('button');
       logBtn.className   = 'card-log-btn';
-      logBtn.textContent = amount ? `💰 Log $${amount} saved` : '💰 Log saving';
+      logBtn.textContent = amount ? `Log $${amount} saved` : 'Log saving';
       logBtn.addEventListener('click', async () => {
         if (logBtn.disabled) return;
         let finalAmt = amount;
@@ -509,7 +509,7 @@ function renderAnalysis(data) {
           if (!finalAmt) return;
         }
         await window.sk.logSaving({ item: item.title, amount: finalAmt });
-        logBtn.textContent = '✓ Logged!';
+        logBtn.textContent = '✓ Logged';
         logBtn.disabled = true;
         logBtn.classList.add('logged');
       });
@@ -522,11 +522,11 @@ function renderAnalysis(data) {
       const kcal      = kcalMatch ? parseInt(kcalMatch[1]) : 0;
       const logBtn    = document.createElement('button');
       logBtn.className   = 'card-log-btn food';
-      logBtn.textContent = kcal ? `🥗 Log ${kcal} kcal` : '🥗 Log meal';
+      logBtn.textContent = kcal ? `Log ${kcal} kcal` : 'Log meal';
       logBtn.addEventListener('click', async () => {
         if (logBtn.disabled) return;
         await window.sk.logDiet({ item: item.title, kcal });
-        logBtn.textContent = '✓ Logged!';
+        logBtn.textContent = '✓ Logged';
         logBtn.disabled = true;
         logBtn.classList.add('logged');
       });
@@ -672,7 +672,7 @@ window.sk.on('history-cleared', () => {
 });
 
 // ─── Memory modal ─────────────────────────────────────────────────────────────
-const TYPE_LABELS = { location:'📍', preference:'⚙', goal:'🎯', habit:'🔄', personal:'👤', interest:'✦', finance:'💳', health:'💪' };
+const TYPE_LABELS = { location:'◎', preference:'◈', goal:'◇', habit:'↺', personal:'○', interest:'✦', finance:'◆', health:'◉' };
 
 function renderMemory(facts, journal) {
   if (!facts.length) {
@@ -731,49 +731,49 @@ memClearBtn?.addEventListener('click', async () => {
 const enc = encodeURIComponent;
 
 const SEARCH_CATS = [
-  { id:'food',    icon:'🍜', label:'Food',
+  { id:'food',    icon:'◎', label:'Food',
     sites:(q,loc)=>[
       `https://www.google.com/maps/search/${enc(loc?q+' near '+loc:q)}`,
       `https://www.yelp.com/search?find_desc=${enc(q)}&find_loc=${enc(loc||'')}`,
       `https://www.ubereats.com/search?q=${enc(q)}`,
     ]},
-  { id:'shop',    icon:'🛍', label:'Shop',
+  { id:'shop',    icon:'◈', label:'Shop',
     sites:(q)=>[
       `https://www.google.com/search?q=${enc(q)}&tbm=shop`,
       `https://www.amazon.com/s?k=${enc(q)}`,
       `https://www.ebay.com/sch/i.html?_nkw=${enc(q)}`,
     ]},
-  { id:'travel',  icon:'✈️', label:'Travel',
+  { id:'travel',  icon:'◇', label:'Travel',
     sites:(q)=>[
       `https://www.google.com/travel/flights?q=${enc(q)}`,
       `https://www.skyscanner.com/transport/flights/search/?query=${enc(q)}`,
       `https://www.booking.com/searchresults.html?ss=${enc(q)}`,
     ]},
-  { id:'tech',    icon:'💻', label:'Tech',
+  { id:'tech',    icon:'◆', label:'Tech',
     sites:(q)=>[
       `https://www.google.com/search?q=${enc(q)}`,
       `https://www.amazon.com/s?k=${enc(q)}`,
       `https://www.rtings.com/search#q=${enc(q)}`,
     ]},
-  { id:'finance', icon:'💹', label:'Finance',
+  { id:'finance', icon:'◉', label:'Finance',
     sites:(q)=>[
       `https://finance.yahoo.com/search/?p=${enc(q)}`,
       `https://www.google.com/search?q=${enc(q)}+stock`,
       `https://www.investopedia.com/search/?q=${enc(q)}`,
     ]},
-  { id:'health',  icon:'💊', label:'Health',
+  { id:'health',  icon:'○', label:'Health',
     sites:(q)=>[
       `https://www.google.com/search?q=${enc(q)}`,
       `https://www.webmd.com/search/search_results/default.aspx?query=${enc(q)}`,
       `https://www.nhs.uk/search/results?q=${enc(q)}`,
     ]},
-  { id:'home',    icon:'🏠', label:'Home',
+  { id:'home',    icon:'□', label:'Home',
     sites:(q,loc)=>[
       `https://www.airbnb.com/s/${enc(loc?q+' '+loc:q)}/homes`,
       `https://www.rightmove.co.uk/search.html#/for-sale?keywords=${enc(q)}`,
       `https://www.zillow.com/search/homes/${enc(q)}/`,
     ]},
-  { id:'fun',     icon:'🎬', label:'Fun',
+  { id:'fun',     icon:'▷', label:'Fun',
     sites:(q)=>[
       `https://www.rottentomatoes.com/search?search=${enc(q)}`,
       `https://open.spotify.com/search/${enc(q)}`,
@@ -841,7 +841,7 @@ function renderSearch() {
     ${srchRecent.slice(0,8).map((r,i)=>{
       const cat = SEARCH_CATS.find(c=>c.id===r.catId);
       return `<div class="srch-row" data-q="${esc(r.q)}" data-cat="${r.catId||''}">
-        <span class="srch-row-icon">${cat?.icon||'🔍'}</span>
+        <span class="srch-row-icon">${cat?.icon||'○'}</span>
         <span class="srch-row-text">${esc(r.q)}</span>
         <span class="srch-row-cat">${cat?.label||''}</span>
         <button class="srch-row-del" data-idx="${i}">✕</button>
@@ -943,8 +943,7 @@ async function loadNotes() {
 function renderNotes(notes) {
   if (!notes || !notes.length) {
     notesList.innerHTML = `<div class="notes-empty">
-      <div class="notes-empty-icon">📝</div>
-      <span>No notes yet. Write something!</span>
+      <span>No notes yet. Write something.</span>
     </div>`;
     return;
   }
@@ -954,7 +953,7 @@ function renderNotes(notes) {
       <div class="note-text">${esc(n.text)}</div>
       <div class="note-meta">
         <span class="note-date">${fmtDate(n.updated || n.created)}</span>
-        <button class="note-pin" data-id="${n.id}" title="${n.pinned?'Unpin':'Pin'}">${n.pinned?'📌':'○'}</button>
+        <button class="note-pin" data-id="${n.id}" title="${n.pinned?'Unpin':'Pin'}">${n.pinned?'·':'·'}</button>
         <button class="note-del" data-id="${n.id}" title="Delete">✕</button>
       </div>
     </div>`).join('');
@@ -1137,7 +1136,6 @@ function renderSavings(savings) {
   const statsRow = document.getElementById('savings-stats-row');
   if (statsRow) statsRow.innerHTML = `
     <div class="stat-card green">
-      <div class="stat-icon">💰</div>
       <div class="stat-body">
         <div class="stat-label">Total saved</div>
         <div class="stat-value">$${totalSaved.toFixed(2)}</div>
@@ -1145,7 +1143,6 @@ function renderSavings(savings) {
       </div>
     </div>
     <div class="stat-card blue">
-      <div class="stat-icon">📅</div>
       <div class="stat-body">
         <div class="stat-label">This month</div>
         <div class="stat-value">$${thisMonth.toFixed(2)}</div>
@@ -1184,7 +1181,7 @@ function renderSavings(savings) {
     <div class="life-recent-chips">
       ${recentSavings.map(s => `
         <button class="life-chip" data-type="saving" data-item="${esc(s.item)}" data-amount="${s.amount}">
-          💰 ${esc(s.item)}
+          ${esc(s.item)}
         </button>`).join('')}
     </div>` : '';
 
@@ -1196,7 +1193,6 @@ function renderSavings(savings) {
     } else {
       entriesEl.innerHTML = savings.map(s => `
         <div class="life-entry">
-          <div class="life-entry-icon">💰</div>
           <div class="life-entry-body">
             <div class="life-entry-name">${esc(s.item)}</div>
             <div class="life-entry-date">${fmtDate(s.date)}</div>
@@ -1270,7 +1266,6 @@ function renderDiet(diet) {
   const statsRow = document.getElementById('diet-stats-row');
   if (statsRow) statsRow.innerHTML = `
     <div class="stat-card orange">
-      <div class="stat-icon">🔥</div>
       <div class="stat-body">
         <div class="stat-label">Today</div>
         <div class="stat-value">${todayKcal > 0 ? todayKcal.toLocaleString() : '—'}</div>
@@ -1278,7 +1273,6 @@ function renderDiet(diet) {
       </div>
     </div>
     <div class="stat-card green">
-      <div class="stat-icon">📊</div>
       <div class="stat-body">
         <div class="stat-label">Total tracked</div>
         <div class="stat-value">${totalKcal > 0 ? (totalKcal >= 1000 ? (totalKcal/1000).toFixed(1)+'k' : totalKcal) : '—'}</div>
@@ -1309,7 +1303,7 @@ function renderDiet(diet) {
     <div class="life-recent-chips">
       ${recentDiet.map(d => `
         <button class="life-chip" data-type="diet" data-item="${esc(d.item)}" data-kcal="${d.kcal||0}">
-          🥗 ${esc(d.item)}${d.kcal ? ` · ${d.kcal}` : ''}
+          ${esc(d.item)}${d.kcal ? ` · ${d.kcal}` : ''}
         </button>`).join('')}
     </div>` : '';
 
@@ -1321,7 +1315,6 @@ function renderDiet(diet) {
     } else {
       entriesEl.innerHTML = diet.map(d => `
         <div class="life-entry">
-          <div class="life-entry-icon">🥗</div>
           <div class="life-entry-body">
             <div class="life-entry-name">${esc(d.item)}</div>
             <div class="life-entry-date">${fmtDate(d.date)}</div>
@@ -1395,7 +1388,7 @@ function renderLife(savings, diet) {
     <div class="life-recent-chips">
       ${recentSavings.map(s => `
         <button class="life-chip" data-type="saving" data-item="${esc(s.item)}" data-amount="${s.amount}">
-          💰 ${esc(s.item)}
+          ${esc(s.item)}
         </button>`).join('')}
     </div>` : '';
 
@@ -1403,14 +1396,13 @@ function renderLife(savings, diet) {
     <div class="life-recent-chips">
       ${recentDiet.map(d => `
         <button class="life-chip" data-type="diet" data-item="${esc(d.item)}" data-kcal="${d.kcal}">
-          🥗 ${esc(d.item)}${d.kcal ? ` · ${d.kcal}` : ''}
+          ${esc(d.item)}${d.kcal ? ` · ${d.kcal}` : ''}
         </button>`).join('')}
     </div>` : '';
 
   // ── stats ──────────────────────────────────────────────────────────────────
   const statsHtml = `
     <div class="stat-card green">
-      <div class="stat-icon">💰</div>
       <div class="stat-body">
         <div class="stat-label">Total saved</div>
         <div class="stat-value">$${totalSaved.toFixed(2)}</div>
@@ -1418,7 +1410,6 @@ function renderLife(savings, diet) {
       </div>
     </div>
     <div class="stat-card orange">
-      <div class="stat-icon">🔥</div>
       <div class="stat-body">
         <div class="stat-label">Kcal tracked</div>
         <div class="stat-value">${totalKcal > 0 ? totalKcal.toLocaleString() : '—'}</div>
@@ -1430,7 +1421,6 @@ function renderLife(savings, diet) {
   const savingsRows = savings.length
     ? savings.map(s => `
       <div class="life-entry">
-        <div class="life-entry-icon">💰</div>
         <div class="life-entry-body">
           <div class="life-entry-name">${esc(s.item)}</div>
           <div class="life-entry-date">${fmtDate(s.date)}</div>
@@ -1438,12 +1428,11 @@ function renderLife(savings, diet) {
         <div class="life-entry-val green">+$${parseFloat(s.amount).toFixed(2)}</div>
         <button class="life-entry-del" data-id="${s.id}" data-type="saving">✕</button>
       </div>`).join('')
-    : '<div class="life-empty">No savings yet.<br>Log what you saved — or let a scan card do it for you!</div>';
+    : '<div class="life-empty">No savings yet. Log what you saved — or let a scan card do it for you.</div>';
 
   const dietRows = diet.length
     ? diet.map(d => `
       <div class="life-entry">
-        <div class="life-entry-icon">🥗</div>
         <div class="life-entry-body">
           <div class="life-entry-name">${esc(d.item)}</div>
           <div class="life-entry-date">${fmtDate(d.date)}</div>
@@ -1451,12 +1440,12 @@ function renderLife(savings, diet) {
         <div class="life-entry-val blue">${d.kcal ? d.kcal+' kcal' : '—'}</div>
         <button class="life-entry-del" data-id="${d.id}" data-type="diet">✕</button>
       </div>`).join('')
-    : '<div class="life-empty">No meals yet.<br>Just type the food name — AI estimates the calories automatically.</div>';
+    : '<div class="life-empty">No meals yet. Just type the food name — AI estimates the calories automatically.</div>';
 
   lifeList.innerHTML = `
     ${statsHtml}
 
-    <div class="life-section-hdr">💰 Savings</div>
+    <div class="life-section-hdr">Savings</div>
     ${savingChips}
     <div class="life-add-row">
       <input class="life-add-input" id="saving-item" placeholder='e.g. "Amazon Prime 12"'>
@@ -1465,7 +1454,7 @@ function renderLife(savings, diet) {
     </div>
     ${savingsRows}
 
-    <div class="life-section-hdr" style="margin-top:14px">🥗 Food & Diet</div>
+    <div class="life-section-hdr" style="margin-top:14px">Food & Diet</div>
     ${dietChips}
     <div class="life-add-row">
       <input class="life-add-input" id="diet-item" placeholder='e.g. "big mac 550"'>

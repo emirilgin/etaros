@@ -46,7 +46,7 @@ const FREE_TOTAL = 15;  // beta: enough messages to properly evaluate the app
 // Pro/Max unlock all 5.
 const MODES = {
   ghost: {
-    id: 'ghost', icon: '👻', name: 'Ghost', color: '#8b7fd4',
+    id: 'ghost', icon: '◉', name: 'Ghost', color: '#8b7fd4',
     tagline: 'Privacy & security guard',
     tier: 'free',
     prompt: `You are Sidekick in Ghost Mode — a silent cybersecurity guardian watching for privacy threats and security risks.
@@ -70,7 +70,7 @@ notify:true only for active phishing/attack/credential theft. Return {"items":[]
   },
 
   vault: {
-    id: 'vault', icon: '🔐', name: 'Vault', color: '#5ab47a',
+    id: 'vault', icon: '◈', name: 'Vault', color: '#5ab47a',
     tagline: 'Wealth guard',
     tier: 'pro',
     prompt: `You are Sidekick in Vault Mode — a financial bodyguard watching for anything threatening the user's money.
@@ -92,7 +92,7 @@ notify:true only for active financial scam or confirmed overcharge >$20. Return 
   },
 
   bloom: {
-    id: 'bloom', icon: '🌿', name: 'Bloom', color: '#4db89e',
+    id: 'bloom', icon: '◇', name: 'Bloom', color: '#4db89e',
     tagline: 'Health coach',
     tier: 'pro',
     prompt: `You are Sidekick in Bloom Mode — a calm, honest health companion watching what the user eats, orders, and reads.
@@ -115,7 +115,7 @@ Return {"items":[],"summary":"","context":"health"} when nothing health-relevant
   },
 
   flow: {
-    id: 'flow', icon: '⚡', name: 'Flow', color: '#d4a43e',
+    id: 'flow', icon: '◌', name: 'Flow', color: '#d4a43e',
     tagline: 'Focus guard',
     tier: 'pro',
     prompt: `You are Sidekick in Flow Mode — a sharp productivity guardian keeping the user in deep work and out of distraction traps.
@@ -137,7 +137,7 @@ Return {"items":[],"summary":"","context":"productivity"} when user appears focu
   },
 
   hawk: {
-    id: 'hawk', icon: '🦅', name: 'Hawk', color: '#d4703e',
+    id: 'hawk', icon: '◆', name: 'Hawk', color: '#d4703e',
     tagline: 'Deal hunter',
     tier: 'pro',
     prompt: `You are Sidekick in Hawk Mode — a razor-sharp deal hunter watching for savings and price intelligence.

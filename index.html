@@ -8,29 +8,29 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
 :root{
-  --bg:         #0f0d0b;
-  --bg-hi:      #131110;
-  --surface:    #1a1714;
-  --card:       #201e1a;
-  --card-h:     #282420;
-  --border:     #252220;
-  --border2:    #322e28;
+  --bg:         #0b0b0e;
+  --bg-hi:      #0f0f13;
+  --surface:    #16161c;
+  --card:       #1e1e26;
+  --card-h:     #252530;
+  --border:     #20202a;
+  --border2:    #2c2c38;
 
-  --orange:     #c8622e;
-  --orange-dim: rgba(200,98,46,.12);
-  --orange-glow:rgba(200,98,46,.07);
-  --orange-t:   #d97848;
-  --orange-hi:  #f0956a;
+  --orange:     #d07040;
+  --orange-dim: rgba(208,112,64,.12);
+  --orange-glow:rgba(208,112,64,.07);
+  --orange-t:   #e08858;
+  --orange-hi:  #f0a070;
 
-  --green: #52a86e; --green-bg: rgba(82,168,110,.1);
-  --red:   #c85858; --red-bg:   rgba(200,88,88,.1);
-  --blue:  #5a88c4; --blue-bg:  rgba(90,136,196,.1);
-  --amber: #b88e2e; --amber-bg: rgba(184,142,46,.1);
+  --green: #4eaa78; --green-bg: rgba(78,170,120,.1);
+  --red:   #c05858; --red-bg:   rgba(192,88,88,.1);
+  --blue:  #5888c8; --blue-bg:  rgba(88,136,200,.1);
+  --amber: #b89040; --amber-bg: rgba(184,144,64,.1);
 
-  --t1: #e8e0d4;
-  --t2: #7a6e62;
-  --t3: #46403a;
-  --t4: #2c2822;
+  --t1: #eceae6;
+  --t2: #787680;
+  --t3: #44424c;
+  --t4: #28282e;
 
   --r:    12px;
   --r-s:   8px;
@@ -119,14 +119,10 @@ html,body{
   display:flex; align-items:center; gap:10px;
   padding:20px 18px 14px;
 }
-.sb-hex{
-  width:28px; height:28px; flex-shrink:0;
-  clip-path:polygon(50% 0%,95% 25%,95% 75%,50% 100%,5% 75%,5% 25%);
-  background:linear-gradient(135deg,var(--orange),#7a3210);
-  display:flex; align-items:center; justify-content:center;
-  font-size:10px; font-weight:800; color:#fff;
-  box-shadow:0 2px 10px rgba(200,98,46,.28);
+.sb-mark{
+  width:28px; height:28px; flex-shrink:0; display:flex; align-items:center; justify-content:center;
 }
+.sb-mark svg{ width:28px; height:28px; display:block; }
 .sb-name{
   font-size:14px; font-weight:600; color:var(--t1); letter-spacing:.01em; flex:1;
 }
@@ -146,12 +142,12 @@ html,body{
   flex:1; display:flex; align-items:center; justify-content:center; gap:5px;
   padding:7px 6px; border-radius:var(--r-s);
   background:transparent; border:1px solid var(--border);
-  color:var(--t3); font-family:inherit; font-size:12px; font-weight:500;
+  color:var(--t3); font-family:inherit; font-size:12px; font-weight:400;
   cursor:pointer; transition:background .14s,color .14s,border-color .14s;
+  letter-spacing:.01em;
 }
-.capture-btn:hover{
-  background:var(--surface); color:var(--t2); border-color:var(--border2);
-}
+.capture-btn:hover{ background:var(--surface); color:var(--t2); border-color:var(--border2); }
+.capture-btn svg{ width:13px; height:13px; flex-shrink:0; }
 
 /* ── Sidebar section label ── */
 .sb-label{
@@ -308,18 +304,14 @@ html,body{
   align-items:center; justify-content:center;
   gap:24px; text-align:center; padding:48px 40px;
 }
-.empty-hex{
-  width:52px; height:52px;
-  clip-path:polygon(50% 0%,95% 25%,95% 75%,50% 100%,5% 75%,5% 25%);
-  background:linear-gradient(135deg,var(--orange),#7a3210);
-  display:flex; align-items:center; justify-content:center;
-  font-size:18px; font-weight:800; color:#fff;
-  box-shadow:0 4px 24px rgba(200,98,46,.22);
-  animation:hexPulse 5s ease-in-out infinite;
+.empty-mark{
+  width:56px; height:56px; display:flex; align-items:center; justify-content:center;
+  animation:markPulse 5s ease-in-out infinite;
 }
-@keyframes hexPulse{
-  0%,100%{box-shadow:0 4px 24px rgba(200,98,46,.22);}
-  50%{box-shadow:0 4px 36px rgba(200,98,46,.42);}
+.empty-mark svg{ width:56px; height:56px; display:block; }
+@keyframes markPulse{
+  0%,100%{ filter:drop-shadow(0 4px 16px rgba(208,112,64,.25)); }
+  50%{     filter:drop-shadow(0 4px 28px rgba(208,112,64,.5));  }
 }
 #empty h3{ font-size:22px; font-weight:600; color:var(--t1); letter-spacing:-.02em; line-height:1.3; }
 #empty .empty-sub{ font-size:14.5px; color:var(--t2); line-height:1.75; max-width:380px; font-weight:400; }
@@ -361,11 +353,12 @@ html,body{
 }
 .avatar{
   width:24px; height:24px; flex-shrink:0;
-  clip-path:polygon(50% 0%,95% 25%,95% 75%,50% 100%,5% 75%,5% 25%);
-  background:linear-gradient(135deg,var(--orange),#7a3210);
+  background:var(--surface); border:1px solid var(--border2);
+  border-radius:6px;
   display:flex; align-items:center; justify-content:center;
-  font-size:8.5px; font-weight:800; color:#fff; margin-top:2px;
+  margin-top:2px; overflow:hidden;
 }
+.avatar svg{ width:16px; height:16px; display:block; }
 .group-r{ flex:1; min-width:0; }
 .g-meta{ font-size:11.5px; font-weight:600; color:var(--t2); margin-bottom:6px; }
 .g-time{ font-weight:400; color:var(--t3); margin-left:5px; }
@@ -498,21 +491,23 @@ html,body{
 #msg::placeholder{ color:var(--t3); }
 #attach-btn-chat{
   width:30px; height:30px; background:none; border:none;
-  color:var(--t3); cursor:pointer; font-size:16px;
+  color:var(--t3); cursor:pointer;
   display:flex; align-items:center; justify-content:center;
-  flex-shrink:0; transition:color .15s;
+  flex-shrink:0; transition:color .15s; border-radius:6px;
+  padding:0;
 }
 #attach-btn-chat:hover{ color:var(--orange-t); }
+#attach-btn-chat svg{ width:16px; height:16px; display:block; }
 #send{
-  width:32px; height:32px; border-radius:50%;
-  background:linear-gradient(135deg,var(--orange),#8a3c18);
+  width:32px; height:32px; border-radius:8px;
+  background:var(--orange);
   border:none; cursor:pointer; flex-shrink:0;
-  display:flex; align-items:center; justify-content:center; font-size:15px;
-  color:#fff; transition:opacity .15s,transform .12s,box-shadow .15s;
-  box-shadow:0 2px 8px rgba(200,98,46,.4);
+  display:flex; align-items:center; justify-content:center;
+  color:#fff; transition:opacity .15s,transform .12s;
 }
-#send:hover{ opacity:.9; transform:scale(1.07); box-shadow:0 3px 12px rgba(200,98,46,.55); }
-#send:disabled{ opacity:.18; cursor:default; transform:none; box-shadow:none; }
+#send:hover{ opacity:.88; transform:scale(1.04); }
+#send:disabled{ opacity:.2; cursor:default; transform:none; }
+#send svg{ width:16px; height:16px; display:block; }
 
 /* Drop preview */
 .drop-preview{
@@ -794,7 +789,8 @@ html,body{
   pointer-events:none;
 }
 #drop-zone.active{ display:flex; }
-#drop-zone .dz-icon{ font-size:52px; }
+#drop-zone .dz-icon{ display:flex; align-items:center; justify-content:center; color:var(--orange-t); }
+#drop-zone .dz-icon svg{ width:48px; height:48px; }
 #drop-zone .dz-text{ font-size:18px; font-weight:700; color:var(--orange-t); }
 #drop-zone .dz-sub{ font-size:13px; color:var(--t2); }
 
@@ -886,7 +882,9 @@ html,body{
 
 <!-- Full-window drop overlay -->
 <div id="drop-zone">
-  <div class="dz-icon">🖼</div>
+  <div class="dz-icon">
+    <svg viewBox="0 0 48 48" fill="none"><rect x="5" y="9" width="38" height="30" rx="3" stroke="currentColor" stroke-width="1.5"/><circle cx="16" cy="19" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M5 30l10-9 8 7 9-11 11 13" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg>
+  </div>
   <div class="dz-text">Drop to analyze</div>
   <div class="dz-sub">PNG, JPG, screenshot — Sidekick will scan it</div>
 </div>
@@ -917,15 +915,35 @@ html,body{
 
       <!-- Brand -->
       <div class="sb-brand">
-        <div class="sb-hex">S</div>
+        <!-- Sidekick mark: geometric eye — "second pair of eyes" -->
+        <div class="sb-mark">
+          <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 16C3 16 8.5 7 16 7C23.5 7 29 16 29 16C29 16 23.5 25 16 25C8.5 25 3 16 3 16Z"
+                  stroke="url(#sk-g1)" stroke-width="1.8" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+            <circle cx="16" cy="16" r="5" stroke="url(#sk-g1)" stroke-width="1.8" fill="none"/>
+            <circle cx="16" cy="16" r="2.3" fill="url(#sk-g1)"/>
+            <defs>
+              <linearGradient id="sk-g1" x1="3" y1="7" x2="29" y2="25" gradientUnits="userSpaceOnUse">
+                <stop offset="0%" stop-color="#f0a070"/>
+                <stop offset="100%" stop-color="#c85828"/>
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
         <span class="sb-name">Sidekick</span>
         <span id="tier-badge"></span>
       </div>
 
       <!-- Capture bar -->
       <div class="sb-capture">
-        <button class="capture-btn" id="scan-sidebar-btn" title="Scan screen now">⊕ Scan</button>
-        <button class="capture-btn" id="upload-sidebar-btn" title="Upload image">↑ Upload</button>
+        <button class="capture-btn" id="scan-sidebar-btn" title="Scan screen now">
+          <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="4" height="4" rx=".8" stroke="currentColor" stroke-width="1.3"/><rect x="11" y="1" width="4" height="4" rx=".8" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="11" width="4" height="4" rx=".8" stroke="currentColor" stroke-width="1.3"/><rect x="11" y="11" width="4" height="4" rx=".8" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r="2" fill="currentColor"/></svg>
+          Scan
+        </button>
+        <button class="capture-btn" id="upload-sidebar-btn" title="Upload image">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M8 11V4M5 7l3-3 3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 13h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+          Upload
+        </button>
       </div>
 
       <!-- Navigation -->
@@ -970,9 +988,9 @@ html,body{
 
       <!-- Stats bar -->
       <div id="stats-bar" data-empty="true">
-        <div class="stat-pill"><span>🛡</span><span class="stat-n" id="stat-threats-n">0</span><span>threats caught</span></div>
-        <div class="stat-pill"><span>💰</span><span class="stat-n green" id="stat-saved-n">$0</span><span>saved</span></div>
-        <div class="stat-pill"><span>👁</span><span class="stat-n" id="stat-scans-n">0</span><span>scans</span></div>
+        <div class="stat-pill"><span class="stat-n" id="stat-threats-n">0</span><span>threats caught</span></div>
+        <div class="stat-pill"><span class="stat-n green" id="stat-saved-n">$0</span><span>saved</span></div>
+        <div class="stat-pill"><span class="stat-n" id="stat-scans-n">0</span><span>scans</span></div>
       </div>
 
       <!-- ── Chat panel ──────────────────────────────────────────────── -->
@@ -981,9 +999,22 @@ html,body{
         <div id="feed">
           <!-- Empty state -->
           <div id="empty">
-            <div class="empty-hex">S</div>
-            <h3>Your digital bodyguard.</h3>
-            <p class="empty-sub">Watching your screen silently. Catches scams, subscription traps, and bad deals before they cost you. Ask anything.</p>
+            <div class="empty-mark">
+              <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M5 28C5 28 14 12 28 12C42 12 51 28 51 28C51 28 42 44 28 44C14 44 5 28 5 28Z"
+                      stroke="url(#em-g)" stroke-width="2.2" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+                <circle cx="28" cy="28" r="9" stroke="url(#em-g)" stroke-width="2.2" fill="none"/>
+                <circle cx="28" cy="28" r="4" fill="url(#em-g)"/>
+                <defs>
+                  <linearGradient id="em-g" x1="5" y1="12" x2="51" y2="44" gradientUnits="userSpaceOnUse">
+                    <stop offset="0%" stop-color="#f0a070"/>
+                    <stop offset="100%" stop-color="#c85828"/>
+                  </linearGradient>
+                </defs>
+              </svg>
+            </div>
+            <h3>Your second pair of eyes.</h3>
+            <p class="empty-sub">Always watching. Catches scams, bad deals, and subscription traps before they cost you. Ask anything — it sees what you see.</p>
             <div class="empty-chips">
               <button class="empty-chip" data-msg="Is this a scam? Analyze what's on my screen carefully.">Is this a scam?</button>
               <button class="empty-chip" data-msg="What subscriptions or recurring charges should I know about? Look at my screen.">Subscription check</button>
@@ -998,7 +1029,9 @@ html,body{
           <!-- Thinking indicator -->
           <div id="thinking">
             <div class="group" style="margin-bottom:0;animation:none">
-              <div class="avatar">S</div>
+              <div class="avatar">
+                <svg viewBox="0 0 16 16" fill="none"><path d="M1.5 8C1.5 8 4 3.5 8 3.5C12 3.5 14.5 8 14.5 8C14.5 8 12 12.5 8 12.5C4 12.5 1.5 8 1.5 8Z" stroke="url(#av-g)" stroke-width="1.2" fill="none" stroke-linejoin="round" stroke-linecap="round"/><circle cx="8" cy="8" r="2.5" stroke="url(#av-g)" stroke-width="1.2" fill="none"/><circle cx="8" cy="8" r="1.1" fill="url(#av-g)"/><defs><linearGradient id="av-g" x1="1.5" y1="3.5" x2="14.5" y2="12.5" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#f0a070"/><stop offset="100%" stop-color="#c85828"/></linearGradient></defs></svg>
+              </div>
               <div class="group-r">
                 <div class="g-meta">Sidekick <span class="g-time" id="think-time"></span></div>
                 <div class="t-dots"><span></span><span></span><span></span></div>
@@ -1021,10 +1054,14 @@ html,body{
             </div>
           </div>
           <div class="input-shell">
-            <button id="attach-btn" title="Attach image">📎</button>
+            <button id="attach-btn" title="Attach image">
+              <svg viewBox="0 0 16 16" fill="none"><path d="M13.5 7.5L7 14C5.6 15.4 3.4 15.4 2 14C0.6 12.6 0.6 10.4 2 9L9.5 1.5C10.5 0.5 12 0.5 13 1.5C14 2.5 14 4 13 5L5.5 12.5C5 13 4.2 13 3.8 12.5C3.3 12 3.3 11.2 3.8 10.7L10 4.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+            </button>
             <input type="file" id="file-input" accept="image/*" style="display:none"/>
-            <textarea id="msg" rows="1" placeholder="Message Sidekick… or drop a screenshot"></textarea>
-            <button id="send">↑</button>
+            <textarea id="msg" rows="1" placeholder="Message Sidekick…"></textarea>
+            <button id="send" title="Send">
+              <svg viewBox="0 0 16 16" fill="none"><path d="M8 13V4M4 8l4-4 4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </button>
           </div>
         </div>
 
@@ -1040,8 +1077,7 @@ html,body{
         </div>
         <div class="notes-list" id="notes-list">
           <div class="notes-empty">
-            <div class="notes-empty-icon">📝</div>
-            <span>No notes yet. Write something!</span>
+            <span>No notes yet. Write something.</span>
           </div>
         </div>
       </div>
