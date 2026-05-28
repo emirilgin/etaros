@@ -481,6 +481,19 @@ html,body{
           </div>
         </div>
 
+        <!-- Gemini API Key (always visible — primary AI) -->
+        <div class="sec" id="gemini-key-sec">
+          <div class="sec-label">Gemini API Key</div>
+          <div class="field">
+            <input id="gemini-key" type="password" placeholder="AIzaSy…" autocomplete="off" spellcheck="false"/>
+            <button class="field-btn" id="gemini-eye">👁</button>
+          </div>
+          <div class="hint">
+            Free key from <button class="hint-link" id="aistudio-link">aistudio.google.com ↗</button>
+            · Create API key in a new project · Never expires if kept private
+          </div>
+        </div>
+
         <!-- Own Claude key -->
         <div id="claude-sec" style="display:none">
           <div class="sec">
@@ -537,6 +550,7 @@ html,body{
 
 // ── Elements ──────────────────────────────────────────────────────────────────
 const apiKeyEl   = document.getElementById('api-key');
+const geminiKeyEl= document.getElementById('gemini-key');
 const cityEl     = document.getElementById('city');
 const autoScanEl = document.getElementById('auto-scan');
 const loginEl    = document.getElementById('login');
@@ -568,7 +582,15 @@ document.getElementById('x-btn').addEventListener('click', () => window.sk.close
 
 // ── External links ────────────────────────────────────────────────────────────
 document.getElementById('console-link')?.addEventListener('click',  () => window.sk.openUrl('https://console.anthropic.com'));
+document.getElementById('aistudio-link')?.addEventListener('click', () => window.sk.openUrl('https://aistudio.google.com/apikey'));
 document.getElementById('ollama-dl-btn')?.addEventListener('click', () => window.sk.openUrl('https://ollama.com/download'));
+
+// Gemini key eye toggle
+document.getElementById('gemini-eye')?.addEventListener('click', () => {
+  const show = geminiKeyEl.type === 'password';
+  geminiKeyEl.type = show ? 'text' : 'password';
+  document.getElementById('gemini-eye').textContent = show ? '🙈' : '👁';
+});
 
 // ── Stripe Payment Links ──────────────────────────────────────────────────────
 const STRIPE = {
@@ -727,6 +749,7 @@ saveBtn.addEventListener('click', async () => {
 
   await window.sk.saveSettings({
     apiKey:       apiKeyEl.value.trim(),
+    geminiKey:    geminiKeyEl.value.trim(),
     city:         cityEl.value.trim(),
     scanInterval: selectedInterval,
     autoScan:     selectedInterval === 0 ? false : autoScanEl.checked,
@@ -748,6 +771,7 @@ async function load() {
   const [s, lic] = await Promise.all([window.sk.getSettings(), window.sk.checkLicense()]);
 
   apiKeyEl.value     = s.apiKey     || '';
+  geminiKeyEl.value  = s.geminiKey  || '';
   cityEl.value       = s.city       || '';
   licKeyEl.value     = s.licenseKey || '';
   autoScanEl.checked = s.autoScan !== false;
