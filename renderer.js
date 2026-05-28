@@ -147,9 +147,8 @@ function renderModeBar(modeData) {
     btn.style.setProperty('--mode-color', m.color);
     btn.title = m.locked ? `${m.name} — Pro/Max only` : m.tagline;
     btn.innerHTML = `
-      <span class="mode-icon">${m.icon}</span>
       <span class="mode-name">${m.name}</span>
-      ${m.locked ? '<span class="mode-lock">🔒</span>' : ''}
+      ${m.locked ? '<span class="mode-lock">·</span>' : ''}
     `;
 
     if (!m.locked) {
@@ -178,9 +177,8 @@ function renderModeBar(modeData) {
 }
 
 function updateModeTagline(m) {
-  modeTagline.innerHTML = `<span>${m.icon} ${m.name}</span> — ${m.tagline}`;
+  modeTagline.innerHTML = `<span>${m.name}</span> — ${m.tagline}`;
   modeTagline.style.display = 'block';
-  // Use mode color as CSS custom prop on root
   document.documentElement.style.setProperty('--mode-color', m.color);
 }
 
@@ -205,7 +203,7 @@ window.sk.on('mode-changed', ({ mode, icon, name, color }) => {
   document.querySelectorAll('.mode-btn').forEach(b => {
     b.classList.toggle('active', b.querySelector('.mode-name')?.textContent === name);
   });
-  modeTagline.innerHTML = `<span>${icon} ${name}</span> — `;
+  modeTagline.innerHTML = `<span>${name}</span> — `;
   document.documentElement.style.setProperty('--mode-color', color);
 });
 
@@ -1319,7 +1317,7 @@ function renderDiet(diet) {
   const entriesEl = document.getElementById('diet-entries');
   if (entriesEl) {
     if (!diet.length) {
-      entriesEl.innerHTML = '<div class="life-empty">No meals yet.<br>Type "big mac 550" and it auto-fills for you!</div>';
+      entriesEl.innerHTML = '<div class="life-empty">No meals yet.<br>Just type the food name — AI estimates the calories automatically.</div>';
     } else {
       entriesEl.innerHTML = diet.map(d => `
         <div class="life-entry">
@@ -1338,32 +1336,32 @@ function renderDiet(diet) {
 }
 
 function wireDietHandlers() {
-  function smartParseEl(itemId, numId) {
-    const it = document.getElementById(itemId), nu = document.getElementById(numId);
-    if (!it || !nu) return;
-    it.addEventListener('blur', () => {
-      if (it.value.trim() && !nu.value) {
-        const { name, num } = smartSplit(it.value);
-        if (num) { it.value = name; nu.value = num; }
-      }
-    });
-  }
-  smartParseEl('diet-item', 'diet-kcal');
-
   async function doAddDiet() {
-    let item = document.getElementById('diet-item')?.value.trim();
-    let kcal = parseInt(document.getElementById('diet-kcal')?.value) || 0;
-    if (item && !kcal) { const p = smartSplit(item); if (p.num) { item = p.name; kcal = p.num; } }
+    const itemInput = document.getElementById('diet-item');
+    const btn       = document.getElementById('diet-add-btn');
+    let item = itemInput?.value.trim();
     if (!item) return;
+
+    // Check if user typed "food name 550" style — use inline number if present
+    const parsed = smartSplit(item);
+    let kcal = 0;
+    if (parsed.num && parsed.name) {
+      item = parsed.name;
+      kcal = parsed.num;
+    } else {
+      // AI estimate
+      if (btn) { btn.textContent = 'Estimating…'; btn.disabled = true; }
+      try { kcal = (await window.sk.estimateKcal(item)) || 0; } catch { kcal = 0; }
+      if (btn) { btn.textContent = 'Log Meal →'; btn.disabled = false; }
+    }
+
     await window.sk.logDiet({ item, kcal });
-    document.getElementById('diet-item').value = '';
-    document.getElementById('diet-kcal').value = '';
+    if (itemInput) itemInput.value = '';
     loadDiet();
   }
 
   document.getElementById('diet-add-btn')?.addEventListener('click', doAddDiet);
-  ['diet-item','diet-kcal'].forEach(id =>
-    document.getElementById(id)?.addEventListener('keydown', e => { if (e.key==='Enter') doAddDiet(); }));
+  document.getElementById('diet-item')?.addEventListener('keydown', e => { if (e.key==='Enter') doAddDiet(); });
 
   document.getElementById('diet-chips')?.querySelectorAll('.life-chip').forEach(chip => {
     chip.addEventListener('click', async () => {
@@ -1453,7 +1451,7 @@ function renderLife(savings, diet) {
         <div class="life-entry-val blue">${d.kcal ? d.kcal+' kcal' : '—'}</div>
         <button class="life-entry-del" data-id="${d.id}" data-type="diet">✕</button>
       </div>`).join('')
-    : '<div class="life-empty">No meals yet.<br>Type "big mac 550" and it auto-fills for you!</div>';
+    : '<div class="life-empty">No meals yet.<br>Just type the food name — AI estimates the calories automatically.</div>';
 
   lifeList.innerHTML = `
     ${statsHtml}

@@ -963,6 +963,23 @@ function registerIPC() {
     push('history-cleared', {});
   });
 
+  // ── Auto-estimate calories for a food item ────────────────────────────────
+  ipcMain.handle('estimate-kcal', async (_, item) => {
+    try {
+      const key = getGeminiKey();
+      if (!key) return null;
+      const genai = new GoogleGenerativeAI(key);
+      const model = genai.getGenerativeModel({ model: 'gemini-2.0-flash' });
+      const result = await model.generateContent(
+        `How many calories (kcal) are in a typical single serving of: "${item}"?\n` +
+        `Reply with ONLY an integer number. No units, no explanation, no punctuation. Just the number.`
+      );
+      const text = result.response.text().trim().replace(/\D/g, '');
+      const kcal = parseInt(text, 10);
+      return isNaN(kcal) ? null : Math.min(Math.max(kcal, 0), 5000);
+    } catch { return null; }
+  });
+
   ipcMain.handle('get-memory',    ()      => ({ facts: getMemory(), journal: (store.get('journal') ?? []).slice(0, 30) }));
   ipcMain.handle('clear-memory',  ()      => { saveMemory([]); store.set('journal', []); return { ok: true }; });
   ipcMain.handle('delete-fact',   (_, k)  => { saveMemory(getMemory().filter(f => f.key !== k)); return { ok: true }; });

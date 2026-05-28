@@ -31,6 +31,7 @@ contextBridge.exposeInMainWorld('sk', {
   chat:         (text) => ipcRenderer.invoke('chat', text),
   manualScan:   ()        => ipcRenderer.invoke('manual-scan'),
   analyzeImage: (b64)     => ipcRenderer.invoke('analyze-image', b64),
+  estimateKcal: (item)    => ipcRenderer.invoke('estimate-kcal', item),
 
   // Fire and forget
   hideWindow:     ()       => ipcRenderer.send('hide-window'),

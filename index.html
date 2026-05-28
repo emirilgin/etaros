@@ -161,21 +161,21 @@ html,body{
 
 /* ── Nav items ── */
 .nav-item{
-  display:flex; align-items:center; gap:9px;
-  padding:7px 12px; margin:1px 6px;
+  display:flex; align-items:center;
+  padding:8px 16px; margin:2px 8px;
   border-radius:var(--r-s); cursor:pointer;
   background:none; border:none; font-family:inherit;
-  font-size:13px; color:var(--t2); text-align:left; width:calc(100% - 12px);
+  font-size:13px; font-weight:500; color:var(--t2); text-align:left; width:calc(100% - 16px);
   transition:background .12s,color .12s;
   -webkit-app-region:no-drag;
+  letter-spacing:.01em;
 }
 .nav-item:hover{ background:var(--surface); color:var(--t1); }
 .nav-item.active{
   background:var(--surface);
   color:var(--orange-t); border-left:2px solid var(--orange);
-  padding-left:10px;
+  padding-left:14px;
 }
-.nav-icon{ font-size:14px; flex-shrink:0; width:18px; text-align:center; }
 
 /* ── Mode items in sidebar ── */
 #mode-bar{
@@ -204,7 +204,7 @@ html,body{
   text-transform:none;
 }
 .mode-lock{
-  margin-left:auto; font-size:8px; color:var(--t3); opacity:.7;
+  margin-left:auto; font-size:11px; color:var(--t3); opacity:.5; letter-spacing:0;
 }
 
 #mode-tagline{
@@ -216,13 +216,14 @@ html,body{
 .sb-divider{ height:1px; background:var(--border); margin:8px 10px; }
 
 .sb-bottom-btn{
-  display:flex; align-items:center; gap:9px;
-  padding:7px 12px; margin:1px 6px;
+  display:flex; align-items:center;
+  padding:8px 16px; margin:2px 8px;
   border-radius:var(--r-s); cursor:pointer;
   background:none; border:none; font-family:inherit;
-  font-size:12.5px; color:var(--t3); text-align:left; width:calc(100% - 12px);
+  font-size:12.5px; font-weight:500; color:var(--t3); text-align:left; width:calc(100% - 16px);
   transition:background .12s,color .12s;
   -webkit-app-region:no-drag;
+  letter-spacing:.01em;
 }
 .sb-bottom-btn:hover{ background:var(--surface); color:var(--t2); }
 
@@ -926,35 +927,19 @@ html,body{
 
       <!-- Capture bar -->
       <div class="sb-capture">
-        <button class="capture-btn" id="scan-sidebar-btn" title="Scan screen now">
-          <span>📸</span><span>Scan</span>
-        </button>
-        <button class="capture-btn" id="upload-sidebar-btn" title="Upload image">
-          <span>🖼</span><span>Upload</span>
-        </button>
+        <button class="capture-btn" id="scan-sidebar-btn" title="Scan screen now">⊕ Scan</button>
+        <button class="capture-btn" id="upload-sidebar-btn" title="Upload image">↑ Upload</button>
       </div>
 
       <!-- Navigation -->
-      <div class="sb-label">Navigate</div>
-      <button class="nav-item tab-btn active" data-tab="chat">
-        <span class="nav-icon">💬</span>Chat
-      </button>
-      <button class="nav-item tab-btn" data-tab="notes">
-        <span class="nav-icon">📝</span>Notes
-      </button>
-      <button class="nav-item tab-btn" data-tab="savings">
-        <span class="nav-icon">💰</span>Savings
-      </button>
-      <button class="nav-item tab-btn" data-tab="diet">
-        <span class="nav-icon">🥗</span>Diet
-      </button>
-      <button class="nav-item tab-btn" data-tab="search">
-        <span class="nav-icon">🔍</span>Search
-      </button>
+      <button class="nav-item tab-btn active" data-tab="chat">Chat</button>
+      <button class="nav-item tab-btn" data-tab="notes">Notes</button>
+      <button class="nav-item tab-btn" data-tab="savings">Savings</button>
+      <button class="nav-item tab-btn" data-tab="diet">Diet</button>
+      <button class="nav-item tab-btn" data-tab="search">Search</button>
 
       <!-- Focus Modes -->
-      <div class="sb-divider" style="margin-top:12px"></div>
-      <div class="sb-label">Focus mode</div>
+      <div class="sb-divider" style="margin-top:10px"></div>
       <div id="mode-bar"><!-- populated by renderer.js --></div>
       <div id="mode-tagline"></div>
 
@@ -962,12 +947,8 @@ html,body{
       <div class="sb-divider"></div>
 
       <!-- Bottom actions -->
-      <button class="sb-bottom-btn" id="memory-btn">
-        <span>🧠</span>Memory
-      </button>
-      <button class="sb-bottom-btn" id="settings-btn">
-        <span>⚙</span>Settings
-      </button>
+      <button class="sb-bottom-btn" id="memory-btn">Memory</button>
+      <button class="sb-bottom-btn" id="settings-btn">Settings</button>
 
     </div><!-- /sidebar -->
 
@@ -1007,12 +988,12 @@ html,body{
             <h3>Your digital bodyguard.</h3>
             <p class="empty-sub">Watching your screen silently. Catches scams, subscription traps, and bad deals before they cost you. Ask anything.</p>
             <div class="empty-chips">
-              <button class="empty-chip" data-msg="What should I eat right now? Check what's nearby.">🍜 What to eat?</button>
-              <button class="empty-chip" data-msg="Is what I'm looking at a good deal? Show me alternatives and real prices.">🛍 Good deal?</button>
-              <button class="empty-chip" data-msg="What do you see on my screen right now? Give me your honest take.">👁 What's on screen?</button>
-              <button class="empty-chip" data-msg="Check my finances — any subscriptions or charges I should know about?">💳 Finance check</button>
-              <button class="empty-chip" data-msg="I want to be more productive. What distraction can you see on my screen?">⚡ Focus check</button>
-              <button class="empty-chip" data-msg="Analyse what I'm eating or looking to eat — give me calories and health tips.">🌿 Health advice</button>
+              <button class="empty-chip" data-msg="Is this a scam? Analyze what's on my screen carefully.">Is this a scam?</button>
+              <button class="empty-chip" data-msg="What subscriptions or recurring charges should I know about? Look at my screen.">Subscription check</button>
+              <button class="empty-chip" data-msg="Is what I'm looking at a good deal? Show me alternatives and real prices.">Good deal?</button>
+              <button class="empty-chip" data-msg="What do you see on my screen right now? Give me your honest take.">What's on screen?</button>
+              <button class="empty-chip" data-msg="What should I eat right now based on what I'm looking at?">What to eat?</button>
+              <button class="empty-chip" data-msg="I want to be more productive. What distraction can you see on my screen?">Focus check</button>
             </div>
             <div id="trial-info"></div>
           </div>
@@ -1111,11 +1092,10 @@ html,body{
             <canvas class="chart-canvas" id="diet-chart" height="130"></canvas>
           </div>
 
-          <!-- Add form -->
+          <!-- Add form (kcal auto-estimated by AI) -->
           <div class="life-add-form">
-            <input class="life-add-input" id="diet-item"   type="text"   placeholder="What did you eat? (e.g. 'Salad')"/>
-            <input class="life-add-input" id="diet-kcal"   type="number" placeholder="kcal" style="max-width:90px" min="0"/>
-            <button class="life-add-btn" id="diet-add-btn">+ Log Meal</button>
+            <input class="life-add-input" id="diet-item" type="text" placeholder="What did you eat? e.g. chicken salad, big mac…"/>
+            <button class="life-add-btn" id="diet-add-btn">Log Meal →</button>
           </div>
 
           <!-- Recent chips -->
@@ -1171,7 +1151,9 @@ html,body{
   </div>
 </div>
 
-<!-- Hidden stub elements for legacy renderer.js refs — keep empty but present -->
+<!-- Hidden stubs for legacy renderer.js refs -->
+<input id="diet-kcal" type="number" style="display:none"/>
+<!-- Other hidden stubs -->
 <div id="fs-nav" style="display:none"></div>
 <div id="strip" style="display:none"></div>
 <button id="expand-btn"   style="display:none"></button>
