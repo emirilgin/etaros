@@ -4,6 +4,10 @@ const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('sk', {
   // Async (return promises)
+  getMemory:    ()          => ipcRenderer.invoke('get-memory'),
+  clearMemory:  ()          => ipcRenderer.invoke('clear-memory'),
+  deleteFact:   (key)       => ipcRenderer.invoke('delete-fact', key),
+  addNote:      (text)      => ipcRenderer.invoke('add-note', text),
   getSettings:  ()     => ipcRenderer.invoke('get-settings'),
   saveSettings: (s)    => ipcRenderer.invoke('save-settings', s),
   checkLicense: ()     => ipcRenderer.invoke('check-license'),

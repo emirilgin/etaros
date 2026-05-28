@@ -25,6 +25,14 @@ const upBtn        = document.getElementById('up-btn');
 const newChatBtn   = document.getElementById('new-chat-btn');
 const scanFsBtn    = document.getElementById('scan-fs-btn');
 const settingsFsBtn= document.getElementById('settings-fs-btn');
+const memoryBtn    = document.getElementById('memory-btn');
+const memModal     = document.getElementById('memory-modal');
+const memBody      = document.getElementById('mem-body');
+const memCount     = document.getElementById('mem-count');
+const memNoteInput = document.getElementById('mem-note-input');
+const memNoteBtn   = document.getElementById('mem-note-btn');
+const memCloseBtn  = document.getElementById('mem-close-btn');
+const memClearBtn  = document.getElementById('mem-clear-btn');
 
 // ─── State ────────────────────────────────────────────────────────────────────
 let collapsed      = false;
@@ -380,6 +388,62 @@ window.sk.on('history-cleared', () => {
   empty.style.display = 'flex';
   hasMessages = false;
   lastMsgTime = 0;
+});
+
+// ─── Memory modal ─────────────────────────────────────────────────────────────
+const TYPE_LABELS = { location:'📍', preference:'⚙', goal:'🎯', habit:'🔄', personal:'👤', interest:'✦', finance:'💳', health:'💪' };
+
+function renderMemory(facts, journal) {
+  if (!facts.length) {
+    memBody.innerHTML = '<div class="mem-empty">Nothing remembered yet.<br>Start chatting and I\'ll learn about you automatically.</div>';
+    memCount.textContent = '0 facts';
+    return;
+  }
+  memCount.textContent = `${facts.length} fact${facts.length !== 1 ? 's' : ''}`;
+  memBody.innerHTML = facts.map(f => `
+    <div class="fact-row">
+      <span class="fact-type">${TYPE_LABELS[f.type] || '·'} ${f.type || ''}</span>
+      <span class="fact-key">${f.key.replace(/_/g,' ')}</span>
+      <span class="fact-val">${esc(f.value)}</span>
+      <button class="fact-del" data-key="${esc(f.key)}" title="Forget this">✕</button>
+    </div>`).join('');
+  memBody.querySelectorAll('.fact-del').forEach(btn =>
+    btn.addEventListener('click', async () => {
+      await window.sk.deleteFact(btn.dataset.key);
+      openMemory();
+    }));
+}
+
+async function openMemory() {
+  memModal.classList.add('open');
+  const { facts, journal } = await window.sk.getMemory();
+  renderMemory(facts, journal);
+}
+
+memoryBtn?.addEventListener('click', openMemory);
+memCloseBtn?.addEventListener('click', () => memModal.classList.remove('open'));
+memModal?.addEventListener('click', e => { if (e.target === memModal) memModal.classList.remove('open'); });
+
+memNoteBtn?.addEventListener('click', async () => {
+  const text = memNoteInput.value.trim();
+  if (!text) return;
+  memNoteBtn.textContent = '…';
+  memNoteBtn.disabled = true;
+  await window.sk.addNote(text);
+  memNoteInput.value = '';
+  memNoteBtn.textContent = 'Remember →';
+  memNoteBtn.disabled = false;
+  setTimeout(openMemory, 600); // give extraction a moment
+});
+
+memNoteInput?.addEventListener('keydown', e => {
+  if (e.key === 'Enter') memNoteBtn.click();
+});
+
+memClearBtn?.addEventListener('click', async () => {
+  if (!confirm('Clear all memory? Sidekick will forget everything it knows about you.')) return;
+  await window.sk.clearMemory();
+  openMemory();
 });
 
 // ─── Init ─────────────────────────────────────────────────────────────────────

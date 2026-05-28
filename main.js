@@ -52,19 +52,102 @@ For shopping items: set "query" to the best search term to find this product che
 Mark notify:true EXTREMELY rarely — only active scam/fraud risk, confirmed security threat, or data being stolen RIGHT NOW. Never for deals, tips, recommendations, or general advice. Default is always notify:false. Max 1 notify:true per scan.
 If nothing notable is happening, return: {"items":[],"summary":"","context":"other"}`;
 
-const CHAT_PROMPT = `You are Sidekick — a sharp, witty AI companion who sees the user's screen in real time. You're like that brilliant friend who notices everything and tells it straight — direct, specific, occasionally funny, never boring.
+const CHAT_PROMPT_BASE = `You are Sidekick — a sharp, witty AI companion who sees the user's screen in real time and remembers everything about them. You're like that brilliant friend who notices everything, knows your history, and tells it straight — direct, specific, occasionally funny, never boring.
 
 Be direct and specific. Name real products, real prices, real restaurants, real alternatives. Don't hedge. Lead with what's most useful.
 
-If they ask about food: give real restaurant names, specific dishes, honest takes on what to order. If they mention a city, give local spots.
+If they ask about food: give real restaurant names, specific dishes, honest takes. Use their city if you know it.
 If they ask about shopping: give real prices, real competitors, actual coupon codes if you know them.
-If you spot something on screen worth flagging: call it out naturally in conversation.
-If they want to chat: be warm, engaging, human.
+If you know something relevant about them (city, diet, budget, job, goals) — use it naturally without announcing it.
+If you spot something on screen worth flagging: call it out naturally.
+If they want to chat: be warm, engaging, human. You know them.
 
 Use markdown for structure when helpful. Go deep when asked. Keep it conversational.`;
 
+function CHAT_PROMPT() {
+  return CHAT_PROMPT_BASE + buildMemoryContext();
+}
+
 // ─── Store (encrypted — machine-specific key prevents manual resets) ──────────
 const store = new Store({ encryptionKey: machineKey() });
+
+// ─── Memory system ────────────────────────────────────────────────────────────
+// Persistent facts about the user — injected into every AI call.
+// Structure: [{ key, value, type, updated }]
+
+const MEMORY_MAX = 80; // max facts stored
+
+function getMemory() {
+  return Array.isArray(store.get('memory')) ? store.get('memory') : [];
+}
+
+function saveMemory(facts) {
+  store.set('memory', facts);
+}
+
+function upsertFacts(newFacts) {
+  if (!Array.isArray(newFacts) || !newFacts.length) return;
+  const mem = getMemory();
+  for (const f of newFacts) {
+    if (!f.key || !f.value) continue;
+    const key = String(f.key).toLowerCase().trim().replace(/\s+/g, '_');
+    const idx = mem.findIndex(m => m.key === key);
+    const entry = { key, value: String(f.value).slice(0, 200), type: f.type || 'personal', updated: Date.now() };
+    if (idx >= 0) mem[idx] = entry;
+    else mem.unshift(entry);
+  }
+  // Keep most recently updated, cap at MEMORY_MAX
+  mem.sort((a, b) => b.updated - a.updated);
+  saveMemory(mem.slice(0, MEMORY_MAX));
+}
+
+function buildMemoryContext() {
+  const mem = getMemory();
+  if (!mem.length) return '';
+  const lines = mem.slice(0, 30).map(f => `- ${f.key.replace(/_/g,' ')}: ${f.value}`).join('\n');
+  return `\n\nWHAT YOU KNOW ABOUT THIS USER (use naturally, never recite):\n${lines}`;
+}
+
+// Extract facts from conversation in background (non-blocking, uses cheapest model)
+async function extractAndLearn(userText, aiReply) {
+  const geminiKey = getGeminiKey();
+  if (!geminiKey) return;
+  try {
+    const genAI  = new GoogleGenerativeAI(geminiKey);
+    const model  = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-lite' });
+    const prompt = `Extract personal facts about the user from this exchange.
+User: ${String(userText).slice(0, 400)}
+Assistant: ${String(aiReply).slice(0, 400)}
+
+Return ONLY valid JSON (or {"learn":[]} if nothing new):
+{"learn":[{"key":"fact_name","value":"fact value","type":"location|preference|goal|habit|personal|interest|finance|health"}]}
+
+Rules:
+- Only concrete facts explicitly stated by the user
+- Keys: simple lowercase with underscores (city, job, diet, budget, hobby, age, etc.)
+- Max 4 facts. Skip vague inferences.`;
+
+    const result = await model.generateContent(prompt);
+    const raw    = result.response.text();
+    const m      = raw.match(/\{[\s\S]*\}/);
+    if (!m) return;
+    const parsed = JSON.parse(m[0]);
+    if (Array.isArray(parsed.learn)) upsertFacts(parsed.learn);
+  } catch {
+    // Memory extraction is best-effort — never block the user
+  }
+}
+
+// Journal: save a summary entry per day
+function journalEntry(summary, context) {
+  if (!summary) return;
+  const today   = new Date().toISOString().slice(0, 10);
+  const journal = Array.isArray(store.get('journal')) ? store.get('journal') : [];
+  const entry   = { date: today, summary, context, ts: Date.now() };
+  // Keep last 90 days, max 500 entries
+  journal.unshift(entry);
+  store.set('journal', journal.slice(0, 500));
+}
 
 // ─── State ────────────────────────────────────────────────────────────────────
 let mainWindow     = null;
@@ -420,8 +503,11 @@ async function chat(userText, thumbnail) {
   push('stream-start', {});
 
   try {
-    const reply = await streamAI(CHAT_PROMPT, chatHistory);
+    const reply = await streamAI(CHAT_PROMPT(), chatHistory);
     chatHistory.push({ role: 'assistant', content: reply });
+
+    // Extract facts from this exchange in background (non-blocking)
+    extractAndLearn(userText, reply).catch(() => {});
 
     // Bump usage counter and send tier info back to renderer
     const usage = bumpUsage();
@@ -456,6 +542,9 @@ async function proactiveScan(thumbnail) {
     let parsed = null;
     try { const m = raw.match(/\{[\s\S]*\}/); if (m) parsed = JSON.parse(m[0]); } catch {}
     if (!parsed?.items?.length) return;
+
+    // Save to journal
+    journalEntry(parsed.summary, parsed.context);
 
     // Fire OS notification ONLY for active risk/warn items explicitly marked notify:true
     const notifyItems = parsed.items.filter(i => i.notify && (i.type === 'risk' || i.type === 'warn'));
@@ -676,6 +765,20 @@ function registerIPC() {
   ipcMain.on('clear-history', () => {
     chatHistory = [];
     push('history-cleared', {});
+  });
+
+  ipcMain.handle('get-memory',    ()      => ({ facts: getMemory(), journal: (store.get('journal') ?? []).slice(0, 30) }));
+  ipcMain.handle('clear-memory',  ()      => { saveMemory([]); store.set('journal', []); return { ok: true }; });
+  ipcMain.handle('delete-fact',   (_, k)  => { saveMemory(getMemory().filter(f => f.key !== k)); return { ok: true }; });
+  ipcMain.handle('add-note',      (_, text) => {
+    // Let user manually add facts via natural text — extract immediately
+    const facts = [];
+    // Simple parse: "my name is X", "I live in X", "I work as X" etc.
+    // Also just store as a raw note
+    upsertFacts([{ key: 'note_' + Date.now(), value: text, type: 'personal' }]);
+    // Also run full extraction in background
+    extractAndLearn(text, '').catch(() => {});
+    return { ok: true };
   });
 
   ipcMain.on('hide-window',     () => mainWindow?.hide());
