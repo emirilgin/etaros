@@ -133,6 +133,32 @@ html,body{
 }
 .plan-key-btn:hover{background:var(--orange-dim);}
 
+/* ── Billing toggle ── */
+.billing-toggle{
+  display:flex; align-items:center; gap:0;
+  padding:12px 16px; border-bottom:1px solid var(--border);
+  justify-content:center;
+}
+.billing-pill{
+  display:flex; background:var(--surface); border:1px solid var(--border);
+  border-radius:20px; padding:3px; gap:2px;
+}
+.billing-opt{
+  padding:6px 18px; border-radius:16px; cursor:pointer;
+  font-size:12.5px; font-weight:500; color:var(--t2);
+  transition:background .15s,color .15s; user-select:none;
+  display:flex; align-items:center; gap:6px; white-space:nowrap;
+}
+.billing-opt.active{
+  background:var(--card-h); color:var(--t1);
+}
+.save-badge{
+  font-size:10px; font-weight:700; letter-spacing:.05em;
+  background:var(--green-bg); color:var(--green);
+  border:1px solid rgba(90,180,122,.2); border-radius:10px;
+  padding:1px 7px;
+}
+
 /* ── Upgrade tiers ── */
 .plan-tiers{display:grid;grid-template-columns:1fr 1fr;}
 .tier-opt{
@@ -337,11 +363,21 @@ html,body{
           <button class="plan-key-btn" id="activate-btn">Activate →</button>
         </div>
 
+        <!-- Billing period toggle -->
+        <div class="billing-toggle" id="billing-toggle">
+          <div class="billing-pill">
+            <div class="billing-opt active" data-period="monthly" id="bill-mo">Monthly</div>
+            <div class="billing-opt" data-period="yearly" id="bill-yr">
+              Yearly <span class="save-badge">Save 20%</span>
+            </div>
+          </div>
+        </div>
+
         <!-- Upgrade options — hidden when pro/max -->
         <div class="plan-tiers" id="upgrade-tiers">
           <div class="tier-opt">
             <div class="tier-opt-name">Pro</div>
-            <div class="tier-opt-price"><sup>$</sup>9<sub>/mo</sub></div>
+            <div class="tier-opt-price" id="pro-price"><sup>$</sup>9<sub>/mo</sub></div>
             <ul class="tier-opt-features">
               <li>50 messages per day</li>
               <li>Claude Sonnet vision</li>
@@ -351,7 +387,7 @@ html,body{
           </div>
           <div class="tier-opt">
             <div class="tier-opt-name">Max</div>
-            <div class="tier-opt-price"><sup>$</sup>19<sub>/mo</sub></div>
+            <div class="tier-opt-price" id="max-price"><sup>$</sup>19<sub>/mo</sub></div>
             <ul class="tier-opt-features">
               <li>Unlimited messages</li>
               <li>Fastest model</li>
@@ -532,11 +568,40 @@ document.getElementById('x-btn').addEventListener('click', () => window.sk.close
 document.getElementById('console-link')?.addEventListener('click',  () => window.sk.openUrl('https://console.anthropic.com'));
 document.getElementById('ollama-dl-btn')?.addEventListener('click', () => window.sk.openUrl('https://ollama.com/download'));
 
-// ── Upgrade links — replace with your real Stripe Payment Links ───────────────
+// ── Stripe Payment Links — swap in real URLs Monday ──────────────────────────
+const STRIPE = {
+  pro:  { monthly: 'https://buy.stripe.com/TODO_PRO_MONTHLY',  yearly: 'https://buy.stripe.com/TODO_PRO_YEARLY'  },
+  max:  { monthly: 'https://buy.stripe.com/TODO_MAX_MONTHLY',  yearly: 'https://buy.stripe.com/TODO_MAX_YEARLY'  },
+};
+
+// ── Billing period toggle ─────────────────────────────────────────────────────
+let billingPeriod = 'monthly';
+
+const proPrice = document.getElementById('pro-price');
+const maxPrice = document.getElementById('max-price');
+const billMo   = document.getElementById('bill-mo');
+const billYr   = document.getElementById('bill-yr');
+
+function setBilling(period) {
+  billingPeriod = period;
+  billMo.classList.toggle('active', period === 'monthly');
+  billYr.classList.toggle('active', period === 'yearly');
+  if (period === 'monthly') {
+    proPrice.innerHTML = '<sup>$</sup>9<sub>/mo</sub>';
+    maxPrice.innerHTML = '<sup>$</sup>19<sub>/mo</sub>';
+  } else {
+    proPrice.innerHTML = '<sup>$</sup>7<sub>/mo · billed $86/yr</sub>';
+    maxPrice.innerHTML = '<sup>$</sup>15<sub>/mo · billed $182/yr</sub>';
+  }
+}
+
+billMo.addEventListener('click', () => setBilling('monthly'));
+billYr.addEventListener('click', () => setBilling('yearly'));
+
 document.getElementById('pro-btn').addEventListener('click', () =>
-  window.sk.openUrl('https://buy.stripe.com/YOUR_PRO_LINK'));
+  window.sk.openUrl(STRIPE.pro[billingPeriod]));
 document.getElementById('max-btn').addEventListener('click', () =>
-  window.sk.openUrl('https://buy.stripe.com/YOUR_MAX_LINK'));
+  window.sk.openUrl(STRIPE.max[billingPeriod]));
 
 // ── Activate license (save immediately on click) ──────────────────────────────
 document.getElementById('activate-btn').addEventListener('click', async () => {
@@ -621,11 +686,13 @@ pills.forEach(p => p.addEventListener('click', () => {
 function showTier(lic) {
   tierChip.className = `tier-chip ${lic.tier}`;
 
+  const billingEl = document.getElementById('billing-toggle');
   if (lic.tier === 'max') {
     tierChip.textContent  = 'Max ✦';
     planName.textContent  = 'Sidekick Max';
     planDesc.textContent  = 'Unlimited messages · Fastest model';
     upgradeTiers.style.display = 'none';
+    billingEl.style.display    = 'none';
     planNote.textContent  = 'You have unlimited access. Thank you ✦';
     return;
   }
@@ -635,6 +702,7 @@ function showTier(lic) {
     const rem = Math.max(0, lic.limit - lic.used);
     planDesc.textContent  = `${rem} of ${lic.limit} messages left today`;
     upgradeTiers.style.display = 'none';
+    billingEl.style.display    = 'none';
     planNote.textContent  = 'Resets every midnight. Upgrade to Max for unlimited.';
     return;
   }
@@ -646,6 +714,7 @@ function showTier(lic) {
     ? `${rem} free message${rem !== 1 ? 's' : ''} remaining`
     : 'Free trial used up — upgrade to keep going';
   upgradeTiers.style.display = 'grid';
+  billingEl.style.display    = 'flex';
   planNote.textContent  = 'After payment your key is emailed instantly — paste it above.';
 }
 
