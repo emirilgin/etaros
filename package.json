@@ -6,6 +6,7 @@
   "scripts": {
     "start": "electron .",
     "gen-icon": "electron scripts/gen-icon.js",
+    "gen-dmg-bg": "electron scripts/gen-dmg-bg.js",
     "build:mac": "electron-builder --mac --publish never",
     "build:win": "electron-builder --win --publish never",
     "build:all": "electron-builder --mac --win --publish never",
@@ -58,8 +59,13 @@
     },
     "dmg": {
       "title": "Sidekick",
-      "background": null,
-      "window": { "width": 540, "height": 380 }
+      "background": "build/dmg-bg.png",
+      "window": { "width": 540, "height": 380 },
+      "contents": [
+        { "x": 140, "y": 155, "type": "file" },
+        { "x": 400, "y": 155, "type": "link", "path": "/Applications" }
+      ],
+      "iconSize": 96
     },
     "nsis": {
       "oneClick": true,
