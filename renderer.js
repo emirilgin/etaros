@@ -995,9 +995,11 @@ noteInput?.addEventListener('input', () => {
 function drawAreaChart(canvasId, labels, values, color) {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return;
+  // If canvas has no size yet (panel not visible), retry after frame
+  const rect = canvas.getBoundingClientRect();
+  if (rect.width < 10) { requestAnimationFrame(() => drawAreaChart(canvasId, labels, values, color)); return; }
   const ctx = canvas.getContext('2d');
   const dpr = window.devicePixelRatio || 1;
-  const rect = canvas.getBoundingClientRect();
   canvas.width  = rect.width  * dpr;
   canvas.height = rect.height * dpr;
   ctx.scale(dpr, dpr);
@@ -1065,9 +1067,10 @@ function drawAreaChart(canvasId, labels, values, color) {
 function drawBarChart(canvasId, labels, values, color) {
   const canvas = document.getElementById(canvasId);
   if (!canvas) return;
+  const rect = canvas.getBoundingClientRect();
+  if (rect.width < 10) { requestAnimationFrame(() => drawBarChart(canvasId, labels, values, color)); return; }
   const ctx = canvas.getContext('2d');
   const dpr = window.devicePixelRatio || 1;
-  const rect = canvas.getBoundingClientRect();
   canvas.width  = rect.width  * dpr;
   canvas.height = rect.height * dpr;
   ctx.scale(dpr, dpr);
@@ -1297,7 +1300,9 @@ function renderDiet(diet) {
     labels7.push(label);
     vals7.push(daySum);
   }
-  setTimeout(() => drawBarChart('diet-chart', labels7, vals7, 'rgb(200,98,46)'), 50);
+  // Show placeholder bars (value=1) when no data so chart is visible
+  const displayVals = vals7.map(v => v > 0 ? v : 0);
+  setTimeout(() => drawBarChart('diet-chart', labels7, displayVals.some(v=>v>0) ? displayVals : labels7.map(()=>0), 'rgb(200,98,46)'), 100);
 
   // Chips
   const recentDiet = [...new Map(diet.map(d => [d.item, d])).values()].slice(0, 5);

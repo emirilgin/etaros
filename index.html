@@ -415,6 +415,18 @@ html,body{
   text-decoration:underline; margin-top:4px; display:inline-block;
 }
 
+/* ── Error card ── */
+.err{
+  display:flex; align-items:flex-start; gap:10px;
+  padding:10px 14px; border-radius:var(--r-s); margin-bottom:10px;
+  background:rgba(200,88,88,.08); border:1px solid rgba(200,88,88,.2);
+  font-size:13px; color:var(--t2); line-height:1.6; flex-shrink:0;
+  animation:fadeUp .2s ease both;
+}
+.err span:last-child{
+  display:block; font-size:11.5px; color:var(--t3); margin-top:3px;
+}
+
 /* ── Thinking dots ── */
 #thinking{
   display:none; flex-shrink:0; margin-bottom:18px;
