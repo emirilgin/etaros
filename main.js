@@ -771,13 +771,54 @@ function registerIPC() {
   ipcMain.handle('clear-memory',  ()      => { saveMemory([]); store.set('journal', []); return { ok: true }; });
   ipcMain.handle('delete-fact',   (_, k)  => { saveMemory(getMemory().filter(f => f.key !== k)); return { ok: true }; });
   ipcMain.handle('add-note',      (_, text) => {
-    // Let user manually add facts via natural text — extract immediately
-    const facts = [];
-    // Simple parse: "my name is X", "I live in X", "I work as X" etc.
-    // Also just store as a raw note
     upsertFacts([{ key: 'note_' + Date.now(), value: text, type: 'personal' }]);
-    // Also run full extraction in background
     extractAndLearn(text, '').catch(() => {});
+    return { ok: true };
+  });
+
+  // ── Notes ──────────────────────────────────────────────────────────────────
+  ipcMain.handle('get-notes', () => store.get('notes') ?? []);
+  ipcMain.handle('save-note', (_, { id, text, pinned }) => {
+    const notes = store.get('notes') ?? [];
+    const idx   = notes.findIndex(n => n.id === id);
+    if (idx >= 0) { notes[idx] = { ...notes[idx], text, pinned: !!pinned, updated: Date.now() }; }
+    else          { notes.unshift({ id: randomUUID(), text, pinned: !!pinned, created: Date.now(), updated: Date.now() }); }
+    store.set('notes', notes.slice(0, 500));
+    return { ok: true };
+  });
+  ipcMain.handle('delete-note', (_, id) => {
+    store.set('notes', (store.get('notes') ?? []).filter(n => n.id !== id));
+    return { ok: true };
+  });
+  ipcMain.handle('pin-note', (_, id) => {
+    const notes = (store.get('notes') ?? []).map(n => n.id === id ? { ...n, pinned: !n.pinned } : n);
+    store.set('notes', notes);
+    return { ok: true };
+  });
+
+  // ── Savings log ────────────────────────────────────────────────────────────
+  ipcMain.handle('get-savings', () => store.get('savings') ?? []);
+  ipcMain.handle('log-saving',  (_, { item, amount, currency = 'USD' }) => {
+    const log = store.get('savings') ?? [];
+    log.unshift({ id: randomUUID(), item, amount: Number(amount), currency, date: Date.now() });
+    store.set('savings', log.slice(0, 1000));
+    return { ok: true };
+  });
+  ipcMain.handle('delete-saving', (_, id) => {
+    store.set('savings', (store.get('savings') ?? []).filter(s => s.id !== id));
+    return { ok: true };
+  });
+
+  // ── Diet log ───────────────────────────────────────────────────────────────
+  ipcMain.handle('get-diet',    () => store.get('diet') ?? []);
+  ipcMain.handle('log-diet',    (_, { item, kcal, action = 'avoided' }) => {
+    const log = store.get('diet') ?? [];
+    log.unshift({ id: randomUUID(), item, kcal: Number(kcal) || 0, action, date: Date.now() });
+    store.set('diet', log.slice(0, 1000));
+    return { ok: true };
+  });
+  ipcMain.handle('delete-diet', (_, id) => {
+    store.set('diet', (store.get('diet') ?? []).filter(d => d.id !== id));
     return { ok: true };
   });
 

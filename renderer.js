@@ -446,6 +446,210 @@ memClearBtn?.addEventListener('click', async () => {
   openMemory();
 });
 
+// ─── Date helper ──────────────────────────────────────────────────────────────
+function fmtDate(ts) {
+  const d = new Date(ts);
+  const today = new Date();
+  const isToday = d.toDateString() === today.toDateString();
+  if (isToday) return new Intl.DateTimeFormat([], { hour:'numeric', minute:'2-digit' }).format(d);
+  return new Intl.DateTimeFormat([], { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' }).format(d);
+}
+
+// ─── Tab system ───────────────────────────────────────────────────────────────
+const tabBtns = document.querySelectorAll('.tab-btn');
+
+function switchTab(name) {
+  tabBtns.forEach(b => b.classList.toggle('active', b.dataset.tab === name));
+  document.querySelectorAll('.tab-panel').forEach(p =>
+    p.classList.toggle('active', p.id === name + '-panel'));
+  if (name === 'notes') loadNotes();
+  if (name === 'life')  loadLife();
+}
+tabBtns.forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
+
+// ─── Notes ────────────────────────────────────────────────────────────────────
+const noteInput   = document.getElementById('note-input');
+const noteSaveBtn = document.getElementById('note-save-btn');
+const notesList   = document.getElementById('notes-list');
+
+async function loadNotes() {
+  const notes = await window.sk.getNotes();
+  renderNotes(notes);
+}
+
+function renderNotes(notes) {
+  if (!notes || !notes.length) {
+    notesList.innerHTML = `<div class="notes-empty">
+      <div class="notes-empty-icon">📝</div>
+      <span>No notes yet. Write something!</span>
+    </div>`;
+    return;
+  }
+  const sorted = [...notes].sort((a,b) => (b.pinned?1:0)-(a.pinned?1:0) || (b.updated||b.created||0)-(a.updated||a.created||0));
+  notesList.innerHTML = sorted.map(n => `
+    <div class="note-card${n.pinned?' pinned':''}" data-id="${n.id}">
+      <div class="note-text">${esc(n.text)}</div>
+      <div class="note-meta">
+        <span class="note-date">${fmtDate(n.updated || n.created)}</span>
+        <button class="note-pin" data-id="${n.id}" title="${n.pinned?'Unpin':'Pin'}">${n.pinned?'📌':'○'}</button>
+        <button class="note-del" data-id="${n.id}" title="Delete">✕</button>
+      </div>
+    </div>`).join('');
+
+  notesList.querySelectorAll('.note-pin').forEach(btn =>
+    btn.addEventListener('click', async () => {
+      await window.sk.pinNote(btn.dataset.id);
+      loadNotes();
+    }));
+  notesList.querySelectorAll('.note-del').forEach(btn =>
+    btn.addEventListener('click', async () => {
+      await window.sk.deleteNote(btn.dataset.id);
+      loadNotes();
+    }));
+}
+
+async function doSaveNote() {
+  const text = noteInput.value.trim();
+  if (!text) return;
+  noteInput.value = '';
+  noteInput.style.height = 'auto';
+  await window.sk.saveNote({ text });
+  loadNotes();
+}
+
+noteSaveBtn?.addEventListener('click', doSaveNote);
+noteInput?.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); doSaveNote(); }
+});
+noteInput?.addEventListener('input', () => {
+  noteInput.style.height = 'auto';
+  noteInput.style.height = Math.min(noteInput.scrollHeight, 100) + 'px';
+});
+
+// ─── Life (Savings + Diet) ────────────────────────────────────────────────────
+const lifeList = document.getElementById('life-list');
+
+async function loadLife() {
+  const [savings, diet] = await Promise.all([
+    window.sk.getSavings(),
+    window.sk.getDiet(),
+  ]);
+  renderLife(savings, diet);
+}
+
+function renderLife(savings, diet) {
+  const totalSaved = savings.reduce((s,e) => s + (parseFloat(e.amount)||0), 0);
+  const totalKcal  = diet.reduce((s,e) => s + (parseInt(e.kcal)||0), 0);
+
+  // ── stats row ────────────────────────────────────────────────────────────
+  const statsHtml = `
+    <div class="stat-card green">
+      <div class="stat-icon">💰</div>
+      <div class="stat-body">
+        <div class="stat-label">Total saved</div>
+        <div class="stat-value">$${totalSaved.toFixed(2)}</div>
+        <div class="stat-sub">${savings.length} saving${savings.length!==1?'s':''} logged</div>
+      </div>
+    </div>
+    <div class="stat-card orange">
+      <div class="stat-icon">🔥</div>
+      <div class="stat-body">
+        <div class="stat-label">Kcal tracked</div>
+        <div class="stat-value">${totalKcal > 0 ? totalKcal.toLocaleString() : '—'}</div>
+        <div class="stat-sub">${diet.length} meal${diet.length!==1?'s':''} logged</div>
+      </div>
+    </div>`;
+
+  // ── savings entries ───────────────────────────────────────────────────────
+  const savingsRows = savings.length
+    ? savings.map(s => `
+      <div class="life-entry">
+        <div class="life-entry-icon">💰</div>
+        <div class="life-entry-body">
+          <div class="life-entry-name">${esc(s.item)}</div>
+          <div class="life-entry-date">${fmtDate(s.date)}</div>
+        </div>
+        <div class="life-entry-val green">+$${parseFloat(s.amount).toFixed(2)}</div>
+        <button class="life-entry-del" data-id="${s.id}" data-type="saving">✕</button>
+      </div>`).join('')
+    : '<div class="life-empty">No savings yet.<br>Log money you saved by choosing smarter!</div>';
+
+  // ── diet entries ──────────────────────────────────────────────────────────
+  const dietRows = diet.length
+    ? diet.map(d => `
+      <div class="life-entry">
+        <div class="life-entry-icon">🥗</div>
+        <div class="life-entry-body">
+          <div class="life-entry-name">${esc(d.item)}</div>
+          <div class="life-entry-date">${fmtDate(d.date)}</div>
+        </div>
+        <div class="life-entry-val blue">${d.kcal ? d.kcal+' kcal' : '—'}</div>
+        <button class="life-entry-del" data-id="${d.id}" data-type="diet">✕</button>
+      </div>`).join('')
+    : '<div class="life-empty">No meals logged yet.<br>Track what you eat to stay on top of your health!</div>';
+
+  lifeList.innerHTML = `
+    ${statsHtml}
+
+    <div class="life-section-hdr">💰 Savings</div>
+    <div class="life-add-row">
+      <input class="life-add-input" id="saving-item" placeholder="What did you save on?">
+      <input class="life-add-input" id="saving-amount" placeholder="$" type="number" min="0" style="max-width:68px">
+      <button class="life-add-btn" id="saving-add-btn">+ Add</button>
+    </div>
+    ${savingsRows}
+
+    <div class="life-section-hdr" style="margin-top:14px">🥗 Food & Diet</div>
+    <div class="life-add-row">
+      <input class="life-add-input" id="diet-item" placeholder="What did you eat?">
+      <input class="life-add-input" id="diet-kcal" placeholder="kcal" type="number" min="0" style="max-width:68px">
+      <button class="life-add-btn" id="diet-add-btn">+ Add</button>
+    </div>
+    ${dietRows}
+  `;
+
+  // wire add buttons
+  document.getElementById('saving-add-btn')?.addEventListener('click', async () => {
+    const item   = document.getElementById('saving-item').value.trim();
+    const amount = parseFloat(document.getElementById('saving-amount').value) || 0;
+    if (!item || !amount) return;
+    await window.sk.logSaving({ item, amount });
+    document.getElementById('saving-item').value   = '';
+    document.getElementById('saving-amount').value = '';
+    loadLife();
+  });
+
+  document.getElementById('diet-add-btn')?.addEventListener('click', async () => {
+    const item = document.getElementById('diet-item').value.trim();
+    const kcal = parseInt(document.getElementById('diet-kcal').value) || 0;
+    if (!item) return;
+    await window.sk.logDiet({ item, kcal });
+    document.getElementById('diet-item').value = '';
+    document.getElementById('diet-kcal').value = '';
+    loadLife();
+  });
+
+  // enter key on inputs
+  ['saving-item','saving-amount'].forEach(id => {
+    document.getElementById(id)?.addEventListener('keydown', e => {
+      if (e.key === 'Enter') document.getElementById('saving-add-btn')?.click();
+    });
+  });
+  ['diet-item','diet-kcal'].forEach(id => {
+    document.getElementById(id)?.addEventListener('keydown', e => {
+      if (e.key === 'Enter') document.getElementById('diet-add-btn')?.click();
+    });
+  });
+
+  // delete buttons
+  lifeList.querySelectorAll('.life-entry-del').forEach(btn =>
+    btn.addEventListener('click', async () => {
+      if (btn.dataset.type === 'saving') await window.sk.deleteSaving(btn.dataset.id);
+      else                               await window.sk.deleteDiet(btn.dataset.id);
+      loadLife();
+    }));
+}
+
 // ─── Init ─────────────────────────────────────────────────────────────────────
 async function init() {
   counter.style.display   = 'none';

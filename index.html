@@ -459,6 +459,174 @@ html,body{
   color:var(--t3); padding:2px 0 3px; flex-shrink:0;
 }
 
+/* ═══ TAB BAR ═══════════════════════════════════════════════════════════════ */
+#tab-bar{
+  display:flex; flex-shrink:0; border-bottom:1px solid var(--border);
+  background:var(--bg); padding:0 8px;
+}
+.tab-btn{
+  display:flex; align-items:center; gap:5px;
+  padding:8px 12px; font-family:inherit; font-size:12px; font-weight:500;
+  color:var(--t3); background:none; border:none; cursor:pointer;
+  border-bottom:2px solid transparent; margin-bottom:-1px;
+  transition:color .14s, border-color .14s;
+  white-space:nowrap;
+}
+.tab-btn:hover{ color:var(--t2); }
+.tab-btn.active{ color:var(--orange-t); border-bottom-color:var(--orange); }
+.tab-badge{
+  font-size:9px; font-weight:700; padding:1px 5px; border-radius:8px;
+  background:var(--orange-dim); color:var(--orange-t); min-width:16px; text-align:center;
+  display:none;
+}
+.tab-badge.visible{ display:inline-block; }
+
+/* ═══ TAB PANELS ════════════════════════════════════════════════════════════ */
+.tab-panel{ display:none; flex:1; flex-direction:column; min-height:0; overflow:hidden; }
+.tab-panel.active{ display:flex; }
+
+/* ── Notes tab ── */
+#notes-panel{ background:var(--bg); }
+.notes-input-row{
+  flex-shrink:0; padding:10px 12px 8px;
+  background:linear-gradient(to bottom,var(--bg-hi),var(--bg));
+  border-bottom:1px solid var(--border);
+}
+.notes-input-shell{
+  display:flex; align-items:flex-end; gap:8px;
+  background:var(--surface); border:1px solid var(--border2);
+  border-radius:14px; padding:8px 8px 8px 14px;
+  transition:border-color .2s,box-shadow .2s;
+}
+.notes-input-shell:focus-within{
+  border-color:rgba(200,98,46,.45);
+  box-shadow:0 0 0 3px var(--orange-glow);
+}
+#note-input{
+  flex:1; background:none; border:none; outline:none;
+  color:var(--t1); font-family:inherit; font-size:13px;
+  resize:none; overflow:hidden; line-height:1.55; max-height:100px;
+}
+#note-input::placeholder{ color:var(--t3); }
+#note-save-btn{
+  width:28px; height:28px; border-radius:50%;
+  background:linear-gradient(135deg,var(--orange),#8a3c18);
+  border:none; cursor:pointer; color:#fff; font-size:13px;
+  display:flex; align-items:center; justify-content:center;
+  flex-shrink:0; transition:opacity .15s,transform .12s;
+  box-shadow:0 2px 8px rgba(200,98,46,.4);
+}
+#note-save-btn:hover{ opacity:.88; transform:scale(1.08); }
+.notes-list{
+  flex:1; overflow-y:auto; padding:10px 12px;
+  display:flex; flex-direction:column; gap:6px;
+}
+.notes-list::-webkit-scrollbar{width:3px;}
+.notes-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.notes-empty{
+  flex:1; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:8px;
+  color:var(--t3); font-size:13px; text-align:center; padding:32px 20px;
+}
+.notes-empty-icon{ font-size:28px; opacity:.4; margin-bottom:4px; }
+.note-card{
+  background:var(--card); border:1px solid var(--border);
+  border-radius:var(--r-s); padding:10px 12px;
+  position:relative; transition:background .14s,box-shadow .14s;
+  animation:fadeUp .2s cubic-bezier(.16,.8,.3,1) both;
+}
+.note-card:hover{ background:var(--card-h); box-shadow:var(--shadow-sm); }
+.note-card.pinned{ border-color:rgba(200,98,46,.3); background:rgba(200,98,46,.04); }
+.note-text{ font-size:13px; color:var(--t1); line-height:1.65; white-space:pre-wrap; word-break:break-word; }
+.note-meta{
+  display:flex; align-items:center; gap:8px;
+  margin-top:7px;
+}
+.note-date{ font-size:10.5px; color:var(--t3); flex:1; }
+.note-pin{
+  background:none; border:none; cursor:pointer; font-size:11px;
+  color:var(--t3); padding:2px 5px; border-radius:4px;
+  transition:color .12s,background .12s;
+}
+.note-pin:hover{ color:var(--orange-t); background:var(--orange-dim); }
+.note-card.pinned .note-pin{ color:var(--orange-t); }
+.note-del{
+  background:none; border:none; cursor:pointer; font-size:11px;
+  color:var(--t3); padding:2px 5px; border-radius:4px;
+  transition:color .12s;
+}
+.note-del:hover{ color:var(--red); }
+
+/* ── Life tab ── */
+#life-panel{ background:var(--bg); }
+.life-list{
+  flex:1; overflow-y:auto; padding:12px 12px;
+  display:flex; flex-direction:column; gap:8px;
+}
+.life-list::-webkit-scrollbar{width:3px;}
+.life-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.stat-card{
+  background:var(--card); border:1px solid var(--border);
+  border-radius:var(--r); padding:14px 16px;
+  display:flex; align-items:center; gap:14px;
+}
+.stat-icon{ font-size:26px; flex-shrink:0; }
+.stat-body{ flex:1; min-width:0; }
+.stat-label{ font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.09em; color:var(--t3); margin-bottom:4px; }
+.stat-value{ font-size:22px; font-weight:700; color:var(--t1); line-height:1; letter-spacing:-.02em; }
+.stat-sub{ font-size:11.5px; color:var(--t3); margin-top:3px; }
+.stat-card.green .stat-value{ color:var(--green); }
+.stat-card.orange .stat-value{ color:var(--orange-hi); }
+
+.life-section-hdr{
+  font-size:10.5px; font-weight:700; text-transform:uppercase;
+  letter-spacing:.1em; color:var(--t3); padding:4px 2px 6px;
+}
+.life-entry{
+  display:flex; align-items:center; gap:10px;
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--r-s); padding:9px 12px;
+  animation:fadeUp .2s cubic-bezier(.16,.8,.3,1) both;
+  transition:background .14s;
+}
+.life-entry:hover{ background:var(--card); }
+.life-entry-icon{ font-size:16px; flex-shrink:0; }
+.life-entry-body{ flex:1; min-width:0; }
+.life-entry-name{ font-size:12.5px; color:var(--t1); font-weight:500; }
+.life-entry-date{ font-size:10.5px; color:var(--t3); margin-top:1px; }
+.life-entry-val{ font-size:13px; font-weight:700; flex-shrink:0; }
+.life-entry-val.green{ color:var(--green); }
+.life-entry-val.blue{ color:var(--blue); }
+.life-entry-del{
+  background:none; border:none; cursor:pointer; color:var(--t3);
+  font-size:11px; padding:2px 5px; border-radius:4px; opacity:0;
+  transition:opacity .12s,color .12s;
+}
+.life-entry:hover .life-entry-del{ opacity:1; }
+.life-entry-del:hover{ color:var(--red); }
+.life-empty{
+  font-size:13px; color:var(--t3); text-align:center;
+  padding:20px 0; line-height:1.7;
+}
+.life-add-row{
+  display:flex; gap:6px; margin-top:4px;
+}
+.life-add-input{
+  flex:1; background:var(--surface); border:1px solid var(--border2);
+  border-radius:var(--r-s); padding:8px 11px;
+  color:var(--t1); font-family:inherit; font-size:12.5px; outline:none;
+  transition:border-color .18s;
+}
+.life-add-input:focus{ border-color:rgba(200,98,46,.4); }
+.life-add-input::placeholder{ color:var(--t3); }
+.life-add-btn{
+  background:var(--surface); border:1px solid var(--border2);
+  border-radius:var(--r-s); padding:8px 13px;
+  color:var(--orange-t); font-family:inherit; font-size:12px; font-weight:500;
+  cursor:pointer; white-space:nowrap; transition:background .14s;
+}
+.life-add-btn:hover{ background:var(--orange-dim); }
+
 /* ── Input area ── */
 #input-area{
   flex-shrink:0; padding:6px 12px 16px;
@@ -769,52 +937,85 @@ html[data-mode="fullscreen"] #titlebar{ display:flex; }
     <!-- Counter -->
     <div id="counter"></div>
 
-    <!-- Chat feed -->
-    <div id="feed">
+    <!-- Tab bar -->
+    <div id="tab-bar">
+      <button class="tab-btn active" data-tab="chat">💬 Chat</button>
+      <button class="tab-btn" data-tab="notes">📝 Notes</button>
+      <button class="tab-btn" data-tab="life">🌱 Life</button>
+    </div>
 
-      <!-- Empty state -->
-      <div id="empty">
-        <div class="empty-hex">S</div>
-        <h3>Hey, I'm Sidekick.</h3>
-        <p class="empty-sub">Watching your screen right now. Ask anything — buying, eating, finance, or just what you see.</p>
+    <!-- ── Chat panel ──────────────────────────────────────────────────────── -->
+    <div id="chat-panel" class="tab-panel active">
 
-        <div class="empty-chips">
-          <button class="empty-chip" data-msg="What should I eat right now? Check what's nearby.">🍜 What to eat?</button>
-          <button class="empty-chip" data-msg="Is what I'm looking at a good deal? Show me alternatives and real prices.">🛍 Good deal?</button>
-          <button class="empty-chip" data-msg="What do you see on my screen right now? Give me your honest take.">👁 What's on screen?</button>
-          <button class="empty-chip" data-msg="Check my finances — any subscriptions or charges I should know about?">💳 Finance check</button>
+      <!-- Chat feed -->
+      <div id="feed">
+
+        <!-- Empty state -->
+        <div id="empty">
+          <div class="empty-hex">S</div>
+          <h3>Hey, I'm Sidekick.</h3>
+          <p class="empty-sub">Watching your screen right now. Ask anything — buying, eating, finance, or just what you see.</p>
+
+          <div class="empty-chips">
+            <button class="empty-chip" data-msg="What should I eat right now? Check what's nearby.">🍜 What to eat?</button>
+            <button class="empty-chip" data-msg="Is what I'm looking at a good deal? Show me alternatives and real prices.">🛍 Good deal?</button>
+            <button class="empty-chip" data-msg="What do you see on my screen right now? Give me your honest take.">👁 What's on screen?</button>
+            <button class="empty-chip" data-msg="Check my finances — any subscriptions or charges I should know about?">💳 Finance check</button>
+          </div>
+
+          <!-- Tips -->
+          <div class="empty-tips">
+            <div class="tip-row"><span class="tip-key">⟳ Scan</span><span class="tip-val">Analyse screen instantly</span></div>
+            <div class="tip-row"><span class="tip-key">⛶ Full screen</span><span class="tip-val">Bigger chat, left nav</span></div>
+            <div class="tip-row"><span class="tip-key">⌘⇧S</span><span class="tip-val">Show / hide from anywhere</span></div>
+            <div class="tip-row"><span class="tip-key">◀ Collapse</span><span class="tip-val">Thin strip, stays out of way</span></div>
+          </div>
+
+          <div id="trial-info"></div>
         </div>
 
-        <!-- Tips -->
-        <div class="empty-tips">
-          <div class="tip-row"><span class="tip-key">⟳ Scan</span><span class="tip-val">Analyse screen instantly</span></div>
-          <div class="tip-row"><span class="tip-key">⛶ Full screen</span><span class="tip-val">Bigger chat, left nav</span></div>
-          <div class="tip-row"><span class="tip-key">⌘⇧S</span><span class="tip-val">Show / hide from anywhere</span></div>
-          <div class="tip-row"><span class="tip-key">◀ Collapse</span><span class="tip-val">Thin strip, stays out of way</span></div>
-        </div>
-
-        <div id="trial-info"></div>
-      </div>
-
-      <!-- Thinking indicator -->
-      <div id="thinking">
-        <div class="group" style="margin-bottom:0;animation:none">
-          <div class="avatar">S</div>
-          <div class="group-r">
-            <div class="g-meta">Sidekick <span class="g-time" id="think-time"></span></div>
-            <div class="t-dots"><span></span><span></span><span></span></div>
+        <!-- Thinking indicator -->
+        <div id="thinking">
+          <div class="group" style="margin-bottom:0;animation:none">
+            <div class="avatar">S</div>
+            <div class="group-r">
+              <div class="g-meta">Sidekick <span class="g-time" id="think-time"></span></div>
+              <div class="t-dots"><span></span><span></span><span></span></div>
+            </div>
           </div>
         </div>
+
+      </div><!-- /feed -->
+
+      <!-- Input -->
+      <div id="input-area">
+        <div class="input-shell">
+          <textarea id="msg" rows="1" placeholder="Message Sidekick…"></textarea>
+          <button id="send">↑</button>
+        </div>
       </div>
 
-    </div><!-- /feed -->
+    </div><!-- /chat-panel -->
 
-    <!-- Input -->
-    <div id="input-area">
-      <div class="input-shell">
-        <textarea id="msg" rows="1" placeholder="Message Sidekick…"></textarea>
-        <button id="send">↑</button>
+    <!-- ── Notes panel ─────────────────────────────────────────────────────── -->
+    <div id="notes-panel" class="tab-panel">
+      <div class="notes-input-row">
+        <div class="notes-input-shell">
+          <textarea id="note-input" rows="1" placeholder="Write a note… (Enter to save)"></textarea>
+          <button id="note-save-btn">↑</button>
+        </div>
       </div>
+      <div class="notes-list" id="notes-list">
+        <div class="notes-empty">
+          <div class="notes-empty-icon">📝</div>
+          <span>No notes yet. Write something!</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Life panel ──────────────────────────────────────────────────────── -->
+    <div id="life-panel" class="tab-panel">
+      <div class="life-list" id="life-list"></div>
     </div>
 
   </div><!-- /panel -->

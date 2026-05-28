@@ -8,6 +8,19 @@ contextBridge.exposeInMainWorld('sk', {
   clearMemory:  ()          => ipcRenderer.invoke('clear-memory'),
   deleteFact:   (key)       => ipcRenderer.invoke('delete-fact', key),
   addNote:      (text)      => ipcRenderer.invoke('add-note', text),
+  // Notes
+  getNotes:     ()          => ipcRenderer.invoke('get-notes'),
+  saveNote:     (n)         => ipcRenderer.invoke('save-note', n),
+  deleteNote:   (id)        => ipcRenderer.invoke('delete-note', id),
+  pinNote:      (id)        => ipcRenderer.invoke('pin-note', id),
+  // Savings
+  getSavings:   ()          => ipcRenderer.invoke('get-savings'),
+  logSaving:    (s)         => ipcRenderer.invoke('log-saving', s),
+  deleteSaving: (id)        => ipcRenderer.invoke('delete-saving', id),
+  // Diet
+  getDiet:      ()          => ipcRenderer.invoke('get-diet'),
+  logDiet:      (d)         => ipcRenderer.invoke('log-diet', d),
+  deleteDiet:   (id)        => ipcRenderer.invoke('delete-diet', id),
   getSettings:  ()     => ipcRenderer.invoke('get-settings'),
   saveSettings: (s)    => ipcRenderer.invoke('save-settings', s),
   checkLicense: ()     => ipcRenderer.invoke('check-license'),
