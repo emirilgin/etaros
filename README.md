@@ -1,63 +1,49 @@
-<p align="center">
-  <img src="build/icon.png" width="100" height="100" alt="Sidekick" />
-</p>
+<div align="center">
 
-<h1 align="center">Sidekick</h1>
+<img src="build/icon.png" width="90" height="90" alt="Sidekick" />
 
-<p align="center">
-  <strong>AI that watches your screen and speaks up.</strong><br/>
-  Real-time insights for shopping, food, finance, and everything on your screen.
-</p>
+# ✦ Sidekick
+### Your digital bodyguard.
 
-<p align="center">
-  <a href="https://github.com/emirilgin/sidekick/releases/latest">
-    <img src="https://img.shields.io/badge/Download-macOS-black?style=for-the-badge&logo=apple" />
-  </a>
-  &nbsp;
-  <a href="https://github.com/emirilgin/sidekick/releases/latest">
-    <img src="https://img.shields.io/badge/Download-Windows-0078D4?style=for-the-badge&logo=windows" />
-  </a>
-</p>
+Sidekick watches your screen silently and catches scams, subscription traps,
+and bad deals — before they cost you money.
 
-<p align="center">
-  <img src="https://img.shields.io/badge/AI-Gemini%202.5%20Flash-orange?style=flat-square" />
-  <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows-lightgray?style=flat-square" />
-  <img src="https://img.shields.io/github/v/release/emirilgin/sidekick?style=flat-square" />
-  <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" />
-</p>
+<br/>
+
+## ⬇️ [Download Latest Release](https://github.com/emirilgin/sidekick/releases/latest)
+
+| 🍎 Mac — Apple Silicon (M1/M2/M3/M4) | 🍎 Mac — Intel (pre-2020) | 🪟 Windows 10/11 |
+|:---:|:---:|:---:|
+| `Sidekick-*-arm64.dmg` | `Sidekick-*-x64.dmg` | `Sidekick-*-Setup.exe` |
+
+[![Version](https://img.shields.io/github/v/release/emirilgin/sidekick?style=flat-square&color=8b7fd4&label=latest)](https://github.com/emirilgin/sidekick/releases/latest)
+[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows-lightgray?style=flat-square)](https://github.com/emirilgin/sidekick/releases/latest)
+[![License](https://img.shields.io/badge/license-MIT-5ab47a?style=flat-square)](LICENSE)
+
+</div>
+
+---
+
+> **Not sure which Mac?** 🍎 → About This Mac → chip says M1/M2/M3/M4 → `arm64.dmg` · Says Intel → `x64.dmg`
+
+**Mac install:** Open `.dmg` → drag to Applications → right-click → Open → "Open Anyway"
+**Windows install:** Run `.exe` → if SmartScreen appears → "More info" → "Run anyway"
 
 ---
 
 ## What it does
 
-Sidekick docks to the side of your screen and watches what you're doing. When it spots something worth acting on, it tells you — instantly.
+Sidekick docks to the side of your screen. Every 30 seconds it silently scans what's visible and alerts you when something's wrong.
 
-| | |
-|---|---|
-| 🛍 **Shopping** | Spots overpriced items, opens price comparison tabs on Amazon, eBay, Google Shopping, CamelCamelCamel simultaneously |
-| 🍜 **Food** | Recommends what to order, healthier options, local restaurants near you |
-| 💳 **Finance** | Flags unusual charges, finds better rates, catches surprise subscriptions |
-| ⚠️ **Security** | Detects scam pages, fake payment forms, phishing attempts in real time |
-| 💬 **Chat** | Full-screen conversation mode — ask about anything on screen |
+```
+👻 Ghost  — Phishing, fake logins, dark patterns, trackers          [Free]
+🔐 Vault  — Hidden fees, subscription traps, price manipulation     [Pro]
+🌿 Bloom  — Health misinformation, wellness scams, bad food choices [Pro]
+⚡ Flow   — Distractions, rabbit holes, focus killers               [Pro]
+🦅 Hawk   — Better prices, coupon codes, cashback opportunities     [Pro]
+```
 
-No setup. No API key. Download, open, done.
-
----
-
-## Download
-
-Go to **[Releases](https://github.com/emirilgin/sidekick/releases/latest)** and pick your file:
-
-| # | Platform | File |
-|---|----------|------|
-| 1 | 🍎 **Mac — Apple Silicon** (M1 / M2 / M3 / M4) | `Sidekick-x.x.x-arm64.dmg` |
-| 2 | 🍎 **Mac — Intel** (pre-2020, Core i5/i7/i9) | `Sidekick-x.x.x-x64.dmg` |
-| 3 | 🪟 **Windows** 10 / 11 | `Sidekick-x.x.x-Setup.exe` |
-
-> **Not sure which Mac?** Click  → About This Mac. Chip = M1/M2/M3/M4 → use `arm64.dmg`. Processor = Intel → use `x64.dmg`.
-
-**macOS install:** Open DMG → drag to Applications → right-click → Open on first launch.  
-**Windows install:** Run the `.exe` → More info → Run anyway if SmartScreen appears.
+**100% private.** Screenshots never leave your device. No account required.
 
 ---
 
@@ -65,63 +51,45 @@ Go to **[Releases](https://github.com/emirilgin/sidekick/releases/latest)** and 
 
 | | Free | Pro | Max |
 |---|:---:|:---:|:---:|
-| Messages | 5 lifetime | 50 / day | Unlimited |
-| Screen scanning | ✓ | ✓ | ✓ |
-| Shopping comparison | ✓ | ✓ | ✓ |
-| Notifications | ✓ | ✓ | ✓ |
-| Price | Free | $9 / mo | $19 / mo |
+| Ghost mode | ✓ | ✓ | ✓ |
+| All 5 modes | — | ✓ | ✓ |
+| Scans/day | 15 | Unlimited | Unlimited |
+| AI model | Gemini | Gemini | Claude Sonnet |
+| Price | €0 | €9/mo | €39/mo |
 
-Activate with a license key in Settings → Your Plan.
-
----
-
-## Tech stack
-
-- **[Electron](https://electronjs.org)** — cross-platform desktop
-- **[Google Gemini 2.5 Flash](https://deepmind.google/gemini)** — built-in AI, works on download
-- **[Anthropic Claude](https://anthropic.com)** — optional, Pro/Max tier
-- **[electron-store](https://github.com/sindresorhus/electron-store)** — local state, no server
-- **[electron-builder](https://www.electron.build)** — packaging + releases
+[Get Pro →](https://buy.stripe.com/fZu5kEgrI7766ct9cE14405) · [Get Max →](https://buy.stripe.com/eVqaEY1wOajicAR88A14402)
 
 ---
 
-## Development
+## Dev setup
 
 ```bash
-git clone https://github.com/emirilgin/sidekick
+git clone https://github.com/emirilgin/sidekick.git
 cd sidekick
 npm install
 cp app.config.example.js app.config.js
-# Paste your Gemini key into app.config.js
-# Get a free key at aistudio.google.com
+# Add your Gemini key → aistudio.google.com (free)
 npm start
 ```
 
-### Building
-
 ```bash
-npm run gen-icon   # generate app icon
-npm run build:mac  # → dist/*.dmg (arm64 + x64)
-npm run build:win  # → dist/*.exe (Windows runner only)
-```
-
-### Releasing
-
-```bash
-# Bump version in package.json, then:
-git tag v1.0.1
-git push origin v1.0.1
-# GitHub Actions builds all 3 files and publishes the release automatically
+npm run build:mac   # arm64 + x64 DMG
+npm run build:win   # Windows NSIS installer
 ```
 
 ---
 
 ## Privacy
 
-Screen frames are sent only to Google Gemini during analysis. Nothing is stored, logged, or shared. Scanning can be paused or turned off in Settings at any time.
+- All analysis runs on-device or via your own API key
+- No telemetry, no analytics, no accounts
+- Local data stored in encrypted machine-locked store
+- Scanning can be paused any time from tray
 
 ---
 
-## License
+<div align="center">
 
-MIT
+Made in the Netherlands 🇳🇱 · MIT License
+
+</div>
