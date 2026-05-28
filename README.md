@@ -10,11 +10,11 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/YOUR_USERNAME/sidekick/releases/latest">
+  <a href="https://github.com/emirilgin/sidekick/releases/latest">
     <img src="https://img.shields.io/badge/Download-macOS-black?style=for-the-badge&logo=apple" />
   </a>
   &nbsp;
-  <a href="https://github.com/YOUR_USERNAME/sidekick/releases/latest">
+  <a href="https://github.com/emirilgin/sidekick/releases/latest">
     <img src="https://img.shields.io/badge/Download-Windows-0078D4?style=for-the-badge&logo=windows" />
   </a>
 </p>
@@ -22,7 +22,7 @@
 <p align="center">
   <img src="https://img.shields.io/badge/AI-Gemini%202.5%20Flash-orange?style=flat-square" />
   <img src="https://img.shields.io/badge/platform-macOS%20%7C%20Windows-lightgray?style=flat-square" />
-  <img src="https://img.shields.io/github/v/release/YOUR_USERNAME/sidekick?style=flat-square" />
+  <img src="https://img.shields.io/github/v/release/emirilgin/sidekick?style=flat-square" />
   <img src="https://img.shields.io/badge/license-MIT-blue?style=flat-square" />
 </p>
 
@@ -46,7 +46,7 @@ No setup. No API key. Download, open, done.
 
 ## Download
 
-Go to **[Releases](https://github.com/YOUR_USERNAME/sidekick/releases/latest)**:
+Go to **[Releases](https://github.com/emirilgin/sidekick/releases/latest)**:
 
 | Platform | File |
 |----------|------|
@@ -86,7 +86,7 @@ Activate with a license key in Settings → Your Plan.
 ## Development
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/sidekick
+git clone https://github.com/emirilgin/sidekick
 cd sidekick
 npm install
 cp app.config.example.js app.config.js
