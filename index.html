@@ -376,6 +376,32 @@ html,body{
 .card-action:hover::before{transform:translateX(2px);}
 .g-summary{font-size:12px; color:var(--t3); padding:8px 2px 0; line-height:1.65;}
 
+/* ── Log-to-Life button (on scan cards) ── */
+.card-log-btn{
+  display:inline-flex; align-items:center; gap:5px;
+  margin-top:8px; margin-right:6px;
+  padding:5px 12px;
+  background:var(--surface); border:1px solid var(--border2);
+  border-radius:20px; color:var(--t2);
+  font-family:inherit; font-size:11.5px; font-weight:500;
+  cursor:pointer; transition:background .14s,color .14s,border-color .14s;
+}
+.card-log-btn:hover{background:var(--green-bg); color:var(--green); border-color:rgba(82,168,110,.3);}
+.card-log-btn.logged{color:var(--green); border-color:rgba(82,168,110,.3); background:var(--green-bg); opacity:.7; cursor:default;}
+.card-log-btn.food:hover{background:var(--blue-bg); color:var(--blue); border-color:rgba(90,136,196,.3);}
+.card-log-btn.food.logged{color:var(--blue); border-color:rgba(90,136,196,.3); background:var(--blue-bg); opacity:.7;}
+
+/* ── Recent chips ── */
+.life-recent-chips{display:flex; flex-wrap:wrap; gap:5px; padding:0 0 8px;}
+.life-chip{
+  padding:5px 11px; border-radius:20px;
+  background:var(--surface); border:1px solid var(--border);
+  font-size:11.5px; color:var(--t2); cursor:pointer;
+  font-family:inherit; white-space:nowrap;
+  transition:background .13s,color .13s,border-color .13s;
+}
+.life-chip:hover{background:var(--card); color:var(--t1); border-color:var(--border2);}
+
 /* ── Compare prices button ── */
 .compare-btn{
   display:inline-flex; align-items:center; gap:6px;

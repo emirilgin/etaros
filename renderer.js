@@ -288,6 +288,46 @@ function renderAnalysis(data) {
       c.appendChild(btn);
     }
 
+    // SAVE card → one-click log saving
+    if (t === 'save') {
+      const amtMatch = `${item.title} ${item.detail||''}`.match(/\$\s*([0-9]+(?:\.[0-9]{1,2})?)/);
+      const amount   = amtMatch ? parseFloat(amtMatch[1]) : null;
+      const logBtn   = document.createElement('button');
+      logBtn.className   = 'card-log-btn';
+      logBtn.textContent = amount ? `💰 Log $${amount} saved` : '💰 Log saving';
+      logBtn.addEventListener('click', async () => {
+        if (logBtn.disabled) return;
+        let finalAmt = amount;
+        if (!finalAmt) {
+          const v = prompt('Amount saved ($)?');
+          finalAmt = parseFloat(v) || 0;
+          if (!finalAmt) return;
+        }
+        await window.sk.logSaving({ item: item.title, amount: finalAmt });
+        logBtn.textContent = '✓ Logged!';
+        logBtn.disabled = true;
+        logBtn.classList.add('logged');
+      });
+      c.appendChild(logBtn);
+    }
+
+    // REC card (food context) → one-click log meal
+    if (t === 'rec') {
+      const kcalMatch = `${item.detail||''} ${item.title||''}`.match(/(\d+)\s*k?cal/i);
+      const kcal      = kcalMatch ? parseInt(kcalMatch[1]) : 0;
+      const logBtn    = document.createElement('button');
+      logBtn.className   = 'card-log-btn food';
+      logBtn.textContent = kcal ? `🥗 Log ${kcal} kcal` : '🥗 Log meal';
+      logBtn.addEventListener('click', async () => {
+        if (logBtn.disabled) return;
+        await window.sk.logDiet({ item: item.title, kcal });
+        logBtn.textContent = '✓ Logged!';
+        logBtn.disabled = true;
+        logBtn.classList.add('logged');
+      });
+      c.appendChild(logBtn);
+    }
+
     wrap.appendChild(c);
   });
 
@@ -446,6 +486,18 @@ memClearBtn?.addEventListener('click', async () => {
   openMemory();
 });
 
+// ─── Smart split: "big mac 550" → { name:"big mac", num:550 } ─────────────────
+function smartSplit(val) {
+  val = val.trim();
+  // trailing number with optional $, kcal, cal suffix
+  const m = val.match(/^(.+?)\s+\$?([0-9]+(?:\.[0-9]{1,2})?)(?:\s*k?cal)?$/i);
+  if (m && m[1].trim()) return { name: m[1].trim(), num: parseFloat(m[2]) };
+  // leading $X then description
+  const m2 = val.match(/^\$([0-9]+(?:\.[0-9]{1,2})?)\s+(.+)$/);
+  if (m2) return { name: m2[2].trim(), num: parseFloat(m2[1]) };
+  return { name: val, num: 0 };
+}
+
 // ─── Date helper ──────────────────────────────────────────────────────────────
 function fmtDate(ts) {
   const d = new Date(ts);
@@ -462,8 +514,13 @@ function switchTab(name) {
   tabBtns.forEach(b => b.classList.toggle('active', b.dataset.tab === name));
   document.querySelectorAll('.tab-panel').forEach(p =>
     p.classList.toggle('active', p.id === name + '-panel'));
-  if (name === 'notes') loadNotes();
-  if (name === 'life')  loadLife();
+  if (name === 'notes') {
+    loadNotes();
+    setTimeout(() => noteInput?.focus(), 60);
+  }
+  if (name === 'life') {
+    loadLife().then(() => setTimeout(() => document.getElementById('saving-item')?.focus(), 60));
+  }
 }
 tabBtns.forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
 
@@ -541,7 +598,27 @@ function renderLife(savings, diet) {
   const totalSaved = savings.reduce((s,e) => s + (parseFloat(e.amount)||0), 0);
   const totalKcal  = diet.reduce((s,e) => s + (parseInt(e.kcal)||0), 0);
 
-  // ── stats row ────────────────────────────────────────────────────────────
+  // ── recent unique items for quick-add chips ────────────────────────────────
+  const recentSavings = [...new Map(savings.map(s => [s.item, s])).values()].slice(0, 4);
+  const recentDiet    = [...new Map(diet.map(d => [d.item, d])).values()].slice(0, 4);
+
+  const savingChips = recentSavings.length ? `
+    <div class="life-recent-chips">
+      ${recentSavings.map(s => `
+        <button class="life-chip" data-type="saving" data-item="${esc(s.item)}" data-amount="${s.amount}">
+          💰 ${esc(s.item)}
+        </button>`).join('')}
+    </div>` : '';
+
+  const dietChips = recentDiet.length ? `
+    <div class="life-recent-chips">
+      ${recentDiet.map(d => `
+        <button class="life-chip" data-type="diet" data-item="${esc(d.item)}" data-kcal="${d.kcal}">
+          🥗 ${esc(d.item)}${d.kcal ? ` · ${d.kcal}` : ''}
+        </button>`).join('')}
+    </div>` : '';
+
+  // ── stats ──────────────────────────────────────────────────────────────────
   const statsHtml = `
     <div class="stat-card green">
       <div class="stat-icon">💰</div>
@@ -560,7 +637,7 @@ function renderLife(savings, diet) {
       </div>
     </div>`;
 
-  // ── savings entries ───────────────────────────────────────────────────────
+  // ── entries ────────────────────────────────────────────────────────────────
   const savingsRows = savings.length
     ? savings.map(s => `
       <div class="life-entry">
@@ -572,9 +649,8 @@ function renderLife(savings, diet) {
         <div class="life-entry-val green">+$${parseFloat(s.amount).toFixed(2)}</div>
         <button class="life-entry-del" data-id="${s.id}" data-type="saving">✕</button>
       </div>`).join('')
-    : '<div class="life-empty">No savings yet.<br>Log money you saved by choosing smarter!</div>';
+    : '<div class="life-empty">No savings yet.<br>Log what you saved — or let a scan card do it for you!</div>';
 
-  // ── diet entries ──────────────────────────────────────────────────────────
   const dietRows = diet.length
     ? diet.map(d => `
       <div class="life-entry">
@@ -586,62 +662,92 @@ function renderLife(savings, diet) {
         <div class="life-entry-val blue">${d.kcal ? d.kcal+' kcal' : '—'}</div>
         <button class="life-entry-del" data-id="${d.id}" data-type="diet">✕</button>
       </div>`).join('')
-    : '<div class="life-empty">No meals logged yet.<br>Track what you eat to stay on top of your health!</div>';
+    : '<div class="life-empty">No meals yet.<br>Type "big mac 550" and it auto-fills for you!</div>';
 
   lifeList.innerHTML = `
     ${statsHtml}
 
     <div class="life-section-hdr">💰 Savings</div>
+    ${savingChips}
     <div class="life-add-row">
-      <input class="life-add-input" id="saving-item" placeholder="What did you save on?">
+      <input class="life-add-input" id="saving-item" placeholder='e.g. "Amazon Prime 12"'>
       <input class="life-add-input" id="saving-amount" placeholder="$" type="number" min="0" style="max-width:68px">
       <button class="life-add-btn" id="saving-add-btn">+ Add</button>
     </div>
     ${savingsRows}
 
     <div class="life-section-hdr" style="margin-top:14px">🥗 Food & Diet</div>
+    ${dietChips}
     <div class="life-add-row">
-      <input class="life-add-input" id="diet-item" placeholder="What did you eat?">
+      <input class="life-add-input" id="diet-item" placeholder='e.g. "big mac 550"'>
       <input class="life-add-input" id="diet-kcal" placeholder="kcal" type="number" min="0" style="max-width:68px">
       <button class="life-add-btn" id="diet-add-btn">+ Add</button>
     </div>
     ${dietRows}
   `;
 
-  // wire add buttons
-  document.getElementById('saving-add-btn')?.addEventListener('click', async () => {
-    const item   = document.getElementById('saving-item').value.trim();
-    const amount = parseFloat(document.getElementById('saving-amount').value) || 0;
+  // ── smart parse: "item name 42" auto-fills number field ────────────────────
+  function wireSmartParse(itemId, numId) {
+    const itemEl = document.getElementById(itemId);
+    const numEl  = document.getElementById(numId);
+    if (!itemEl || !numEl) return;
+    itemEl.addEventListener('blur', () => {
+      if (itemEl.value.trim() && !numEl.value) {
+        const { name, num } = smartSplit(itemEl.value);
+        if (num) { itemEl.value = name; numEl.value = num; }
+      }
+    });
+  }
+  wireSmartParse('saving-item', 'saving-amount');
+  wireSmartParse('diet-item', 'diet-kcal');
+
+  // ── add handlers ──────────────────────────────────────────────────────────
+  async function doAddSaving() {
+    let item   = document.getElementById('saving-item').value.trim();
+    let amount = parseFloat(document.getElementById('saving-amount').value) || 0;
+    if (item && !amount) { const p = smartSplit(item); if (p.num) { item = p.name; amount = p.num; } }
     if (!item || !amount) return;
     await window.sk.logSaving({ item, amount });
     document.getElementById('saving-item').value   = '';
     document.getElementById('saving-amount').value = '';
     loadLife();
-  });
+  }
 
-  document.getElementById('diet-add-btn')?.addEventListener('click', async () => {
-    const item = document.getElementById('diet-item').value.trim();
-    const kcal = parseInt(document.getElementById('diet-kcal').value) || 0;
+  async function doAddDiet() {
+    let item = document.getElementById('diet-item').value.trim();
+    let kcal = parseInt(document.getElementById('diet-kcal').value) || 0;
+    if (item && !kcal) { const p = smartSplit(item); if (p.num) { item = p.name; kcal = p.num; } }
     if (!item) return;
     await window.sk.logDiet({ item, kcal });
     document.getElementById('diet-item').value = '';
     document.getElementById('diet-kcal').value = '';
     loadLife();
-  });
+  }
 
-  // enter key on inputs
-  ['saving-item','saving-amount'].forEach(id => {
-    document.getElementById(id)?.addEventListener('keydown', e => {
-      if (e.key === 'Enter') document.getElementById('saving-add-btn')?.click();
+  document.getElementById('saving-add-btn')?.addEventListener('click', doAddSaving);
+  document.getElementById('diet-add-btn')?.addEventListener('click', doAddDiet);
+
+  // ── enter key on inputs ───────────────────────────────────────────────────
+  ['saving-item','saving-amount'].forEach(id =>
+    document.getElementById(id)?.addEventListener('keydown', e => { if (e.key==='Enter') doAddSaving(); }));
+  ['diet-item','diet-kcal'].forEach(id =>
+    document.getElementById(id)?.addEventListener('keydown', e => { if (e.key==='Enter') doAddDiet(); }));
+
+  // ── recent chip click → instant re-log ───────────────────────────────────
+  lifeList.querySelectorAll('.life-chip').forEach(chip => {
+    chip.addEventListener('click', async () => {
+      chip.textContent = '✓';
+      chip.style.pointerEvents = 'none';
+      if (chip.dataset.type === 'saving') {
+        await window.sk.logSaving({ item: chip.dataset.item, amount: parseFloat(chip.dataset.amount)||0 });
+      } else {
+        await window.sk.logDiet({ item: chip.dataset.item, kcal: parseInt(chip.dataset.kcal)||0 });
+      }
+      loadLife();
     });
   });
-  ['diet-item','diet-kcal'].forEach(id => {
-    document.getElementById(id)?.addEventListener('keydown', e => {
-      if (e.key === 'Enter') document.getElementById('diet-add-btn')?.click();
-    });
-  });
 
-  // delete buttons
+  // ── delete ────────────────────────────────────────────────────────────────
   lifeList.querySelectorAll('.life-entry-del').forEach(btn =>
     btn.addEventListener('click', async () => {
       if (btn.dataset.type === 'saving') await window.sk.deleteSaving(btn.dataset.id);
