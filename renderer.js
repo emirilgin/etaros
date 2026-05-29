@@ -147,8 +147,9 @@ function renderModeBar(modeData) {
     btn.style.setProperty('--mode-color', m.color);
     btn.title = m.locked ? `${m.name} — Pro/Max only` : m.tagline;
     btn.innerHTML = `
+      <span class="mode-icon-sym" style="color:var(--mode-color,var(--orange))">${m.icon}</span>
       <span class="mode-name">${m.name}</span>
-      ${m.locked ? '<span class="mode-lock">·</span>' : ''}
+      ${m.locked ? '<span class="mode-lock">pro</span>' : ''}
     `;
 
     if (!m.locked) {
@@ -559,7 +560,7 @@ function appendError(message) {
   if (streamEl) { finalizeStream({}); }
   const el = document.createElement('div');
   el.className = 'err';
-  el.innerHTML = `<span style="font-size:15px;flex-shrink:0">⚠</span><div>${esc(message)}<span>Retrying in 15 s…</span></div>`;
+  el.innerHTML = `<span style="font-size:13px;flex-shrink:0;opacity:.7">△</span><div>${esc(message)}<span>Retrying in 15 s…</span></div>`;
   feed.insertBefore(el, thinking);
   scrollBottom();
 }
@@ -631,17 +632,17 @@ window.sk.on('update-status', ({ status, version, percent }) => {
   if (!updateBanner) return;
   switch (status) {
     case 'available':
-      updateMsg.textContent = `✦ v${version} available — downloading…`;
+      updateMsg.textContent = `◆ v${version} available — downloading…`;
       updateBanner.style.display = 'flex';
       updateBtn.style.display = 'none';
       break;
     case 'downloading':
-      updateMsg.textContent = `⬇ Downloading update… ${percent}%`;
+      updateMsg.textContent = `↓ Downloading update… ${percent}%`;
       updateBanner.style.display = 'flex';
       updateBtn.style.display = 'none';
       break;
     case 'ready':
-      updateMsg.textContent = `✦ v${version} ready to install`;
+      updateMsg.textContent = `◆ v${version} ready to install`;
       updateBtn.style.display = '';
       updateBanner.style.display = 'flex';
       break;
@@ -676,7 +677,7 @@ window.sk.on('history-cleared', () => {
 });
 
 // ─── Memory modal ─────────────────────────────────────────────────────────────
-const TYPE_LABELS = { location:'◎', preference:'◈', goal:'◇', habit:'↺', personal:'○', interest:'✦', finance:'◆', health:'◉' };
+const TYPE_LABELS = { location:'◎', preference:'◈', goal:'◇', habit:'↺', personal:'○', interest:'◎', finance:'◆', health:'◉' };
 
 function renderMemory(facts, journal) {
   if (!facts.length) {
@@ -690,7 +691,7 @@ function renderMemory(facts, journal) {
       <span class="fact-type">${TYPE_LABELS[f.type] || '·'} ${f.type || ''}</span>
       <span class="fact-key">${f.key.replace(/_/g,' ')}</span>
       <span class="fact-val">${esc(f.value)}</span>
-      <button class="fact-del" data-key="${esc(f.key)}" title="Forget this">✕</button>
+      <button class="fact-del" data-key="${esc(f.key)}" title="Forget this">×</button>
     </div>`).join('');
   memBody.querySelectorAll('.fact-del').forEach(btn =>
     btn.addEventListener('click', async () => {
@@ -848,7 +849,7 @@ function renderSearch() {
         <span class="srch-row-icon">${cat?.icon||'○'}</span>
         <span class="srch-row-text">${esc(r.q)}</span>
         <span class="srch-row-cat">${cat?.label||''}</span>
-        <button class="srch-row-del" data-idx="${i}">✕</button>
+        <button class="srch-row-del" data-idx="${i}">×</button>
       </div>`;
     }).join('')}` : `
     <div class="srch-empty">
@@ -958,7 +959,7 @@ function renderNotes(notes) {
       <div class="note-meta">
         <span class="note-date">${fmtDate(n.updated || n.created)}</span>
         <button class="note-pin" data-id="${n.id}" title="${n.pinned?'Unpin':'Pin'}">${n.pinned?'·':'·'}</button>
-        <button class="note-del" data-id="${n.id}" title="Delete">✕</button>
+        <button class="note-del" data-id="${n.id}" title="Delete">×</button>
       </div>
     </div>`).join('');
 
@@ -1202,7 +1203,7 @@ function renderSavings(savings) {
             <div class="life-entry-date">${fmtDate(s.date)}</div>
           </div>
           <div class="life-entry-val green">+$${parseFloat(s.amount).toFixed(2)}</div>
-          <button class="life-entry-del" data-id="${s.id}" data-type="saving">✕</button>
+          <button class="life-entry-del" data-id="${s.id}" data-type="saving">×</button>
         </div>`).join('');
     }
   }
@@ -1324,7 +1325,7 @@ function renderDiet(diet) {
             <div class="life-entry-date">${fmtDate(d.date)}</div>
           </div>
           <div class="life-entry-val blue">${d.kcal ? d.kcal+' kcal' : '—'}</div>
-          <button class="life-entry-del" data-id="${d.id}" data-type="diet">✕</button>
+          <button class="life-entry-del" data-id="${d.id}" data-type="diet">×</button>
         </div>`).join('');
     }
   }
@@ -1430,7 +1431,7 @@ function renderLife(savings, diet) {
           <div class="life-entry-date">${fmtDate(s.date)}</div>
         </div>
         <div class="life-entry-val green">+$${parseFloat(s.amount).toFixed(2)}</div>
-        <button class="life-entry-del" data-id="${s.id}" data-type="saving">✕</button>
+        <button class="life-entry-del" data-id="${s.id}" data-type="saving">×</button>
       </div>`).join('')
     : '<div class="life-empty">No savings yet. Log what you saved — or let a scan card do it for you.</div>';
 
@@ -1442,7 +1443,7 @@ function renderLife(savings, diet) {
           <div class="life-entry-date">${fmtDate(d.date)}</div>
         </div>
         <div class="life-entry-val blue">${d.kcal ? d.kcal+' kcal' : '—'}</div>
-        <button class="life-entry-del" data-id="${d.id}" data-type="diet">✕</button>
+        <button class="life-entry-del" data-id="${d.id}" data-type="diet">×</button>
       </div>`).join('')
     : '<div class="life-empty">No meals yet. Just type the food name — AI estimates the calories automatically.</div>';
 

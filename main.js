@@ -349,7 +349,7 @@ function fireNotification(title, body) {
   lastNotifyTime = now;
   try {
     const n = new Notification({
-      title:    '✦ Sidekick',
+      title:    'Sidekick',
       subtitle: title,             // macOS: shows under title
       body:     String(body || '').slice(0, 160),
       silent:   false,             // plays system notification sound
@@ -784,7 +784,9 @@ function dockedBounds(collapsed = false) {
 
 function createMainWindow() {
   const saved = store.get('windowBounds', {});
-  const bounds = (saved.width && saved.height) ? saved : fullscreenBounds();
+  // Ignore saved bounds from old docked/narrow mode — always start fullscreen-ish
+  const bounds = (saved.width && saved.width >= 700 && saved.height && saved.height >= 500)
+    ? saved : fullscreenBounds();
   mainWindow = new BrowserWindow({
     ...bounds,
     minWidth: 700, minHeight: 500,
@@ -901,6 +903,18 @@ function registerIPC() {
     if (s.startOnLogin != null)   app.setLoginItemSettings({ openAtLogin: Boolean(s.startOnLogin) });
     Boolean(store.get('autoScan') ?? true) ? startScanLoop() : stopScanLoop();
     push('settings-updated', {});
+    return { ok: true };
+  });
+
+  // Profile (avatar + display name)
+  ipcMain.handle('get-profile', () => ({
+    name:   String(store.get('profileName')   ?? ''),
+    avatar: String(store.get('profileAvatar') ?? ''), // base64 data URL or ''
+  }));
+  ipcMain.handle('save-profile', (_, { name, avatar }) => {
+    if (name   != null) store.set('profileName',   name);
+    if (avatar != null) store.set('profileAvatar', avatar);
+    push('profile-updated', { name, avatar });
     return { ok: true };
   });
 

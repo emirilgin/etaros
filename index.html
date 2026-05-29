@@ -157,7 +157,7 @@ html,body{
 
 /* ── Nav items ── */
 .nav-item{
-  display:flex; align-items:center;
+  display:flex; align-items:center; gap:9px;
   padding:9px 18px; margin:1px 6px;
   border-radius:var(--r-s); cursor:pointer;
   background:none; border:none; font-family:inherit;
@@ -173,13 +173,21 @@ html,body{
   border-left:2px solid var(--orange);
   padding-left:16px;
 }
+.nav-icon{
+  font-size:11px; flex-shrink:0; opacity:.5;
+  width:14px; text-align:center; display:inline-block;
+}
+.nav-item.active .nav-icon,
+.nav-item:hover .nav-icon{ opacity:1; }
+.sb-bottom-btn{ gap:9px; }
+.sb-bottom-btn .nav-icon{ font-size:11px; opacity:.4; }
 
 /* ── Mode items in sidebar ── */
 #mode-bar{
   display:flex; flex-direction:column; gap:0; padding:0 6px;
 }
 .mode-btn{
-  display:flex; flex-direction:row; align-items:center;
+  display:flex; flex-direction:row; align-items:center; gap:9px;
   padding:8px 18px; margin:0 0; border-radius:var(--r-s);
   background:none; border:none;
   cursor:pointer; font-family:inherit;
@@ -194,13 +202,22 @@ html,body{
   border-left:2px solid var(--mode-color, var(--orange));
   padding-left:16px;
 }
-.mode-btn.locked{ opacity:.3; cursor:default; }
+.mode-btn.locked{ opacity:.4; cursor:default; }
 .mode-btn.locked:hover{ background:none; }
+.mode-icon-sym{
+  font-size:11px; flex-shrink:0; width:16px; text-align:center;
+  opacity:.7; transition:opacity .14s;
+}
+.mode-btn.active .mode-icon-sym{ opacity:1; }
 .mode-name{
-  font-size:13.5px; font-weight:400; letter-spacing:.005em;
+  font-size:13.5px; font-weight:400; letter-spacing:.005em; flex:1;
 }
 .mode-lock{
-  margin-left:auto; font-size:11px; color:var(--t3); opacity:.45;
+  margin-left:auto; font-size:8.5px; font-weight:700;
+  letter-spacing:.06em; text-transform:uppercase;
+  color:var(--t3); opacity:.5;
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:4px; padding:1px 5px;
 }
 
 #mode-tagline{
@@ -941,7 +958,9 @@ html,body{
       <div id="hdr-dot"></div>
       <button class="tl-btn-action" id="scan-btn" title="Scan screen now">⟳ Scan</button>
       <button class="tl-btn-action" id="clear-btn" title="Clear chat">⌫ Clear</button>
-      <button class="tl-btn-action close" id="hide-btn" title="Hide Sidekick">✕</button>
+      <button class="tl-btn-action close" id="hide-btn" title="Hide Sidekick">
+        <svg viewBox="0 0 10 10" fill="none" style="width:9px;height:9px"><path d="M1 1l8 8M9 1L1 9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+      </button>
     </div>
   </div>
 
@@ -985,14 +1004,16 @@ html,body{
       </div>
 
       <!-- Navigation -->
-      <button class="nav-item tab-btn active" data-tab="chat">Chat</button>
-      <button class="nav-item tab-btn" data-tab="notes">Notes</button>
-      <button class="nav-item tab-btn" data-tab="savings">Savings</button>
-      <button class="nav-item tab-btn" data-tab="diet">Diet</button>
-      <button class="nav-item tab-btn" data-tab="search">Search</button>
+      <div class="sb-label" style="padding-top:14px">Workspace</div>
+      <button class="nav-item tab-btn active" data-tab="chat"><span class="nav-icon">◉</span>Chat</button>
+      <button class="nav-item tab-btn" data-tab="notes"><span class="nav-icon">◇</span>Notes</button>
+      <button class="nav-item tab-btn" data-tab="savings"><span class="nav-icon">◆</span>Savings</button>
+      <button class="nav-item tab-btn" data-tab="diet"><span class="nav-icon">○</span>Diet</button>
+      <button class="nav-item tab-btn" data-tab="search"><span class="nav-icon">◈</span>Search</button>
 
       <!-- Focus Modes -->
       <div class="sb-divider" style="margin-top:10px"></div>
+      <div class="sb-label">Focus Mode</div>
       <div id="mode-bar"><!-- populated by renderer.js --></div>
       <div id="mode-tagline"></div>
 
@@ -1000,8 +1021,8 @@ html,body{
       <div class="sb-divider"></div>
 
       <!-- Bottom actions -->
-      <button class="sb-bottom-btn" id="memory-btn">Memory</button>
-      <button class="sb-bottom-btn" id="settings-btn">Settings</button>
+      <button class="sb-bottom-btn" id="memory-btn"><span class="nav-icon">◎</span>Memory</button>
+      <button class="sb-bottom-btn" id="settings-btn"><span class="nav-icon">◌</span>Settings</button>
 
       <div class="sb-divider" style="margin:6px 0 4px"></div>
 
@@ -1020,7 +1041,7 @@ html,body{
 
       <!-- Update banner -->
       <div id="update-banner" style="display:none;">
-        <span id="update-msg">✦ Update available</span>
+        <span id="update-msg">◆ Update available</span>
         <button id="update-btn">Install &amp; restart</button>
       </div>
 
@@ -1098,7 +1119,9 @@ html,body{
                 <span class="drop-preview-label">Image attached — will be analyzed</span>
                 <span class="drop-preview-name" id="drop-preview-name"></span>
               </div>
-              <button class="drop-preview-close" id="drop-preview-close" title="Remove">✕</button>
+              <button class="drop-preview-close" id="drop-preview-close" title="Remove">
+          <svg viewBox="0 0 10 10" fill="none" style="width:9px;height:9px"><path d="M1 1l8 8M9 1L1 9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+        </button>
             </div>
           </div>
           <div class="input-shell">
@@ -1201,13 +1224,13 @@ html,body{
       <div id="search-panel" class="tab-panel">
         <div class="search-top">
           <div class="srch-shell">
-            <span style="font-size:15px;flex-shrink:0;opacity:.6">🔍</span>
+            <svg viewBox="0 0 16 16" fill="none" style="width:14px;height:14px;flex-shrink:0;opacity:.4"><circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" stroke-width="1.3"/><path d="M10 10l3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
             <input id="search-input" type="text"
               placeholder="Restaurants, deals, flights, health…"
               autocomplete="off" spellcheck="false">
             <button id="search-go-btn" title="Search (Enter)">↗</button>
           </div>
-          <button id="search-ai-btn">✦ Ask Sidekick AI &nbsp;<span style="opacity:.45;font-size:10px">Shift+Enter</span></button>
+          <button id="search-ai-btn">◆ Ask Sidekick AI &nbsp;<span style="opacity:.45;font-size:10px">Shift+Enter</span></button>
         </div>
         <div class="search-body" id="search-body"></div>
       </div>
@@ -1222,9 +1245,11 @@ html,body{
 <div id="memory-modal">
   <div class="mem-panel">
     <div class="mem-hdr">
-      <span style="font-size:20px">🧠</span>
+      <span style="font-size:16px;color:var(--orange-t)">◉</span>
       <h2>What Sidekick knows about you</h2>
-      <button class="mem-close" id="mem-close-btn">✕</button>
+      <button class="mem-close" id="mem-close-btn">
+        <svg viewBox="0 0 12 12" fill="none" style="width:11px;height:11px"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
     </div>
     <div class="mem-note-row">
       <input id="mem-note-input" type="text" placeholder="Tell me something about yourself… (e.g. 'I'm vegetarian')"/>
