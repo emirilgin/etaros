@@ -233,6 +233,7 @@ scanBtn.addEventListener('click',    () => doScan(scanBtn));
 scanFsBtn?.addEventListener('click', () => doScan(scanFsBtn));
 document.getElementById('scan-sidebar-btn')?.addEventListener('click', () => doScan(scanBtn));
 document.getElementById('scan-input-btn')?.addEventListener('click',   () => doScan(scanBtn));
+document.getElementById('clear-chat-btn')?.addEventListener('click',   () => window.sk.clearHistory());
 
 // ─── Quick messages (chips + fs-nav) ─────────────────────────────────────────
 function sendQuickMsg(text) {
