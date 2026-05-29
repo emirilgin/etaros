@@ -222,6 +222,13 @@ upBtn.addEventListener('click',          () => window.sk.openSettings());
 clearBtn.addEventListener('click',       () => window.sk.clearHistory());
 newChatBtn.addEventListener('click',     () => window.sk.clearHistory());
 
+// No-key banner
+const noKeyBanner = document.getElementById('no-key-banner');
+const noKeyBtn    = document.getElementById('no-key-settings-btn');
+if (noKeyBtn) noKeyBtn.addEventListener('click', () => window.sk.openSettings());
+window.sk.on('no-key', () => { if (noKeyBanner) noKeyBanner.style.display = 'flex'; });
+window.sk.on('key-ok',  () => { if (noKeyBanner) noKeyBanner.style.display = 'none'; });
+
 // Scan
 async function doScan(btn) {
   const orig = btn.textContent;

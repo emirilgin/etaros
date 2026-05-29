@@ -6,12 +6,12 @@
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#1a1815; --surface:#252220; --card:#2c2825;
-  --border:#302c28; --border2:#413c36;
-  --orange:#d4703e; --orange-dim:rgba(212,112,62,.14); --orange-t:#de8860;
-  --green:#5ab47a; --green-bg:rgba(90,180,122,.11);
-  --red:#d46868;
-  --t1:#ede9e1; --t2:#9a8b7c; --t3:#5e5248;
+  --bg:#090910; --surface:#141420; --card:#1a1a28;
+  --border:#1e1e2c; --border2:#282838;
+  --orange:#cf6e3c; --orange-dim:rgba(207,110,60,.13); --orange-t:#e07848;
+  --green:#4db87a; --green-bg:rgba(77,184,122,.1);
+  --red:#c05858;
+  --t1:#ebebf0; --t2:#72707c; --t3:#3e3d48;
   --r:12px; --r-s:8px;
 }
 html,body{
@@ -28,68 +28,67 @@ html,body{
 /* Header */
 #hdr{
   display:flex; align-items:center; gap:12px;
-  padding:20px 22px 18px;
+  padding:22px 22px 18px;
   -webkit-app-region:drag;
 }
-.hex{
-  width:36px; height:36px; flex-shrink:0;
-  clip-path:polygon(50% 0%,95% 25%,95% 75%,50% 100%,5% 75%,5% 25%);
-  background:var(--orange-dim);
-  display:flex; align-items:center; justify-content:center;
-  font-size:14px; font-weight:700; color:var(--orange);
-}
-#hdr h1{font-size:16px; font-weight:600; color:var(--t1); flex:1;}
+.eye-mark{width:34px;height:34px;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.eye-mark svg{width:34px;height:34px;display:block;}
+#hdr h1{font-size:16px;font-weight:600;color:var(--t1);flex:1;}
 
 /* Body */
-#body{flex:1; padding:4px 22px 24px; display:flex; flex-direction:column; gap:20px;}
-
-.intro{font-size:13.5px; color:var(--t2); line-height:1.75;}
+#body{flex:1;padding:4px 22px 24px;display:flex;flex-direction:column;gap:18px;}
+.intro{font-size:13.5px;color:var(--t2);line-height:1.8;}
 .intro strong{color:var(--t1);}
 
-/* Permission rows */
-.perms{display:flex; flex-direction:column; gap:10px;}
-.perm{
-  display:flex; align-items:center; gap:14px;
-  background:var(--surface); border:1px solid var(--border);
-  border-radius:var(--r); padding:14px 16px;
+/* Steps */
+.steps{display:flex;flex-direction:column;gap:8px;}
+.step{
+  display:flex;align-items:center;gap:14px;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);padding:14px 16px;
   transition:border-color .2s;
 }
-.perm.granted{ border-color:rgba(90,180,122,.3); background:var(--green-bg);}
-.perm-icon{font-size:22px; flex-shrink:0; width:28px; text-align:center;}
-.perm-info{flex:1;}
-.perm-name{font-size:14px; font-weight:600; color:var(--t1); display:block;}
-.perm-desc{font-size:12px; color:var(--t3); margin-top:2px; line-height:1.5;}
-.perm-status{
-  font-size:11px; font-weight:600; padding:3px 9px; border-radius:12px;
-  flex-shrink:0; letter-spacing:.04em;
+.step.granted{border-color:rgba(77,184,122,.3);background:var(--green-bg);}
+.step-icon{
+  width:30px;height:30px;border-radius:8px;flex-shrink:0;
+  background:var(--card);border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;color:var(--t2);
 }
-.perm-status.waiting{background:var(--surface); color:var(--t3); border:1px solid var(--border);}
-.perm-status.granted{background:var(--green-bg); color:var(--green); border:1px solid rgba(90,180,122,.25);}
-.perm-status.checking{background:var(--orange-dim); color:var(--orange-t); border:1px solid rgba(212,112,62,.2);}
+.step-info{flex:1;}
+.step-name{font-size:13.5px;font-weight:600;color:var(--t1);display:block;}
+.step-desc{font-size:12px;color:var(--t3);margin-top:2px;line-height:1.5;}
+.step-badge{
+  font-size:11px;font-weight:600;padding:3px 9px;border-radius:12px;
+  flex-shrink:0;letter-spacing:.04em;white-space:nowrap;
+}
+.step-badge.waiting{background:var(--surface);color:var(--t3);border:1px solid var(--border);}
+.step-badge.ok{background:var(--green-bg);color:var(--green);border:1px solid rgba(77,184,122,.25);}
+.step-badge.checking{background:var(--orange-dim);color:var(--orange-t);border:1px solid rgba(207,110,60,.2);}
 
 /* Note */
 .note{
-  font-size:12px; color:var(--t3); line-height:1.65;
-  background:var(--surface); border:1px solid var(--border);
-  border-radius:var(--r-s); padding:12px 14px;
+  font-size:12px;color:var(--t3);line-height:1.65;
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r-s);padding:12px 14px;
 }
 .note strong{color:var(--t2);}
 
 /* Footer */
-#foot{padding:0 22px 22px; display:flex; flex-direction:column; gap:8px;}
+#foot{padding:0 22px 22px;display:flex;flex-direction:column;gap:8px;}
 #start-btn{
-  width:100%; padding:13px;
-  background:var(--orange); color:#fff; border:none;
-  border-radius:var(--r-s); font-family:inherit;
-  font-size:14px; font-weight:600; cursor:pointer;
+  width:100%;padding:13px;
+  background:var(--orange);color:#fff;border:none;
+  border-radius:var(--r-s);font-family:inherit;
+  font-size:14px;font-weight:600;cursor:pointer;
   transition:opacity .15s;
 }
 #start-btn:hover{opacity:.87;}
-#start-btn:disabled{opacity:.35; cursor:default;}
+#start-btn:disabled{opacity:.35;cursor:default;}
 #skip{
-  text-align:center; font-size:12px; color:var(--t3);
-  background:none; border:none; cursor:pointer; font-family:inherit;
-  transition:color .15s; padding:2px;
+  text-align:center;font-size:12px;color:var(--t3);
+  background:none;border:none;cursor:pointer;font-family:inherit;
+  transition:color .15s;padding:2px;
 }
 #skip:hover{color:var(--t2);}
 </style>
@@ -97,46 +96,74 @@ html,body{
 <body>
 <div id="win">
   <div id="hdr">
-    <div class="hex">S</div>
+    <div class="eye-mark">
+      <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M3 16C3 16 8.5 7 16 7C23.5 7 29 16 29 16C29 16 23.5 25 16 25C8.5 25 3 16 3 16Z"
+              stroke="url(#su-g1)" stroke-width="1.8" fill="none" stroke-linejoin="round" stroke-linecap="round"/>
+        <circle cx="16" cy="16" r="5" stroke="url(#su-g1)" stroke-width="1.8" fill="none"/>
+        <circle cx="16" cy="16" r="2.3" fill="url(#su-g1)"/>
+        <defs>
+          <linearGradient id="su-g1" x1="3" y1="7" x2="29" y2="25" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="#f0a070"/><stop offset="100%" stop-color="#c85828"/>
+          </linearGradient>
+        </defs>
+      </svg>
+    </div>
     <h1>Set up Sidekick</h1>
   </div>
 
   <div id="body">
     <p class="intro">
-      Sidekick needs <strong>two permissions</strong> to work.
-      Grant them both below — takes 30 seconds.
+      Two permissions and a free API key — takes <strong>60 seconds</strong>.
+      Then Sidekick watches your screen and protects you in real time.
     </p>
 
-    <div class="perms">
+    <div class="steps">
       <!-- Screen Recording -->
-      <div class="perm" id="perm-screen">
-        <span class="perm-icon">🖥</span>
-        <div class="perm-info">
-          <span class="perm-name">Screen Recording</span>
-          <span class="perm-desc">Lets Sidekick see what's on screen and give real-time advice.</span>
+      <div class="step" id="perm-screen">
+        <div class="step-icon">
+          <svg viewBox="0 0 16 16" fill="none" style="width:14px;height:14px"><rect x="1" y="2" width="14" height="10" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M5 14h6M8 12v2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
         </div>
-        <span class="perm-status waiting" id="screen-status">Needed</span>
+        <div class="step-info">
+          <span class="step-name">Screen Recording</span>
+          <span class="step-desc">Lets Sidekick see what's on screen and give real-time advice.</span>
+        </div>
+        <span class="step-badge waiting" id="screen-status">Needed</span>
       </div>
 
       <!-- Notifications -->
-      <div class="perm" id="perm-notif">
-        <span class="perm-icon">🔔</span>
-        <div class="perm-info">
-          <span class="perm-name">Notifications</span>
-          <span class="perm-desc">Alerts you when something important is spotted — scams, big savings.</span>
+      <div class="step" id="perm-notif">
+        <div class="step-icon">
+          <svg viewBox="0 0 16 16" fill="none" style="width:14px;height:14px"><path d="M8 2a5 5 0 0 0-5 5v3l-1 2h12l-1-2V7a5 5 0 0 0-5-5Z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M6.5 13.5a1.5 1.5 0 0 0 3 0" stroke="currentColor" stroke-width="1.3"/></svg>
         </div>
-        <span class="perm-status waiting" id="notif-status">Needed</span>
+        <div class="step-info">
+          <span class="step-name">Notifications</span>
+          <span class="step-desc">Alerts you when something important is spotted — scams, savings.</span>
+        </div>
+        <span class="step-badge waiting" id="notif-status">Needed</span>
+      </div>
+
+      <!-- API key note -->
+      <div class="step" id="perm-key">
+        <div class="step-icon">
+          <svg viewBox="0 0 16 16" fill="none" style="width:14px;height:14px"><circle cx="6" cy="9" r="3.5" stroke="currentColor" stroke-width="1.3"/><path d="M8.5 6.5l5 5M12 7l1.5 1.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </div>
+        <div class="step-info">
+          <span class="step-name">Free AI key</span>
+          <span class="step-desc">Get a free Gemini key at <strong style="color:var(--t2)">aistudio.google.com</strong> → paste in Settings → AI.</span>
+        </div>
+        <span class="step-badge waiting" id="key-status">After setup</span>
       </div>
     </div>
 
     <div class="note">
-      <strong>Privacy:</strong> Your screen is only analysed locally and sent to Gemini AI.
-      Nothing is stored, sold, or shared. You can turn off scanning any time in Settings.
+      <strong>Privacy:</strong> Screenshots are sent only to Google Gemini AI for analysis.
+      Nothing is stored server-side. You can turn off auto-scanning any time in Settings.
     </div>
   </div>
 
   <div id="foot">
-    <button id="start-btn">Grant permissions &amp; start →</button>
+    <button id="start-btn">Grant permissions &amp; start</button>
     <button id="skip">Skip for now</button>
   </div>
 </div>
@@ -144,45 +171,36 @@ html,body{
 <script>
 'use strict';
 
-const startBtn    = document.getElementById('start-btn');
-const skipBtn     = document.getElementById('skip');
-const screenRow   = document.getElementById('perm-screen');
-const notifRow    = document.getElementById('perm-notif');
-const screenStat  = document.getElementById('screen-status');
-const notifStat   = document.getElementById('notif-status');
+const startBtn   = document.getElementById('start-btn');
+const skipBtn    = document.getElementById('skip');
+const screenRow  = document.getElementById('perm-screen');
+const notifRow   = document.getElementById('perm-notif');
+const screenStat = document.getElementById('screen-status');
+const notifStat  = document.getElementById('notif-status');
 
-function setStatus(el, row, state) {
-  el.className = `perm-status ${state}`;
-  if (state === 'granted') {
-    el.textContent = '✓ Granted';
-    row.classList.add('granted');
-  } else if (state === 'checking') {
-    el.textContent = 'Checking…';
-  } else {
-    el.textContent = 'Needed';
-  }
+function setStatus(el, row, state, text) {
+  el.className = `step-badge ${state}`;
+  el.textContent = text;
+  if (state === 'ok') row.classList.add('granted');
 }
 
 startBtn.addEventListener('click', async () => {
   startBtn.disabled = true;
   startBtn.textContent = 'Requesting…';
 
-  // 1 — Screen recording: trigger by requesting sources
-  setStatus(screenStat, screenRow, 'checking');
+  setStatus(screenStat, screenRow, 'checking', 'Checking…');
   const screenOk = await window.sk.requestScreenPermission();
-  setStatus(screenStat, screenRow, screenOk ? 'granted' : 'waiting');
+  setStatus(screenStat, screenRow, screenOk ? 'ok' : 'waiting', screenOk ? 'Granted' : 'Needed');
 
-  // 2 — Notifications
-  setStatus(notifStat, notifRow, 'checking');
+  setStatus(notifStat, notifRow, 'checking', 'Checking…');
   try {
     const perm = await Notification.requestPermission();
-    setStatus(notifStat, notifRow, perm === 'granted' ? 'granted' : 'waiting');
+    setStatus(notifStat, notifRow, perm === 'granted' ? 'ok' : 'waiting', perm === 'granted' ? 'Granted' : 'Needed');
   } catch(e) {
-    setStatus(notifStat, notifRow, 'waiting');
+    setStatus(notifStat, notifRow, 'waiting', 'Needed');
   }
 
-  // Done
-  startBtn.textContent = screenOk ? '✓ All set — launching Sidekick' : 'Continue anyway →';
+  startBtn.textContent = 'Open Sidekick';
   startBtn.disabled = false;
   startBtn.addEventListener('click', () => window.sk.closeSetup(), { once: true });
 });

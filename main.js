@@ -893,7 +893,7 @@ function registerIPC() {
 
   ipcMain.handle('save-settings', (_, s) => {
     if (s.apiKey       != null) { store.set('apiKey',       s.apiKey);      anthropic = null; cachedKey = ''; }
-    if (s.geminiKey    != null)   store.set('geminiKey',    s.geminiKey);
+    if (s.geminiKey    != null) { store.set('geminiKey', s.geminiKey); push(s.geminiKey ? 'key-ok' : 'no-key', {}); }
     if (s.city         != null)   store.set('city',         s.city);
     if (s.scanInterval != null)   store.set('scanInterval', s.scanInterval);
     if (s.autoScan     != null)   store.set('autoScan',     s.autoScan);
@@ -1138,6 +1138,12 @@ app.whenReady().then(() => {
     setTimeout(openSetup, 800); // slight delay so main window appears first
     store.set('setupDone', true);
   }
+
+  // Warn if no Gemini key — show banner in UI
+  setTimeout(() => {
+    const hasKey = Boolean(getGeminiKey());
+    push(hasKey ? 'key-ok' : 'no-key', {});
+  }, 1200); // after renderer is ready
   globalShortcut.register('CommandOrControl+Shift+S', () => {
     if (!mainWindow) return;
     mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show();
