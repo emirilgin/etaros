@@ -39,22 +39,28 @@ Keep it secret. If it leaks, regenerate and redeploy.
 
 ---
 
-## 3 · Create Stripe products + prices
+## 3 · Stripe products + prices (DONE — created via MCP)
 
-In [Stripe Dashboard → Products](https://dashboard.stripe.com/products):
+Products and prices already exist in your Stripe account (`acct_1TbkvcKM7Mh7gOJi`):
 
-**Create "Sidekick Pro":**
-- Monthly price: $9.00 USD/month → copy the `price_...` ID
-- Yearly price: $86.00 USD/year → copy the `price_...` ID
+| Product | Interval | Price ID | Amount |
+|---|---|---|---|
+| Sidekick Pro | Monthly | `price_1TcSzeKM7Mh7gOJisXOROKtJ` | $9/mo |
+| Sidekick Pro | Yearly | `price_1TcSzfKM7Mh7gOJiCtvEYJXR` | $86/yr |
+| Sidekick Max | Monthly | `price_1TcSzgKM7Mh7gOJiPkvAIq6i` | $39/mo |
+| Sidekick Max | Yearly | `price_1TcSzhKM7Mh7gOJiquyOS3vJ` | $374/yr |
 
-**Create "Sidekick Max":**
-- Monthly price: $39.00 USD/month → copy the `price_...` ID
-- Yearly price: $374.00 USD/year → copy the `price_...` ID
+These are already set in `server/.env.example`.
 
-**Create Payment Links** (in Stripe → Payment Links):
-- One per tier/period (4 total) → copy each `https://buy.stripe.com/...` URL
+**Step 3a — Activate card payments first** (required for payment links):
+1. Go to [dashboard.stripe.com/settings/payment_methods](https://dashboard.stripe.com/settings/payment_methods)
+2. Enable **Cards** under "Payment methods" → Save
+3. (Also enable Link, Apple Pay, Google Pay for best conversion)
 
-**Update settings.html** with your real payment link URLs (lines 646–647):
+**Step 3b — Create payment links** (Stripe Dashboard → Payment Links → New):
+- Select each price from the table above, qty 1 → Create → copy the `https://buy.stripe.com/...` URL
+
+**Step 3c — Update settings.html** with your payment link URLs (line 646–647):
 ```js
 const STRIPE = {
   pro:  { monthly: 'https://buy.stripe.com/YOUR_PRO_MONTHLY',  yearly: 'https://buy.stripe.com/YOUR_PRO_YEARLY' },
