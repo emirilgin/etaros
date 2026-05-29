@@ -284,7 +284,7 @@ async function handleStripeWebhook(req, res) {
         subject: `Your Sidekick ${tier.charAt(0).toUpperCase() + tier.slice(1)} license key`,
         html: `
           <div style="font-family:system-ui,sans-serif;max-width:480px;margin:0 auto;padding:32px 24px">
-            <h2 style="color:#CF6E3C;margin-bottom:8px">Welcome to Sidekick ${tier === 'max' ? 'Max' : 'Pro'} ✦</h2>
+            <h2 style="color:#CF6E3C;margin-bottom:8px">Welcome to Sidekick ${tier === 'max' ? 'Max' : 'Pro'}</h2>
             <p style="color:#555;line-height:1.6">Here's your license key — paste it in <strong>Settings → License</strong>:</p>
             <div style="background:#1C1917;border-radius:10px;padding:18px 22px;margin:20px 0;text-align:center">
               <code style="font-size:20px;letter-spacing:.12em;color:#D98060;font-family:monospace">${key}</code>
