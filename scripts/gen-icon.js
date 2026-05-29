@@ -16,7 +16,10 @@ const ROOT  = path.join(__dirname, '..');
 const BUILD = path.join(ROOT, 'build');
 
 // ─── Icon HTML/Canvas ─────────────────────────────────────────────────────────
-// Renders a 1024×1024 Sidekick icon — dark rounded-square bg, orange hexagon, white S
+// Renders a 1024×1024 Sidekick icon
+// Concept: geometric eye — "your second pair of eyes"
+// Structure: lens outline + iris ring + pupil, orange gradient on dark bg
+// Same design philosophy as Claude's logo: abstract, geometric, minimal
 const ICON_HTML = /* html */`<!DOCTYPE html>
 <html><head><meta charset="UTF-8">
 <style>*{margin:0;padding:0;box-sizing:border-box}
@@ -29,65 +32,80 @@ html,body{width:1024px;height:1024px;overflow:hidden;background:transparent}</st
   const g  = cv.getContext('2d');
   const S  = 1024, cx = 512, cy = 512;
 
-  /* ── Background: dark warm rounded square ── */
+  /* ── Background: deep cool-dark rounded square ── */
   const bgGrad = g.createLinearGradient(0, 0, S, S);
-  bgGrad.addColorStop(0, '#201c18');
-  bgGrad.addColorStop(1, '#121009');
+  bgGrad.addColorStop(0, '#16151a');
+  bgGrad.addColorStop(1, '#0b0a0d');
   g.beginPath();
   g.roundRect(0, 0, S, S, 220);
   g.fillStyle = bgGrad;
   g.fill();
 
-  /* ── Subtle inner glow ring ── */
-  const ringGrad = g.createRadialGradient(cx, cy-60, 40, cx, cy, 560);
-  ringGrad.addColorStop(0,   'rgba(230,120,55,0.09)');
-  ringGrad.addColorStop(0.6, 'rgba(230,120,55,0.04)');
-  ringGrad.addColorStop(1,   'rgba(0,0,0,0)');
+  /* ── Subtle radial glow behind eye ── */
+  const glow = g.createRadialGradient(cx, cy, 60, cx, cy, 500);
+  glow.addColorStop(0,   'rgba(208,112,64,0.12)');
+  glow.addColorStop(0.5, 'rgba(208,112,64,0.04)');
+  glow.addColorStop(1,   'rgba(0,0,0,0)');
   g.beginPath();
   g.roundRect(0, 0, S, S, 220);
-  g.fillStyle = ringGrad;
+  g.fillStyle = glow;
   g.fill();
 
-  /* ── Orange hexagon ── */
-  const hr = 330;
+  /* ── Orange gradient (used for all eye elements) ── */
+  const eyeGrad = g.createLinearGradient(100, 200, 924, 824);
+  eyeGrad.addColorStop(0, '#f0a070');
+  eyeGrad.addColorStop(1, '#c85828');
+
+  /* ── Eye lens — almond/vesica shape ──
+     The eye curves from left-tip to right-tip via top-arc and bottom-arc.
+     Original SVG viewBox 32×32, scaled 32× and centred in 1024×1024.
+     SVG: M3 16 C3 16 8.5 7 16 7 C23.5 7 29 16 29 16
+             C29 16 23.5 25 16 25 C8.5 25 3 16 3 16
+     Scale=32, offset=(64,64):  every coord: canvas = svg*32 + 64
+  */
+  const sc = 32, ox = 64, oy = 64;
+  // helper: svg → canvas
+  const tx = v => v * sc + ox;
+  const ty = v => v * sc + oy;
+
   g.beginPath();
-  for (let i = 0; i < 6; i++) {
-    const a = Math.PI / 3 * i - Math.PI / 6;
-    const x = cx + hr * Math.cos(a);
-    const y = cy + hr * Math.sin(a);
-    i === 0 ? g.moveTo(x, y) : g.lineTo(x, y);
-  }
+  g.moveTo(tx(3), ty(16));
+  g.bezierCurveTo(tx(3),   ty(16), tx(8.5), ty(7),  tx(16), ty(7));
+  g.bezierCurveTo(tx(23.5),ty(7),  tx(29),  ty(16), tx(29), ty(16));
+  g.bezierCurveTo(tx(29),  ty(16), tx(23.5),ty(25), tx(16), ty(25));
+  g.bezierCurveTo(tx(8.5), ty(25), tx(3),   ty(16), tx(3),  ty(16));
   g.closePath();
-
-  /* Hex fill gradient */
-  const hexGrad = g.createLinearGradient(cx - hr, cy - hr * 0.8, cx + hr * 0.5, cy + hr);
-  hexGrad.addColorStop(0,   '#f09050');
-  hexGrad.addColorStop(0.45,'#d4703e');
-  hexGrad.addColorStop(1,   '#a84820');
-  g.fillStyle = hexGrad;
-
-  /* Hex shadow/glow */
-  g.shadowColor = 'rgba(210, 90, 30, 0.55)';
-  g.shadowBlur  = 72;
-  g.fill();
+  g.strokeStyle = eyeGrad;
+  g.lineWidth   = 38;
+  g.lineJoin    = 'round';
+  g.lineCap     = 'round';
+  g.shadowColor = 'rgba(200,88,40,0.55)';
+  g.shadowBlur  = 60;
+  g.stroke();
   g.shadowBlur  = 0;
 
-  /* Hex highlight edge */
-  g.strokeStyle = 'rgba(255,200,150,0.18)';
-  g.lineWidth   = 5;
+  /* ── Iris ring ── */
+  // SVG: circle cx=16 cy=16 r=5  → canvas: center=(tx(16),ty(16)), r=5*32=160
+  const icx = tx(16), icy = ty(16), ir = 5 * sc;
+  g.beginPath();
+  g.arc(icx, icy, ir, 0, Math.PI * 2);
+  g.strokeStyle = eyeGrad;
+  g.lineWidth   = 32;
+  g.shadowColor = 'rgba(200,88,40,0.4)';
+  g.shadowBlur  = 40;
   g.stroke();
+  g.shadowBlur  = 0;
 
-  /* ── White "S" lettermark ── */
-  g.font         = 'bold 510px -apple-system, "SF Pro Display", "Helvetica Neue", Arial, sans-serif';
-  g.fillStyle    = 'rgba(255,255,255,0.97)';
-  g.textAlign    = 'center';
-  g.textBaseline = 'middle';
-  g.shadowColor  = 'rgba(0,0,0,0.35)';
-  g.shadowBlur   = 18;
-  g.shadowOffsetY= 6;
-  g.fillText('S', cx, cy + 16);
-  g.shadowBlur   = 0;
-  g.shadowOffsetY= 0;
+  /* ── Pupil — filled circle ── */
+  // SVG: circle cx=16 cy=16 r=2.3 → canvas: r=2.3*32=73.6
+  const pr = 2.3 * sc;
+  g.beginPath();
+  g.arc(icx, icy, pr, 0, Math.PI * 2);
+  g.fillStyle   = eyeGrad;
+  g.shadowColor = 'rgba(200,88,40,0.8)';
+  g.shadowBlur  = 50;
+  g.fill();
+  g.shadowBlur  = 0;
 
   document.title = 'ICON_DONE';
 })();
