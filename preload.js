@@ -49,8 +49,6 @@ contextBridge.exposeInMainWorld('sk', {
   hideWindow:     ()       => ipcRenderer.send('hide-window'),
   minimizeWindow: ()       => ipcRenderer.send('minimize-window'),
   openSettings:  ()        => ipcRenderer.send('open-settings'),
-  closeSettings: ()        => ipcRenderer.send('close-settings'),
-  closeSetup:    ()        => ipcRenderer.send('close-setup'),
   requestScreenPermission: () => ipcRenderer.invoke('request-screen-permission'),
   toggleScan:    (on)      => ipcRenderer.send('toggle-scan', on),
   setCollapsed:  (bool)    => ipcRenderer.send('set-collapsed', bool),

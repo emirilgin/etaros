@@ -231,7 +231,7 @@ async function extractAndLearn(userText, aiReply) {
   if (!geminiKey) return;
   try {
     const genAI  = new GoogleGenerativeAI(geminiKey);
-    const model  = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-lite' });
+    const model  = genAI.getGenerativeModel({ model: GEMINI_CHEAP_MODEL });
     const prompt = `Extract personal facts about the user from this exchange.
 User: ${String(userText).slice(0, 400)}
 Assistant: ${String(aiReply).slice(0, 400)}
@@ -268,8 +268,6 @@ function journalEntry(summary, context) {
 
 // ─── State ────────────────────────────────────────────────────────────────────
 let mainWindow     = null;
-let settingsWindow = null;
-let setupWindow    = null;
 let tray           = null;
 let scanTimer      = null;
 let searchBrowserView = null;
@@ -685,10 +683,11 @@ function historyForOllama(history) {
 }
 
 // ─── Stream: Gemini (free, default for everyone) ─────────────────────────────
-// Uses Google's free API — no credit card needed, 1500 req/day free.
+// Uses Google's free API — no credit card needed, generous free daily quota.
 // This is what powers the app out of the box.
-// Tries gemini-2.0-flash first, falls back to gemini-1.5-flash on quota errors.
-const GEMINI_MODELS = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-flash-lite-latest'];
+// Fallback chain: on a 429/quota error we try the next model in order.
+const GEMINI_MODELS      = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-flash-lite-latest'];
+const GEMINI_CHEAP_MODEL = 'gemini-2.0-flash-lite'; // background tasks (fact extraction)
 
 async function streamGeminiWithModel(modelName, key, systemPrompt, history) {
   const genai = new GoogleGenerativeAI(key);
@@ -1060,20 +1059,6 @@ function createMainWindow() {
   });
 }
 
-function openSetup() {
-  if (setupWindow && !setupWindow.isDestroyed()) { setupWindow.focus(); return; }
-  setupWindow = new BrowserWindow({
-    width: 480, height: 520, frame: false, transparent: true,
-    resizable: false, alwaysOnTop: true, center: true,
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
-      contextIsolation: true, nodeIntegration: false, sandbox: false,
-    },
-  });
-  setupWindow.loadFile('setup.html');
-  setupWindow.on('closed', () => { setupWindow = null; });
-}
-
 function openSettings() {
   // Unified: open the in-app inline settings page (legacy settings.html window retired)
   if (mainWindow && !mainWindow.isDestroyed()) {
@@ -1424,8 +1409,6 @@ function registerIPC() {
   ipcMain.on('hide-window',     () => mainWindow?.hide());
   ipcMain.on('minimize-window', () => mainWindow?.minimize());
   ipcMain.on('open-settings',  openSettings);
-  ipcMain.on('close-settings', () => settingsWindow?.close());
-  ipcMain.on('close-setup',    () => setupWindow?.close());
 
   ipcMain.handle('request-screen-permission', async () => {
     try {
@@ -1543,14 +1526,8 @@ app.whenReady().then(() => {
   registerIPC();
   setupAutoUpdater();
 
-  // Legacy onboarding (setup.html) only when there's NO auth backend.
-  // With Supabase auth, the login/register overlay handles onboarding — showing
-  // setup.html too would double up (both ask for email) and reappear after logout.
-  const authActive = sbReady() && !APP_CONFIG.ownerMode;
-  if (!authActive && (!store.get('setupDone') || !store.get('profileName'))) {
-    setTimeout(openSetup, 800);
-    store.set('setupDone', true);
-  }
+  // Onboarding is handled by the in-app login/register overlay (renderer).
+  // The legacy setup.html window was retired — it duplicated the auth flow.
 
   // Warn if no Gemini key — show banner in UI
   setTimeout(() => {
