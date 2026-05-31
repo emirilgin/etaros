@@ -6,7 +6,7 @@ sentryInit({
 });
 
 const {
-  app, BrowserWindow, WebContentsView, desktopCapturer, ipcMain,
+  app, BrowserWindow, BrowserView, desktopCapturer, ipcMain,
   Tray, Menu, nativeImage, Notification, screen, globalShortcut, shell,
 } = require('electron');
 const path           = require('path');
@@ -221,7 +221,7 @@ let settingsWindow = null;
 let setupWindow    = null;
 let tray           = null;
 let scanTimer      = null;
-let searchView     = null;
+let searchBrowserView = null;
 let lastBitmap     = null;
 let isStreaming    = false;
 let retryTimer     = null;
@@ -1228,50 +1228,60 @@ function registerIPC() {
   });
   ipcMain.handle('get-window-mode', () => 'fullscreen');
 
-  // ─── Embedded search browser (WebContentsView) ────────────────────────────
-  function destroySearchView() {
-    if (searchView && mainWindow && !mainWindow.isDestroyed()) {
-      try { mainWindow.contentView.removeChildView(searchView); } catch {}
+  // ─── Embedded search browser (BrowserView) ────────────────────────────────
+  function destroySearchBrowserView() {
+    if (searchBrowserView && mainWindow && !mainWindow.isDestroyed()) {
+      try {
+        mainWindow.removeBrowserView(searchBrowserView);
+        searchBrowserView.webContents.destroy();
+      } catch {}
     }
-    searchView = null;
+    searchBrowserView = null;
   }
 
   ipcMain.handle('show-search-browser', async (_, { url, x, y, width, height }) => {
-    if (!mainWindow || mainWindow.isDestroyed()) return { ok: false };
-    if (!searchView) {
-      searchView = new WebContentsView({
-        webPreferences: {
-          nodeIntegration: false, contextIsolation: true, sandbox: false,
-        },
-      });
-      mainWindow.contentView.addChildView(searchView);
-      searchView.webContents.setUserAgent(
-        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-      );
-      // Keep navigation inside the view — don't open OS browser
-      searchView.webContents.setWindowOpenHandler(({ url: u }) => {
-        searchView?.webContents.loadURL(u);
-        return { action: 'deny' };
-      });
+    if (!mainWindow || mainWindow.isDestroyed()) return { ok: false, error: 'no window' };
+    try {
+      if (!searchBrowserView) {
+        searchBrowserView = new BrowserView({
+          webPreferences: {
+            nodeIntegration: false, contextIsolation: true, sandbox: false,
+          },
+        });
+        mainWindow.addBrowserView(searchBrowserView);
+        searchBrowserView.webContents.setUserAgent(
+          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+        );
+        // Keep all navigation inside the view
+        searchBrowserView.webContents.setWindowOpenHandler(({ url: u }) => {
+          searchBrowserView?.webContents.loadURL(u);
+          return { action: 'deny' };
+        });
+      }
+      const bx = Math.round(x), by = Math.round(y),
+            bw = Math.max(1, Math.round(width)), bh = Math.max(1, Math.round(height));
+      searchBrowserView.setBounds({ x: bx, y: by, width: bw, height: bh });
+      await searchBrowserView.webContents.loadURL(url);
+      return { ok: true };
+    } catch (e) {
+      console.error('[search-browser] error:', e.message);
+      destroySearchBrowserView();
+      return { ok: false, error: e.message };
     }
-    searchView.setBounds({ x: Math.round(x), y: Math.round(y), width: Math.round(width), height: Math.round(height) });
-    await searchView.webContents.loadURL(url);
-    return { ok: true };
   });
 
   ipcMain.handle('hide-search-browser', () => {
-    destroySearchView();
+    destroySearchBrowserView();
     return { ok: true };
   });
 
   ipcMain.handle('get-search-url', () => {
-    return searchView?.webContents.getURL() || '';
+    try { return searchBrowserView?.webContents.getURL() || ''; } catch { return ''; }
   });
 
   // Resize search view when main window resizes
   mainWindow.on('resize', () => {
-    if (!searchView) return;
-    // re-ask renderer for updated bounds
+    if (!searchBrowserView) return;
     mainWindow.webContents.send('search-view-resize');
   });
 }

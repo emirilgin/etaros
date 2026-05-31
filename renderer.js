@@ -982,10 +982,22 @@ async function showSearchWebview(url, label) {
   if (lbl)  lbl.textContent    = label || url;
 
   const bounds = getSearchViewBounds();
-  if (!bounds) return false;
-  _searchViewOpen = true;
-  await window.sk.showSearchBrowser({ url, ...bounds });
-  return true;
+  if (!bounds || bounds.width < 10 || bounds.height < 10) {
+    showToast('Search panel too small', 'err');
+    return false;
+  }
+  try {
+    _searchViewOpen = true;
+    const res = await window.sk.showSearchBrowser({ url, ...bounds });
+    if (!res?.ok) {
+      showToast('Could not load: ' + (res?.error || 'unknown error'), 'err');
+      return false;
+    }
+    return true;
+  } catch (e) {
+    showToast('Search browser error: ' + e.message, 'err');
+    return false;
+  }
 }
 
 async function hideSearchWebview() {
@@ -1028,20 +1040,13 @@ window.sk.on('search-view-resize', async () => {
   if (bounds && url) window.sk.showSearchBrowser({ url, ...bounds });
 });
 
-function doSearch(query, catOverride) {
+async function doSearch(query, catOverride) {
   const q = (query || document.getElementById('search-input')?.value || '').trim();
   if (!q) return;
   const catId = catOverride !== undefined ? catOverride : (selectedCat || detectCat(q));
   saveSrchRecent(q, catId);
-  // Always open Google in embedded webview as primary
   const url = `https://www.google.com/search?q=${enc(q)}`;
-  const opened = showSearchWebview(url, q);
-  if (!opened) {
-    // Fallback: open in browser
-    const cat  = SEARCH_CATS.find(c => c.id === catId);
-    const urls = cat ? cat.sites(q, '') : [url, `https://duckduckgo.com/?q=${enc(q)}`];
-    window.sk.openUrls(urls);
-  }
+  await showSearchWebview(url, q);
   renderSearch();
 }
 
