@@ -1647,8 +1647,11 @@ app.whenReady().then(() => {
   registerIPC();
   setupAutoUpdater();
 
-  // Show setup screen on first run or if no profile name set
-  if (!store.get('setupDone') || !store.get('profileName')) {
+  // Legacy onboarding (setup.html) only when there's NO auth backend.
+  // With Supabase auth, the login/register overlay handles onboarding — showing
+  // setup.html too would double up (both ask for email) and reappear after logout.
+  const authActive = sbReady() && !APP_CONFIG.ownerMode;
+  if (!authActive && (!store.get('setupDone') || !store.get('profileName'))) {
     setTimeout(openSetup, 800);
     store.set('setupDone', true);
   }
