@@ -14,7 +14,7 @@ before they cost you — in real time.
 
 | Mac — Apple Silicon (M1/M2/M3/M4) | Mac — Intel (pre-2020) | Windows 10/11 |
 |:---:|:---:|:---:|
-| `Sidekick-*-arm64.dmg` | `Sidekick-*-x64.dmg` | `Sidekick Setup *.exe` |
+| `Sidekick-*-arm64.dmg` | `Sidekick-*-x64.dmg` | `Sidekick-*-Setup.exe` |
 
 [![Version](https://img.shields.io/github/v/release/emirilgin/sidekick?style=flat-square&color=cf6e3c&label=latest)](https://github.com/emirilgin/sidekick/releases/latest)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows-lightgray?style=flat-square)](https://github.com/emirilgin/sidekick/releases/latest)
@@ -32,13 +32,16 @@ before they cost you — in real time.
 
 ## What it does
 
-Sidekick watches your screen in real time and flags what matters:
+Sidekick watches your screen in real time and flags threats before they cost you.
+Five focus modes — each a different lens on what matters:
 
-- **Security** — phishing domains, fake logins, dark patterns, credential risks
-- **Finance** — hidden fees, subscription traps, overcharging, price history
-- **Shopping** — cheaper alternatives, coupon codes, cashback opportunities
-- **Health** — wellness scams, food choices, misinformation
-- **Focus** — distractions and rabbit holes during work
+```
+◉ Ghost  — Phishing, fake logins, dark patterns, trackers          [Free]
+◈ Vault  — Hidden fees, subscription traps, price manipulation     [Pro]
+◇ Bloom  — Health misinformation, wellness scams, bad food choices [Pro]
+◌ Flow   — Distractions, rabbit holes, focus killers               [Pro]
+◆ Hawk   — Better prices, coupon codes, cashback opportunities     [Pro]
+```
 
 **100% private.** Screenshots never leave your device. No account required to start.
 
@@ -48,8 +51,9 @@ Sidekick watches your screen in real time and flags what matters:
 
 | | Free | Pro | Max |
 |---|:---:|:---:|:---:|
-| Real-time screen analysis | ✓ | ✓ | ✓ |
-| Messages | 5 total | Unlimited | Unlimited |
+| Ghost mode | ✓ | ✓ | ✓ |
+| All 5 modes | — | ✓ | ✓ |
+| Messages | 15 total | Unlimited | Unlimited |
 | AI model | Gemini | Gemini | Claude Sonnet |
 | Price | $0 | $9/mo | $39/mo |
 
@@ -81,10 +85,9 @@ See [DEPLOY.md](DEPLOY.md) for server + Stripe setup.
 ## Privacy
 
 - All analysis runs on-device or via your own API key
-- No analytics, no accounts required
-- Crash reporting via Sentry (errors only, no usage data)
+- No telemetry, no analytics, no accounts
 - Local data stored in encrypted machine-locked store
-- Scanning can be paused any time in Settings
+- Scanning can be paused any time from tray
 
 ---
 
