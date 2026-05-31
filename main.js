@@ -468,10 +468,22 @@ function tierFromKeyOffline(key) {
 }
 
 // Fetch tier from Supabase profile — cache 30min
+// Refresh access token using refresh_token
+async function refreshAccessToken() {
+  const refreshToken = store.get('sbRefreshToken');
+  if (!refreshToken || !sbReady()) return false;
+  const { ok, data } = await sbFetch('/auth/v1/token?grant_type=refresh_token', { refresh_token: refreshToken });
+  if (!ok || !data.access_token) return false;
+  store.set('sbAccessToken',  data.access_token);
+  store.set('sbRefreshToken', data.refresh_token ?? refreshToken);
+  if (data.user?.id) store.set('sbUserId', data.user.id);
+  return true;
+}
+
 async function refreshTierFromServer() {
   if (APP_CONFIG.ownerMode || !sbReady()) return null;
-  const accessToken = store.get('sbAccessToken');
-  const userId      = store.get('sbUserId');
+  let accessToken = store.get('sbAccessToken');
+  const userId    = store.get('sbUserId');
   if (!accessToken || !userId) return null;
 
   const CACHE_TTL = 30 * 60 * 1000;
@@ -480,17 +492,20 @@ async function refreshTierFromServer() {
     return store.get('sbTier') ?? null;
   }
 
-  // GET profile via PostgREST
-  const { ok, data } = await sbGet(
-    `/rest/v1/profiles?select=tier&id=eq.${userId}&limit=1`,
-    accessToken,
-  );
-  if (!ok || !Array.isArray(data) || !data[0]) {
-    console.warn('[auth] profile fetch failed', data);
+  // Try fetch; if 401 refresh token and retry once
+  let result = await sbGet(`/rest/v1/profiles?select=tier&id=eq.${userId}&limit=1`, accessToken);
+  if (result.status === 401 || result.status === 403) {
+    const refreshed = await refreshAccessToken();
+    if (!refreshed) return null;
+    accessToken = store.get('sbAccessToken');
+    result = await sbGet(`/rest/v1/profiles?select=tier&id=eq.${userId}&limit=1`, accessToken);
+  }
+  if (!result.ok || !Array.isArray(result.data) || !result.data[0]) {
+    console.warn('[auth] profile fetch failed', result.data);
     return null;
   }
 
-  const tier = data[0].tier ?? 'free';
+  const tier = result.data[0].tier ?? 'free';
   store.set('sbTier',   tier);
   store.set('sbTierTs', Date.now());
   push('tier-updated', { tier });
@@ -513,7 +528,16 @@ function getTierSync() {
   return tierFromKeyOffline(key) ?? 'free';
 }
 
-function getFreeUsed()  { return Number(store.get('freeUsed') ?? 0); }
+function currentMonth() { return new Date().toISOString().slice(0, 7); } // e.g. "2026-05"
+function getFreeUsed() {
+  // Reset counter when month changes
+  const month = currentMonth();
+  if (store.get('freeMonth') !== month) {
+    store.set('freeMonth', month);
+    store.set('freeUsed', 0);
+  }
+  return Number(store.get('freeUsed') ?? 0);
+}
 function bumpFreeUsed() { const n = getFreeUsed() + 1; store.set('freeUsed', n); return n; }
 
 function getProUsed() { return Number(store.get('proUsed') ?? 0); }

@@ -1799,21 +1799,77 @@ html,body{
     </div>
 
     <div class="sp-section-divider"></div>
-    <!-- ── Advanced tab ── -->
+    <!-- ── Advanced tab (inline) ── -->
     <div class="sp-tab-content" id="sp-tab-advanced">
-      <div class="sp-section-lbl" style="padding-top:20px">Settings</div>
-      <button class="sp-link-row" id="sp-advanced-btn">
-        <span>Advanced settings</span><span class="sp-arrow">›</span>
-      </button>
+      <div class="sp-section-lbl" style="padding-top:20px">Scan interval</div>
+      <div style="padding:0 20px 10px">
+        <div class="adv-pills" id="adv-interval-pills">
+          <button class="adv-pill" data-val="15">15s<small>Fast</small></button>
+          <button class="adv-pill active" data-val="30">30s<small>Default</small></button>
+          <button class="adv-pill" data-val="60">60s<small>Gentle</small></button>
+          <button class="adv-pill" data-val="0">Off<small>Manual</small></button>
+        </div>
+      </div>
+      <div style="padding:0 20px 4px">
+        <div class="adv-toggle-row">
+          <div class="adv-toggle-info">
+            <span class="adv-toggle-label">Auto-scan</span>
+            <span class="adv-toggle-sub">Watch screen continuously</span>
+          </div>
+          <label class="adv-sw"><input type="checkbox" id="adv-auto-scan"/><span class="adv-sw-t"></span></label>
+        </div>
+        <div class="adv-toggle-row">
+          <div class="adv-toggle-info">
+            <span class="adv-toggle-label">Launch at login</span>
+            <span class="adv-toggle-sub">Start Sidekick on system login</span>
+          </div>
+          <label class="adv-sw"><input type="checkbox" id="adv-login"/><span class="adv-sw-t"></span></label>
+        </div>
+      </div>
+      <div class="sp-section-lbl">Your city</div>
+      <div class="sp-field">
+        <input id="adv-city" type="text" placeholder="e.g. Amsterdam, London"/>
+      </div>
+      <div class="sp-section-lbl">Beta / Tester code</div>
+      <div style="padding:0 20px 10px">
+        <div class="adv-field-row">
+          <input id="adv-tester-code" class="sp-field input" type="text" placeholder="Enter invite code" spellcheck="false" autocomplete="off" style="flex:1;height:40px;padding:0 12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-s);color:var(--t1);font-family:inherit;font-size:14px;outline:none"/>
+          <button class="adv-activate-btn" id="adv-tester-btn">Redeem →</button>
+        </div>
+        <p class="adv-hint" id="adv-tester-status"></p>
+      </div>
+      <div class="sp-section-lbl">AI provider</div>
+      <div style="padding:0 20px 10px">
+        <div class="adv-prov-grid" id="adv-prov-grid">
+          <div class="adv-pcard active" data-prov="builtin">
+            <span class="adv-pcard-icon">◉</span>
+            <span class="adv-pcard-name">Sidekick</span>
+            <span class="adv-pcard-sub">Default</span>
+          </div>
+          <div class="adv-pcard" data-prov="ollama">
+            <span class="adv-pcard-icon">○</span>
+            <span class="adv-pcard-name">Ollama</span>
+            <span class="adv-pcard-sub">Local</span>
+          </div>
+          <div class="adv-pcard" data-prov="claude">
+            <span class="adv-pcard-icon">◈</span>
+            <span class="adv-pcard-name">Own Key</span>
+            <span class="adv-pcard-sub">API key</span>
+          </div>
+        </div>
+        <div id="adv-own-key-field" class="adv-field" style="margin-top:10px;display:none">
+          <label>API Key</label>
+          <input id="adv-own-key" type="password" placeholder="sk-ant-… or similar"/>
+        </div>
+      </div>
       <div class="sp-divider"></div>
       <div class="sp-section-lbl">Support</div>
       <button class="sp-link-row" id="sp-help-btn2">
-        <svg viewBox="0 0 16 16" fill="none" style="width:15px;height:15px;margin-right:4px;opacity:.45"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.3"/><path d="M6.5 6.5c0-1 .7-1.5 1.5-1.5s1.5.6 1.5 1.5c0 .8-.7 1.2-1.5 1.5V9" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><circle cx="8" cy="11.5" r=".7" fill="currentColor"/></svg>
         <span>Get help</span><span class="sp-arrow">›</span>
       </button>
-      <div class="sp-divider" style="margin-top:16px"></div>
+      <div class="sp-divider" style="margin-top:8px"></div>
       <button class="sp-link-row danger" id="sp-logout-btn">
-        <svg viewBox="0 0 16 16" fill="none" style="width:15px;height:15px;margin-right:4px;opacity:.6"><path d="M6 2H3a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3M11 11l3-3-3-3M14 8H6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <svg viewBox="0 0 16 16" fill="none" style="width:14px;height:14px;margin-right:6px;opacity:.6"><path d="M6 2H3a1 1 0 0 0-1 1v10a1 1 0 0 0 1 1h3M11 11l3-3-3-3M14 8H6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
         Log out
       </button>
     </div>

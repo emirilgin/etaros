@@ -304,7 +304,7 @@ document.getElementById('tl-max')  ?.addEventListener('click', () => window.sk.s
 // ─── Buttons ──────────────────────────────────────────────────────────────────
 // settings button removed from sidebar
 settingsFsBtn.addEventListener('click',  () => window.sk.openSettings());
-upBtn.addEventListener('click',          () => window.sk.openSettings());
+upBtn.addEventListener('click',          () => openSettingsPage('plan'));
 clearBtn.addEventListener('click', () => window.sk.clearHistory());
 
 // No-key banner
@@ -2001,6 +2001,27 @@ function openSettingsPage(section = 'profile') {
   settingsPage.classList.add('open');
   switchSettingsTab(section);
   spAvatarDataUrl = null;
+
+  // Load advanced/settings fields (now inline)
+  window.sk.getSettings().then(s => {
+    const city      = document.getElementById('adv-city');
+    const autoScan  = document.getElementById('adv-auto-scan');
+    const loginItem = document.getElementById('adv-login');
+    if (city)      city.value        = s.city       || '';
+    if (autoScan)  autoScan.checked  = Boolean(s.autoScan);
+    if (loginItem) loginItem.checked = Boolean(s.startOnLogin);
+    const interval = Number(s.scanInterval ?? 30);
+    document.querySelectorAll('.adv-pill').forEach(p =>
+      p.classList.toggle('active', Number(p.dataset.val) === interval));
+    const prov = s.provider || 'builtin';
+    document.querySelectorAll('.adv-pcard').forEach(c =>
+      c.classList.toggle('active', c.dataset.prov === prov));
+    const ownKeyField = document.getElementById('adv-own-key-field');
+    const ownKey      = document.getElementById('adv-own-key');
+    if (ownKeyField) ownKeyField.style.display = (prov === 'claude') ? '' : 'none';
+    if (ownKey)      ownKey.value = s.apiKey || '';
+  });
+
   window.sk.getProfile().then(p => {
     const n = document.getElementById('sp-name');
     const em = document.getElementById('sp-email');
@@ -2055,13 +2076,22 @@ document.getElementById('sp-avatar-hint')?.addEventListener('click', () => spPfp
 spPfpInput?.addEventListener('change', () => {
   const file = spPfpInput.files[0];
   if (!file) return;
-  const reader = new FileReader();
-  reader.onload = e => {
-    spAvatarDataUrl = e.target.result;
+  // Compress to max 200x200 before storing — prevents huge base64 in electron-store
+  const img = new Image();
+  const url = URL.createObjectURL(file);
+  img.onload = () => {
+    const MAX = 200;
+    const scale = Math.min(MAX / img.width, MAX / img.height, 1);
+    const canvas = document.createElement('canvas');
+    canvas.width  = Math.round(img.width  * scale);
+    canvas.height = Math.round(img.height * scale);
+    canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
+    spAvatarDataUrl = canvas.toDataURL('image/jpeg', 0.82);
+    URL.revokeObjectURL(url);
     const av = document.getElementById('sp-big-avatar');
     if (av) av.innerHTML = `<img src="${spAvatarDataUrl}" alt=""/>`;
   };
-  reader.readAsDataURL(file);
+  img.src = url;
   spPfpInput.value = '';
 });
 
@@ -2089,7 +2119,7 @@ async function openUpgrade(planTier) {
 }
 document.getElementById('plan-pro-action')?.addEventListener('click', () => openUpgrade('pro'));
 document.getElementById('plan-max-action')?.addEventListener('click', () => openUpgrade('max'));
-document.getElementById('sp-advanced-btn')?.addEventListener('click', () => openAdvancedPage());
+// sp-advanced-btn removed (advanced settings now inline in settings scroll)
 document.getElementById('sp-help-btn2')?.addEventListener('click',    () => window.sk.openUrl('mailto:support@emirilgin.com'));
 document.getElementById('sp-logout-btn')?.addEventListener('click', async () => {
   if (!confirm('Log out? This will clear your profile and license key.')) return;
@@ -2273,7 +2303,7 @@ resetBtn?.addEventListener('click', async () => {
   const res = await window.sk.authResetPassword({ email });
   setAuthLoading(resetBtn, false);
   if (!res.ok) { setAuthError(res.error ?? 'Failed'); return; }
-  setAuthSuccess('Reset link sent! Check your inbox.');
+  setAuthSuccess('Reset link sent! Check your inbox. (Check spam too)');
 });
 
 // Enter key on inputs
@@ -2327,13 +2357,23 @@ function bootApp() {
 
 // ─── Startup: check session ────────────────────────────────────────────────────
 async function startApp() {
+  // Show overlay immediately with loading state (no flash of blank)
+  authOverlay.style.display = 'flex';
+  authOverlay.style.opacity = '1';
+  document.getElementById('auth-form-login').style.display    = 'none';
+  document.getElementById('auth-form-register').style.display = 'none';
+  document.getElementById('auth-form-forgot').style.display   = 'none';
+  authSubtitle.textContent = '';
+  document.getElementById('auth-logo-wrap')?.classList.add('loading');
+
   const session = await window.sk.authSession();
+  document.getElementById('auth-logo-wrap')?.classList.remove('loading');
+
   if (session?.loggedIn) {
     authOverlay.style.display = 'none';
     init();
     loadProfile();
   } else {
-    showAuthOverlay();
     showAuthForm('login');
   }
 }
