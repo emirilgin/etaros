@@ -1017,9 +1017,14 @@ document.getElementById('search-web-browser')?.addEventListener('click', async (
   if (url) window.sk.openUrl(url);
 });
 document.getElementById('search-web-ai')?.addEventListener('click', async () => {
+  // Pro/Max only feature
+  const lic = await window.sk.checkLicense();
+  if (lic.tier === 'free') {
+    showToast('AI Compare is Pro & Max only — upgrade in Settings', 'info');
+    return;
+  }
   const url = await window.sk.getSearchUrl() || _lastSearchUrl;
   let q = _lastSearchLabel || document.getElementById('search-input')?.value || '';
-  // Try to extract query from current URL
   if (url && url.includes('google.com/search')) {
     try { q = new URL(url).searchParams.get('q') || q; } catch {}
   }
@@ -1115,6 +1120,20 @@ function loadSearch() {
   hideSearchWebview();
   renderSearch();
   setTimeout(() => document.getElementById('search-input')?.focus(), 60);
+  // Mark AI Compare button with Pro badge for free users
+  window.sk.checkLicense().then(lic => {
+    const btn = document.getElementById('search-web-ai');
+    if (!btn) return;
+    if (lic.tier === 'free') {
+      btn.style.opacity = '.55';
+      btn.title = 'AI Compare — Pro & Max only';
+      btn.textContent = '◆ AI Compare  PRO';
+    } else {
+      btn.style.opacity = '';
+      btn.title = '';
+      btn.textContent = '◆ AI Compare';
+    }
+  });
 }
 
 // ─── Smart split: "big mac 550" → { name:"big mac", num:550 } ─────────────────
