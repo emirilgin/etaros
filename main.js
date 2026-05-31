@@ -1180,6 +1180,48 @@ function registerIPC() {
     return { ok: true };
   });
 
+  // ── Links (URL analysis with alternatives) ────────────────────────────────
+  ipcMain.handle('get-links', () => store.get('savedLinks', []));
+  ipcMain.handle('delete-link', (_, id) => {
+    store.set('savedLinks', (store.get('savedLinks', [])).filter(l => l.id !== id));
+    return { ok: true };
+  });
+  ipcMain.handle('analyze-link', async (_, { url, note }) => {
+    const key = getGeminiKey();
+    if (!key) throw new Error('No AI key');
+    const genAI = new GoogleGenerativeAI(key);
+    const models = ['gemini-2.0-flash', 'gemini-1.5-flash'];
+    let lastErr;
+    for (const modelName of models) {
+      try {
+        const model = genAI.getGenerativeModel({ model: modelName });
+        const prompt = `You are a smart shopping assistant. Analyze this URL and find real alternatives.
+
+URL: ${url}
+${note ? `User note: ${note}` : ''}
+
+Find the product/service and return 3-5 real, specific alternatives with actual working URLs. Focus on cheaper or better value options. If it's a subscription/service, find competitors. If it's a product, find the same or similar at lower prices.
+
+Respond ONLY with valid JSON, no markdown:
+{"title":"product or service name","what":"one sentence describing what this is","domain":"the site domain","alternatives":[{"name":"Alternative name","url":"https://real-url.com/product","why":"Why this is better or cheaper — be specific","saving":"estimated saving or value difference, e.g. '~$15 cheaper' or 'free tier available'"}]}`;
+        const result = await model.generateContent(prompt);
+        const text   = result.response.text();
+        const match  = text.match(/\{[\s\S]*\}/);
+        if (!match) throw new Error('No JSON in response');
+        const parsed = JSON.parse(match[0]);
+        // Save to store
+        const links = store.get('savedLinks', []);
+        links.unshift({ id: randomUUID(), url, note: note || '', ts: Date.now(), ...parsed });
+        store.set('savedLinks', links.slice(0, 200));
+        return parsed;
+      } catch (e) {
+        lastErr = e;
+        if (!e.message?.includes('429') && !e.message?.includes('quota')) throw e;
+      }
+    }
+    throw lastErr;
+  });
+
   // ── Savings log ────────────────────────────────────────────────────────────
   ipcMain.handle('get-savings', () => store.get('savings') ?? []);
   ipcMain.handle('log-saving',  (_, { item, amount, currency = 'USD' }) => {

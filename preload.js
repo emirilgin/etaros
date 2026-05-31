@@ -42,6 +42,10 @@ contextBridge.exposeInMainWorld('sk', {
   renameChat: (id, title) => ipcRenderer.invoke('rename-chat', { id, title }),
   pinChat:    (id)        => ipcRenderer.invoke('pin-chat', id),
   chat:         (text) => ipcRenderer.invoke('chat', text),
+  // Links
+  getLinks:     ()           => ipcRenderer.invoke('get-links'),
+  deleteLink:   (id)         => ipcRenderer.invoke('delete-link', id),
+  analyzeLink:  (opts)       => ipcRenderer.invoke('analyze-link', opts),
   showSearchBrowser: (opts) => ipcRenderer.invoke('show-search-browser', opts),
   hideSearchBrowser: ()     => ipcRenderer.invoke('hide-search-browser'),
   getSearchUrl:      ()     => ipcRenderer.invoke('get-search-url'),

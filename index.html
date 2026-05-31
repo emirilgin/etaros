@@ -1211,6 +1211,108 @@ html,body{
 /* Pinned conv indicator */
 .conv-pin-icon { font-size:9px; color:var(--orange-t); opacity:.7; flex-shrink:0; margin-right:2px; }
 
+/* ── Plan cards (3 horizontal) ── */
+.sp-plan-cards { display:flex; gap:10px; padding:20px 20px 8px; }
+.sp-plan-tile {
+  flex:1; display:flex; flex-direction:column; gap:8px;
+  background:var(--surface); border:2px solid var(--border);
+  border-radius:16px; padding:16px 14px 14px;
+  cursor:pointer; transition:border-color .18s,background .15s,transform .15s;
+  position:relative; overflow:hidden;
+}
+.sp-plan-tile:hover { border-color:var(--border2); transform:translateY(-2px); }
+.sp-plan-tile.current { border-color:rgba(192,96,30,.5); background:var(--orange-dim); }
+.sp-plan-tile.highlighted { border-color:var(--orange); }
+.sp-plan-tile-badge {
+  font-size:9px; font-weight:800; letter-spacing:.1em; text-transform:uppercase;
+  padding:3px 8px; border-radius:20px; align-self:flex-start;
+  background:var(--card); color:var(--t3); border:1px solid var(--border);
+}
+.sp-plan-tile.current .sp-plan-tile-badge { background:var(--orange-dim); color:var(--orange-t); border-color:rgba(192,96,30,.3); }
+.sp-plan-tile.highlighted .sp-plan-tile-badge { background:var(--orange); color:#fff; border-color:var(--orange); }
+.sp-plan-tile-price { font-size:24px; font-weight:700; color:var(--t1); line-height:1; letter-spacing:-.03em; }
+.sp-plan-tile-price sub { font-size:12px; font-weight:400; color:var(--t3); letter-spacing:0; }
+.sp-plan-tile-name { font-size:13px; font-weight:600; color:var(--t1); }
+.sp-plan-tile-features { list-style:none; display:flex; flex-direction:column; gap:5px; flex:1; }
+.sp-plan-tile-features li { font-size:11.5px; color:var(--t2); display:flex; align-items:flex-start; gap:5px; line-height:1.45; }
+.sp-plan-tile-features li::before { content:'✓'; color:var(--orange-t); font-weight:700; font-size:10px; flex-shrink:0; margin-top:1px; }
+.sp-plan-tile-features li.na { color:var(--t4); }
+.sp-plan-tile-features li.na::before { content:'–'; color:var(--t4); }
+.sp-plan-tile-action {
+  margin-top:auto; padding:7px 0; border-radius:var(--r-s);
+  font-family:inherit; font-size:12px; font-weight:600; border:none; cursor:pointer;
+  transition:opacity .15s; width:100%;
+}
+.sp-plan-tile-action.upgrade { background:var(--orange); color:#fff; }
+.sp-plan-tile-action.upgrade:hover { opacity:.88; }
+.sp-plan-tile-action.current-lbl { background:transparent; color:var(--orange-t); cursor:default; }
+.sp-plan-tile-action.locked { background:var(--card); color:var(--t3); cursor:default; }
+
+/* ── Links panel ── */
+#links-panel { background:var(--bg); }
+.links-input-row { padding:14px 20px 12px; flex-shrink:0; border-bottom:1px solid var(--border); }
+.links-input-shell {
+  display:flex; flex-direction:column; gap:8px;
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--r); padding:12px 14px;
+  transition:border-color .18s;
+}
+.links-input-shell:focus-within { border-color:rgba(192,96,30,.4); }
+#link-url-input {
+  background:none; border:none; outline:none; width:100%;
+  color:var(--t1); font-family:inherit; font-size:14px;
+}
+#link-url-input::placeholder { color:var(--t4); }
+#link-note-input {
+  background:none; border:none; outline:none; resize:none; overflow:hidden;
+  color:var(--t2); font-family:inherit; font-size:12.5px; min-height:20px;
+}
+#link-note-input::placeholder { color:var(--t4); }
+.links-input-actions { display:flex; justify-content:flex-end; }
+#link-analyze-btn {
+  height:30px; padding:0 14px; border-radius:var(--r-s);
+  background:var(--orange); color:#fff; border:none;
+  font-family:inherit; font-size:12.5px; font-weight:600;
+  cursor:pointer; transition:opacity .15s; display:flex; align-items:center; gap:5px;
+}
+#link-analyze-btn:hover { opacity:.88; }
+#link-analyze-btn:disabled { opacity:.45; cursor:default; }
+.links-list { flex:1; overflow-y:auto; padding:12px 20px; display:flex; flex-direction:column; gap:10px; }
+.links-list::-webkit-scrollbar { width:4px; }
+.links-list::-webkit-scrollbar-thumb { background:var(--border); border-radius:4px; }
+.links-empty { font-size:13px; color:var(--t3); text-align:center; padding:40px 0; line-height:1.9; }
+.link-card {
+  background:var(--surface); border:1px solid var(--border);
+  border-radius:var(--r); padding:14px 16px;
+  animation:fadeUp .22s ease both;
+  transition:border-color .14s;
+}
+.link-card:hover { border-color:var(--border2); }
+.link-card-header { display:flex; align-items:flex-start; gap:8px; margin-bottom:10px; }
+.link-card-favicon { width:16px; height:16px; border-radius:3px; flex-shrink:0; margin-top:2px; background:var(--card); }
+.link-card-meta { flex:1; min-width:0; }
+.link-card-title { font-size:13.5px; font-weight:600; color:var(--t1); margin-bottom:2px; }
+.link-card-what { font-size:12px; color:var(--t2); line-height:1.55; }
+.link-card-url { font-size:11px; color:var(--t4); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; margin-top:2px; }
+.link-card-del { background:none; border:none; cursor:pointer; color:var(--t4); font-size:11px; padding:2px 5px; border-radius:4px; opacity:0; transition:opacity .12s,color .12s; flex-shrink:0; }
+.link-card:hover .link-card-del { opacity:1; }
+.link-card-del:hover { color:var(--red); }
+.link-alts-hdr { font-size:10px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--t3); margin-bottom:6px; }
+.link-alt {
+  display:flex; align-items:flex-start; gap:8px;
+  padding:8px 10px; border-radius:var(--r-xs);
+  background:var(--bg); border:1px solid var(--border);
+  margin-bottom:5px; cursor:pointer; text-decoration:none;
+  transition:background .12s,border-color .12s;
+}
+.link-alt:hover { background:var(--card); border-color:var(--border2); }
+.link-alt-body { flex:1; min-width:0; }
+.link-alt-name { font-size:12.5px; font-weight:600; color:var(--t1); margin-bottom:2px; }
+.link-alt-why { font-size:11.5px; color:var(--t2); line-height:1.5; }
+.link-alt-saving { font-size:11px; color:var(--green); font-weight:600; margin-top:2px; }
+.link-alt-arrow { font-size:12px; color:var(--t4); flex-shrink:0; margin-top:2px; }
+.link-analyzing { display:flex; align-items:center; gap:8px; padding:10px 0; font-size:13px; color:var(--t3); }
+
 /* Memory redesign */
 .mem-fact-card { display:flex; align-items:flex-start; gap:10px; padding:8px 12px; background:var(--bg); border:1px solid var(--border); border-radius:var(--r-s); animation:fadeUp .18s ease both; transition:border-color .12s; }
 .mem-fact-card:hover { border-color:var(--border2); }
@@ -1300,6 +1402,7 @@ html,body{
       <!-- Secondary nav -->
       <button class="nav-item tab-btn" data-tab="notes"><span class="nav-icon">◇</span>Notes</button>
       <button class="nav-item tab-btn" data-tab="search"><span class="nav-icon">◈</span>Search</button>
+      <button class="nav-item tab-btn" data-tab="links"><span class="nav-icon">⬡</span>Links</button>
 
       <div class="sb-divider" style="margin:6px 14px"></div>
 
@@ -1452,6 +1555,25 @@ html,body{
         </div>
       </div>
 
+
+      <!-- ── Links panel ──────────────────────────────────────────────── -->
+      <div id="links-panel" class="tab-panel">
+        <div class="links-input-row">
+          <div class="links-input-shell">
+            <input id="link-url-input" type="url" placeholder="Paste a product or service URL…" autocomplete="off" spellcheck="false"/>
+            <textarea id="link-note-input" rows="1" placeholder="Optional: add context (e.g. 'looking for something cheaper')"></textarea>
+            <div class="links-input-actions">
+              <button id="link-analyze-btn">
+                <svg viewBox="0 0 14 14" fill="none" style="width:12px;height:12px"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.4"/><path d="M9.5 9.5l2.5 2.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
+                Find alternatives
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="links-list" id="links-list">
+          <div class="links-empty">Paste any product, subscription, or service URL.<br>Sidekick finds cheaper or better alternatives.</div>
+        </div>
+      </div>
 
       <!-- ── Search panel ─────────────────────────────────────────────── -->
       <div id="search-panel" class="tab-panel">
@@ -1627,26 +1749,61 @@ html,body{
 
     <!-- ── Plan tab ── -->
     <div class="sp-tab-content" id="sp-tab-plan">
-      <div class="sp-section-lbl" style="padding-top:20px">Current plan</div>
-      <div class="sp-plan-card">
-        <span class="sp-plan-tier free" id="sp-tier-badge">Free</span>
-        <span class="sp-plan-desc" id="sp-tier-desc">5 free messages to try Sidekick.</span>
+      <div class="sp-plan-cards">
+
+        <!-- Free -->
+        <div class="sp-plan-tile" id="plan-tile-free">
+          <span class="sp-plan-tile-badge">Free</span>
+          <div class="sp-plan-tile-price">$0</div>
+          <div class="sp-plan-tile-name">Starter</div>
+          <ul class="sp-plan-tile-features">
+            <li>5 messages to try</li>
+            <li>Screen scanning</li>
+            <li>Notes &amp; memory</li>
+            <li class="na">Unlimited chat</li>
+            <li class="na">AI Compare prices</li>
+            <li class="na">Claude AI</li>
+          </ul>
+          <button class="sp-plan-tile-action current-lbl" id="plan-free-action">Current plan</button>
+        </div>
+
+        <!-- Pro -->
+        <div class="sp-plan-tile highlighted" id="plan-tile-pro">
+          <span class="sp-plan-tile-badge">Pro</span>
+          <div class="sp-plan-tile-price">$9<sub>/mo</sub></div>
+          <div class="sp-plan-tile-name">Most popular</div>
+          <ul class="sp-plan-tile-features">
+            <li>Unlimited messages</li>
+            <li>Real-time screen AI</li>
+            <li>AI Compare prices</li>
+            <li>Links &amp; alternatives</li>
+            <li>All scan features</li>
+            <li class="na">Claude AI</li>
+          </ul>
+          <button class="sp-plan-tile-action upgrade" id="plan-pro-action">Get Pro →</button>
+        </div>
+
+        <!-- Max -->
+        <div class="sp-plan-tile" id="plan-tile-max">
+          <span class="sp-plan-tile-badge">Max</span>
+          <div class="sp-plan-tile-price">$19<sub>/mo</sub></div>
+          <div class="sp-plan-tile-name">Best AI</div>
+          <ul class="sp-plan-tile-features">
+            <li>Everything in Pro</li>
+            <li>Claude Sonnet AI</li>
+            <li>Deeper analysis</li>
+            <li>Smarter decisions</li>
+            <li>Priority responses</li>
+            <li>Best for power users</li>
+          </ul>
+          <button class="sp-plan-tile-action upgrade" id="plan-max-action">Get Max →</button>
+        </div>
+
       </div>
-      <div class="sp-plan-explain" style="margin-top:8px">
-        <div class="sp-tier-row">
-          <span class="sp-tier-pill free">Free</span>
-          <div class="sp-tier-info"><strong>Free</strong><p>5 messages. Powered by Google Gemini.</p></div>
-        </div>
-        <div class="sp-tier-row">
-          <span class="sp-tier-pill pro">Pro</span>
-          <div class="sp-tier-info"><strong>Pro — $9/mo</strong><p>Unlimited messages on Google Gemini.</p></div>
-        </div>
-        <div class="sp-tier-row">
-          <span class="sp-tier-pill max">Max</span>
-          <div class="sp-tier-info"><strong>Max — $19/mo</strong><p>Unlimited + Claude (Anthropic). Smarter answers.</p></div>
-        </div>
-      </div>
-      <button class="sp-upgrade-btn" id="sp-upgrade-btn" style="display:none">Upgrade to Pro →</button>
+      <!-- Hidden compat elements referenced in renderer -->
+      <span id="sp-tier-badge" style="display:none"></span>
+      <span id="sp-tier-desc"  style="display:none"></span>
+      <button id="sp-upgrade-btn" style="display:none"></button>
     </div>
 
     <!-- ── Advanced tab ── -->

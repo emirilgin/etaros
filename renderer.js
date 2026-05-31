@@ -1136,6 +1136,105 @@ function loadSearch() {
   });
 }
 
+// ─── Links tab ────────────────────────────────────────────────────────────────
+function esc2(s) { return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+function renderLinks(links) {
+  const list = document.getElementById('links-list');
+  if (!list) return;
+  if (!links || !links.length) {
+    list.innerHTML = '<div class="links-empty">Paste any product, subscription, or service URL.<br>Sidekick finds cheaper or better alternatives.</div>';
+    return;
+  }
+  list.innerHTML = links.map(l => {
+    const domain = (() => { try { return new URL(l.url).hostname.replace('www.',''); } catch { return l.url; } })();
+    const favicon = `https://www.google.com/s2/favicons?domain=${domain}&sz=32`;
+    const alts = (l.alternatives || []).map(a => `
+      <a class="link-alt" href="#" data-url="${esc2(a.url)}" title="${esc2(a.url)}">
+        <div class="link-alt-body">
+          <div class="link-alt-name">${esc2(a.name)}</div>
+          <div class="link-alt-why">${esc2(a.why)}</div>
+          ${a.saving ? `<div class="link-alt-saving">${esc2(a.saving)}</div>` : ''}
+        </div>
+        <span class="link-alt-arrow">↗</span>
+      </a>`).join('');
+    return `
+      <div class="link-card" data-id="${l.id}">
+        <div class="link-card-header">
+          <img class="link-card-favicon" src="${favicon}" alt="" onerror="this.style.display='none'"/>
+          <div class="link-card-meta">
+            <div class="link-card-title">${esc2(l.title || domain)}</div>
+            <div class="link-card-what">${esc2(l.what || '')}</div>
+            <div class="link-card-url">${esc2(l.url)}</div>
+          </div>
+          <button class="link-card-del" title="Remove">×</button>
+        </div>
+        ${alts ? `<div class="link-alts-hdr">Better alternatives</div>${alts}` : ''}
+      </div>`;
+  }).join('');
+
+  list.querySelectorAll('.link-card-del').forEach(btn =>
+    btn.addEventListener('click', async () => {
+      const id = btn.closest('.link-card').dataset.id;
+      await window.sk.deleteLink(id);
+      loadLinks();
+    }));
+  list.querySelectorAll('.link-alt').forEach(a =>
+    a.addEventListener('click', e => {
+      e.preventDefault();
+      window.sk.openUrl(a.dataset.url);
+    }));
+}
+
+async function loadLinks() {
+  const links = await window.sk.getLinks();
+  renderLinks(links);
+}
+
+// Link analyze button
+document.getElementById('link-analyze-btn')?.addEventListener('click', async () => {
+  const urlInput  = document.getElementById('link-url-input');
+  const noteInput = document.getElementById('link-note-input');
+  const btn       = document.getElementById('link-analyze-btn');
+  const list      = document.getElementById('links-list');
+  const url = urlInput?.value.trim();
+  if (!url) return;
+  const note = noteInput?.value.trim() || '';
+
+  // Check Pro/Max
+  const lic = await window.sk.checkLicense();
+  if (lic.tier === 'free') {
+    showToast('Links analysis is Pro & Max only — upgrade in Settings', 'info');
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Analyzing…';
+  // Show loading state at top of list
+  const loadDiv = document.createElement('div');
+  loadDiv.className = 'link-analyzing';
+  loadDiv.innerHTML = '<span class="t-dots"><span></span><span></span><span></span></span> Finding alternatives…';
+  list?.prepend(loadDiv);
+
+  try {
+    await window.sk.analyzeLink({ url, note });
+    if (urlInput) urlInput.value = '';
+    if (noteInput) noteInput.value = '';
+    await loadLinks();
+  } catch (e) {
+    showToast('Analysis failed: ' + e.message, 'err');
+    loadDiv?.remove();
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<svg viewBox="0 0 14 14" fill="none" style="width:12px;height:12px"><circle cx="6" cy="6" r="4.5" stroke="currentColor" stroke-width="1.4"/><path d="M9.5 9.5l2.5 2.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg> Find alternatives';
+  }
+});
+
+// Enter key in URL input triggers analyze
+document.getElementById('link-url-input')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter') { e.preventDefault(); document.getElementById('link-analyze-btn')?.click(); }
+});
+
 // ─── Smart split: "big mac 550" → { name:"big mac", num:550 } ─────────────────
 function smartSplit(val) {
   val = val.trim();
@@ -1161,7 +1260,6 @@ function fmtDate(ts) {
 const tabBtns = document.querySelectorAll('.tab-btn');
 
 function switchTab(name) {
-  // Hide search view when leaving search tab
   if (name !== 'search' && _searchViewOpen) hideSearchWebview();
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
   document.querySelectorAll('.tab-panel').forEach(p =>
@@ -1171,6 +1269,7 @@ function switchTab(name) {
   if (name === 'diet')    { loadDiet();    setTimeout(() => document.getElementById('diet-item')?.focus(), 60); }
   if (name === 'life')    { loadLife(); }
   if (name === 'search')  { loadSearch(); }
+  if (name === 'links')   { loadLinks(); setTimeout(() => document.getElementById('link-url-input')?.focus(), 60); }
   if (name === 'chat')    { setTimeout(() => msg?.focus(), 60); }
 }
 document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
@@ -1940,23 +2039,31 @@ function openSettingsPage(section = 'profile') {
       : `<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.5"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
   });
   window.sk.checkLicense().then(lic => {
+    // Update plan tiles
+    ['free','pro','max'].forEach(tier => {
+      const tile   = document.getElementById(`plan-tile-${tier}`);
+      const action = document.getElementById(`plan-${tier}-action`);
+      if (!tile) return;
+      tile.classList.toggle('current', lic.tier === tier);
+      tile.classList.toggle('highlighted', tier === 'pro' && lic.tier === 'free');
+      if (action) {
+        if (lic.tier === tier) {
+          action.className = 'sp-plan-tile-action current-lbl';
+          action.textContent = 'Current plan';
+        } else if (tier === 'free') {
+          action.className = 'sp-plan-tile-action locked';
+          action.textContent = 'Downgrade';
+        } else {
+          action.className = 'sp-plan-tile-action upgrade';
+          action.textContent = tier === 'pro' ? 'Get Pro →' : 'Get Max →';
+        }
+      }
+    });
+    // Legacy compat
     const badge = document.getElementById('sp-tier-badge');
     const desc  = document.getElementById('sp-tier-desc');
-    const upBtn = document.getElementById('sp-upgrade-btn');
-    if (lic.tier === 'max') {
-      if (badge) { badge.className = 'sp-plan-tier max'; badge.textContent = 'Max'; }
-      if (desc)  desc.textContent = 'Unlimited · Claude (Anthropic)';
-      if (upBtn) upBtn.style.display = 'none';
-    } else if (lic.tier === 'pro') {
-      if (badge) { badge.className = 'sp-plan-tier pro'; badge.textContent = 'Pro'; }
-      if (desc)  desc.textContent = 'Unlimited · Google Gemini';
-      if (upBtn) upBtn.style.display = 'none';
-    } else {
-      if (badge) { badge.className = 'sp-plan-tier free'; badge.textContent = 'Free'; }
-      const rem = Math.max(0, lic.limit - lic.used);
-      if (desc)  desc.textContent = `${rem} of ${lic.limit} free messages remaining`;
-      if (upBtn) upBtn.style.display = '';
-    }
+    if (badge) badge.textContent = lic.tier;
+    if (desc)  desc.textContent  = lic.tier === 'free' ? `${Math.max(0,lic.limit-lic.used)} of ${lic.limit} free messages remaining` : 'Unlimited';
   });
 }
 
@@ -1993,7 +2100,10 @@ document.getElementById('sp-save-btn')?.addEventListener('click', async () => {
   showToast('Profile saved', 'ok');
 });
 
-document.getElementById('sp-upgrade-btn')?.addEventListener('click',  () => openSettingsPage('plan'));
+document.getElementById('sp-upgrade-btn')?.addEventListener('click', () => openSettingsPage('plan'));
+// Plan tile upgrade buttons → open settings/billing window
+document.getElementById('plan-pro-action')?.addEventListener('click', () => window.sk.openSettings());
+document.getElementById('plan-max-action')?.addEventListener('click', () => window.sk.openSettings());
 document.getElementById('sp-advanced-btn')?.addEventListener('click', () => openAdvancedPage());
 document.getElementById('sp-help-btn2')?.addEventListener('click',    () => window.sk.openUrl('mailto:support@emirilgin.com'));
 document.getElementById('sp-logout-btn')?.addEventListener('click', async () => {
