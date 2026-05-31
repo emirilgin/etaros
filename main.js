@@ -976,7 +976,7 @@ function registerIPC() {
     geminiKey:     String(store.get('geminiKey')    ?? ''),
     city:          String(store.get('city')         ?? ''),
     scanInterval:  Number(store.get('scanInterval') ?? 5),
-    autoScan:      Boolean(store.get('autoScan')    ?? true),
+    autoScan:      Boolean(store.get('autoScan')    ?? false),
     licenseKey:    String(store.get('licenseKey')   ?? ''),
     startOnLogin:  app.getLoginItemSettings().openAtLogin,
     provider:      String(store.get('provider')     ?? 'builtin'),
@@ -994,7 +994,7 @@ function registerIPC() {
     if (s.provider     != null)   store.set('provider',     s.provider);
     if (s.ollamaModel  != null)   store.set('ollamaModel',  s.ollamaModel);
     if (s.startOnLogin != null)   app.setLoginItemSettings({ openAtLogin: Boolean(s.startOnLogin) });
-    Boolean(store.get('autoScan') ?? true) ? startScanLoop() : stopScanLoop();
+    Boolean(store.get('autoScan') ?? false) ? startScanLoop() : stopScanLoop();
     push('settings-updated', {});
     return { ok: true };
   });
@@ -1267,7 +1267,8 @@ app.whenReady().then(() => {
     if (!mainWindow) return;
     mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show();
   });
-  if (store.get('autoScan') !== false) startScanLoop();
+  // Auto-scan off by default — user can enable in Settings
+  if (store.get('autoScan') === true) startScanLoop();
 });
 
 app.on('window-all-closed', () => { /* stay alive in tray */ });
