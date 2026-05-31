@@ -37,7 +37,8 @@ contextBridge.exposeInMainWorld('sk', {
   authRegister:     (opts) => ipcRenderer.invoke('auth-register', opts),
   authSession:      ()     => ipcRenderer.invoke('auth-session'),
   authResetPassword:(opts) => ipcRenderer.invoke('auth-reset-password', opts),
-  authGetUpgradeUrl:(opts) => ipcRenderer.invoke('auth-get-upgrade-url', opts),
+  authGetUpgradeUrl:  (opts) => ipcRenderer.invoke('auth-get-upgrade-url', opts),
+  redeemTesterCode:   (opts) => ipcRenderer.invoke('redeem-tester-code', opts),
   checkOllama:  ()     => ipcRenderer.invoke('check-ollama'),
   getStats:     ()     => ipcRenderer.invoke('get-stats'),
   // Conversation management

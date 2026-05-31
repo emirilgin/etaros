@@ -1216,6 +1216,44 @@ function registerIPC() {
     return { url };
   });
 
+  // Tester/beta invite code redemption
+  ipcMain.handle('redeem-tester-code', async (_, { code }) => {
+    if (!code) return { ok: false, error: 'No code entered' };
+    const normalized = code.trim().toUpperCase();
+    const validCodes = (APP_CONFIG.testerCodes ?? []).map(c => c.toUpperCase());
+    if (!validCodes.includes(normalized)) return { ok: false, error: 'Invalid code' };
+
+    const userId      = store.get('sbUserId');
+    const accessToken = store.get('sbAccessToken');
+
+    if (userId && accessToken && sbReady()) {
+      // Update tier in Supabase
+      try {
+        await fetch(`${sbUrl()}/rest/v1/profiles?id=eq.${userId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+            'apikey': sbKey(),
+            'Authorization': `Bearer ${accessToken}`,
+            'Prefer': 'return=minimal',
+          },
+          body: JSON.stringify({ tier: 'max' }),
+        });
+        store.set('sbTier', 'max');
+        store.set('sbTierTs', Date.now());
+        push('tier-updated', { tier: 'max' });
+      } catch (e) {
+        console.warn('[redeem] DB update failed:', e.message);
+      }
+    } else {
+      // Offline fallback — store locally
+      store.set('sbTier', 'max');
+      store.set('sbTierTs', Date.now());
+      push('tier-updated', { tier: 'max' });
+    }
+    return { ok: true, tier: 'max' };
+  });
+
   // Returns { tier, used, limit }
   ipcMain.handle('check-license', async () => {
     // Fire-and-forget tier refresh

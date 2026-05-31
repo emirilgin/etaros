@@ -2117,11 +2117,9 @@ function openAdvancedPage() {
   // Load current settings
   window.sk.getSettings().then(s => {
     const city      = document.getElementById('adv-city');
-    const licKey    = document.getElementById('adv-license-key');
     const autoScan  = document.getElementById('adv-auto-scan');
     const loginItem = document.getElementById('adv-login');
     if (city)      city.value       = s.city        || '';
-    if (licKey)    licKey.value     = s.licenseKey  || '';
     if (autoScan)  autoScan.checked = Boolean(s.autoScan);
     if (loginItem) loginItem.checked = Boolean(s.startOnLogin);
     // Scan interval pills
@@ -2138,13 +2136,13 @@ function openAdvancedPage() {
     if (ownKeyField) ownKeyField.style.display = (prov === 'claude') ? '' : 'none';
     if (ownKey) ownKey.value = s.apiKey || '';
   });
-  // Update license status
+  // Update tester status
   window.sk.checkLicense().then(lic => {
-    const el = document.getElementById('adv-license-status');
+    const el = document.getElementById('adv-tester-status');
     if (!el) return;
-    if (lic.tier === 'max') el.textContent = '✓ Max plan active';
-    else if (lic.tier === 'pro') el.textContent = '✓ Pro plan active';
-    else el.textContent = `Free — ${Math.max(0, lic.limit - lic.used)} of ${lic.limit} messages remaining`;
+    if (lic.tier === 'max') el.textContent = '✓ Max access active';
+    else if (lic.tier === 'pro') el.textContent = '✓ Pro access active';
+    else el.textContent = '';
   });
 }
 
@@ -2170,15 +2168,23 @@ document.querySelectorAll('.adv-pcard').forEach(card =>
     if (ownKeyField) ownKeyField.style.display = (card.dataset.prov === 'claude') ? '' : 'none';
   }));
 
-// Activate license key
-document.getElementById('adv-activate-btn')?.addEventListener('click', async () => {
-  const key = document.getElementById('adv-license-key')?.value.trim();
-  if (!key) return;
-  await window.sk.saveSettings({ licenseKey: key });
-  const lic = await window.sk.checkLicense();
-  const el  = document.getElementById('adv-license-status');
-  if (el) el.textContent = lic.tier !== 'free' ? `✓ ${lic.tier.toUpperCase()} plan activated!` : 'Key not recognized';
-  showToast(lic.tier !== 'free' ? 'License activated!' : 'Key not recognized', lic.tier !== 'free' ? 'ok' : 'err');
+// Redeem tester/beta code
+document.getElementById('adv-tester-btn')?.addEventListener('click', async () => {
+  const code = document.getElementById('adv-tester-code')?.value.trim();
+  if (!code) return;
+  const btn = document.getElementById('adv-tester-btn');
+  btn.disabled = true; btn.textContent = '···';
+  const res = await window.sk.redeemTesterCode({ code });
+  btn.disabled = false; btn.textContent = 'Redeem →';
+  const el = document.getElementById('adv-tester-status');
+  if (!res.ok) {
+    if (el) el.textContent = '✗ ' + (res.error ?? 'Invalid code');
+    showToast('Invalid code', 'err');
+    return;
+  }
+  if (el) el.textContent = '✓ Max access unlocked!';
+  showToast('Max access unlocked! 🎉', 'ok');
+  window.sk.checkLicense().then(lic => setTierDisplay(lic.tier, lic.used, lic.limit));
 });
 
 // Save advanced settings
@@ -2242,9 +2248,7 @@ loginBtn?.addEventListener('click', async () => {
   const res = await window.sk.authLogin({ email, password });
   setAuthLoading(loginBtn, false);
   if (!res.ok) { setAuthError(res.error ?? 'Login failed'); return; }
-  authOverlay.style.display = 'none';
-  init();
-  loadProfile();
+  bootApp();
 });
 
 // Register
@@ -2264,9 +2268,7 @@ registerBtn?.addEventListener('click', async () => {
     showAuthForm('login');
     return;
   }
-  authOverlay.style.display = 'none';
-  init();
-  loadProfile();
+  bootApp();
 });
 
 // Reset password
@@ -2300,6 +2302,30 @@ window.sk.on('tier-updated', ({ tier }) => {
   if (tier !== 'free') showToast(`Upgraded to ${tier.charAt(0).toUpperCase() + tier.slice(1)}! 🎉`, 'ok');
 });
 
+// ─── Smooth overlay transitions ───────────────────────────────────────────────
+function hideAuthOverlay() {
+  authOverlay.style.transition = 'opacity .35s ease';
+  authOverlay.style.opacity    = '0';
+  setTimeout(() => { authOverlay.style.display = 'none'; authOverlay.style.opacity = '1'; authOverlay.style.transition = ''; }, 360);
+}
+
+function showAuthOverlay() {
+  authOverlay.style.opacity    = '0';
+  authOverlay.style.display    = 'flex';
+  requestAnimationFrame(() => {
+    authOverlay.style.transition = 'opacity .25s ease';
+    authOverlay.style.opacity    = '1';
+    setTimeout(() => authOverlay.style.transition = '', 260);
+  });
+}
+
+// After successful auth — hide overlay, boot app
+function bootApp() {
+  hideAuthOverlay();
+  init();
+  loadProfile();
+}
+
 // ─── Startup: check session ────────────────────────────────────────────────────
 async function startApp() {
   const session = await window.sk.authSession();
@@ -2308,9 +2334,7 @@ async function startApp() {
     init();
     loadProfile();
   } else {
-    // Show login overlay — but only if Supabase is configured
-    // If not configured (dev mode / ownerMode), skip auth
-    authOverlay.style.display = 'flex';
+    showAuthOverlay();
     showAuthForm('login');
   }
 }
