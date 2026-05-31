@@ -1,7 +1,7 @@
 {
   "name": "sidekick",
-  "version": "1.1.0",
-  "description": "AI sidekick that watches your screen — shopping, food, finance, anything",
+  "version": "1.2.0",
+  "description": "AI sidekick that watches your screen — catches scams, bad deals, and subscription traps in real time",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
