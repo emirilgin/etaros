@@ -505,7 +505,7 @@ async function streamGeminiWithModel(modelName, key, systemPrompt, history) {
 
 async function streamGemini(systemPrompt, history) {
   const key = getGeminiKey();
-  if (!key) throw new Error('No Gemini key found. Get a free one at aistudio.google.com → Get API key → Create API key in new project');
+  if (!key) throw new Error('No AI key set. Open Settings → AI → paste your free Gemini key from aistudio.google.com → Save. Only need to do this once.');
 
   let lastErr;
   for (const modelName of GEMINI_MODELS) {
@@ -523,17 +523,17 @@ async function streamGemini(systemPrompt, history) {
         continue; // try next model
       }
       // Non-quota error — surface it immediately with a clean message
-      const clean = msg.includes('API key') ? 'Invalid Gemini API key. Get a fresh one at aistudio.google.com'
-                  : msg.includes('limit: 0')  ? 'Gemini quota exhausted. Get a new API key at aistudio.google.com (create a NEW project, no billing).'
+      const clean = msg.includes('API key') || msg.includes('API_KEY') || msg.includes('INVALID_ARGUMENT')
+                  ? 'Gemini key invalid. Open Settings → AI → paste your key from aistudio.google.com → Save.'
                   : msg.split('\n')[0]; // first line only — strip the giant JSON
       throw new Error(clean);
     }
   }
 
-  // All models exhausted — show helpful message with self-serve fix
-  const retryMatch = String(lastErr?.message ?? '').match(/retry[^0-9]*(\d+)/i);
-  const wait = retryMatch ? ` Try again in ${retryMatch[1]}s.` : ' Try again in a few minutes.';
-  throw new Error(`Daily AI limit reached.${wait}\n\nTo keep using Sidekick: open Settings → paste your own free Gemini key from aistudio.google.com (free, takes 30 seconds).`);
+  // All models exhausted — quota hit across the board
+  // Keys do NOT expire — this is daily quota (resets at midnight Pacific)
+  // User does NOT need a new key, just wait or use their own key
+  throw new Error('Daily AI quota reached — resets at midnight. Your key is still valid.\n\nTip: paste your own free Gemini key in Settings → AI to get a higher personal quota (takes 30 seconds at aistudio.google.com).');
 }
 
 // ─── Stream: Claude (optional, for Pro/Max if Anthropic key is set) ───────────
