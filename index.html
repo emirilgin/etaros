@@ -1161,16 +1161,7 @@ html,body{
 /* search-panel flex fills remaining height when WebContentsView is overlaid */
 
 /* ── Advanced settings full-screen page ── */
-#advanced-page { position:fixed; inset:0; z-index:360; background:var(--bg); display:flex; flex-direction:column; transform:translateX(100%); transition:transform .26s cubic-bezier(.16,.8,.3,1); }
-#advanced-page.open { transform:translateX(0); }
-#adv-hdr { height:44px; flex-shrink:0; display:flex; align-items:center; padding:0 16px; border-bottom:1px solid var(--border); background:var(--bg-hi); -webkit-app-region:drag; }
-#adv-back { -webkit-app-region:no-drag; display:flex; align-items:center; gap:5px; height:28px; padding:0 10px; border-radius:var(--r-xs); background:none; border:none; cursor:pointer; font-family:inherit; font-size:12.5px; color:var(--t2); transition:color .12s,background .12s; }
-#adv-back:hover { color:var(--t1); background:var(--surface); }
-#adv-back svg { width:12px; height:12px; }
-#adv-title { flex:1; text-align:center; font-size:13px; font-weight:600; color:var(--t2); pointer-events:none; }
-#adv-body { flex:1; overflow-y:auto; padding:0 0 24px; }
-#adv-body::-webkit-scrollbar { width:4px; }
-#adv-body::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+/* Advanced page CSS removed — settings now inline */
 .adv-section { padding:16px 20px 4px; }
 .adv-section-lbl { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--t3); padding-bottom:8px; }
 .adv-field { display:flex; flex-direction:column; gap:4px; margin-bottom:10px; }
@@ -1208,9 +1199,7 @@ html,body{
 .adv-pcard.active .adv-pcard-name { color:var(--orange-t); }
 .adv-hint { font-size:11.5px; color:var(--t3); line-height:1.6; margin-top:4px; }
 .adv-divider { height:1px; background:var(--border); margin:8px 20px; }
-#adv-footer { flex-shrink:0; padding:12px 20px 20px; border-top:1px solid var(--border); background:var(--bg); }
-#adv-save-btn { width:100%; height:40px; background:var(--orange); color:#fff; border:none; border-radius:var(--r-s); font-family:inherit; font-size:14px; font-weight:600; cursor:pointer; transition:opacity .15s; }
-#adv-save-btn:hover { opacity:.88; }
+/* #adv-footer + #adv-save-btn removed — settings save button now inline */
 
 /* Conv context menu */
 .conv-menu-btn { background:none; border:none; cursor:pointer; color:var(--t3); padding:2px 5px; border-radius:4px; opacity:0; transition:opacity .12s,color .12s; flex-shrink:0; font-size:13px; line-height:1; }
@@ -1854,13 +1843,25 @@ html,body{
           <div class="adv-pcard" data-prov="claude">
             <span class="adv-pcard-icon">◈</span>
             <span class="adv-pcard-name">Own Key</span>
-            <span class="adv-pcard-sub">API key</span>
+            <span class="adv-pcard-sub">Claude</span>
           </div>
         </div>
         <div id="adv-own-key-field" class="adv-field" style="margin-top:10px;display:none">
-          <label>API Key</label>
-          <input id="adv-own-key" type="password" placeholder="sk-ant-… or similar"/>
+          <label>Anthropic API key</label>
+          <input id="adv-own-key" type="password" placeholder="sk-ant-…" autocomplete="off" spellcheck="false"/>
         </div>
+      </div>
+
+      <!-- Personal Gemini key — removes shared daily quota -->
+      <div class="sp-section-lbl">Personal Gemini key <span style="color:var(--t4);font-weight:400">· optional</span></div>
+      <div style="padding:0 20px 4px">
+        <div class="adv-field">
+          <div class="adv-field-row" style="display:flex;gap:6px">
+            <input id="adv-gemini-key" type="password" placeholder="AIza…" autocomplete="off" spellcheck="false" style="flex:1;height:40px;padding:0 12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-s);color:var(--t1);font-family:inherit;font-size:14px;outline:none"/>
+            <button class="adv-activate-btn" id="adv-gemini-clear" type="button" title="Clear key" style="height:40px">Clear</button>
+          </div>
+        </div>
+        <p class="adv-hint" id="adv-gemini-status" style="margin-top:6px">Using shared key. Hit the daily limit? Paste your own free key from <a href="#" id="adv-gemini-link" style="color:var(--orange)">aistudio.google.com</a> for a higher personal quota.</p>
       </div>
       <div class="sp-divider"></div>
       <div class="sp-section-lbl">Support</div>
@@ -1879,105 +1880,7 @@ html,body{
     <button id="sp-save-btn">Save changes</button>
   </div>
 </div>
-<!-- Advanced Settings full-screen page -->
-<div id="advanced-page">
-  <div id="adv-hdr">
-    <button id="adv-back">
-      <svg viewBox="0 0 12 12" fill="none"><path d="M8 2L4 6l4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      Back
-    </button>
-    <span id="adv-title">Advanced Settings</span>
-    <div style="width:60px;-webkit-app-region:no-drag"></div>
-  </div>
-  <div id="adv-body">
-
-    <!-- Scan interval -->
-    <div class="adv-section">
-      <div class="adv-section-lbl">Scan interval</div>
-      <div class="adv-pills" id="adv-interval-pills">
-        <button class="adv-pill" data-val="15">15s<small>Fast</small></button>
-        <button class="adv-pill active" data-val="30">30s<small>Default</small></button>
-        <button class="adv-pill" data-val="60">60s<small>Gentle</small></button>
-        <button class="adv-pill" data-val="0">Off<small>Manual</small></button>
-      </div>
-      <p class="adv-hint">How often Sidekick silently scans your screen.</p>
-    </div>
-
-    <!-- Behaviour toggles -->
-    <div class="adv-section">
-      <div class="adv-section-lbl">Behaviour</div>
-      <div class="adv-toggle-row">
-        <div class="adv-toggle-info">
-          <span class="adv-toggle-label">Auto-scan</span>
-          <span class="adv-toggle-sub">Watch screen continuously in the background</span>
-        </div>
-        <label class="adv-sw"><input type="checkbox" id="adv-auto-scan"/><span class="adv-sw-t"></span></label>
-      </div>
-      <div class="adv-toggle-row">
-        <div class="adv-toggle-info">
-          <span class="adv-toggle-label">Launch at login</span>
-          <span class="adv-toggle-sub">Start Sidekick when you sign in</span>
-        </div>
-        <label class="adv-sw"><input type="checkbox" id="adv-login"/><span class="adv-sw-t"></span></label>
-      </div>
-    </div>
-
-    <div class="adv-divider"></div>
-
-    <!-- City -->
-    <div class="adv-section">
-      <div class="adv-section-lbl">Your city</div>
-      <div class="adv-field">
-        <input id="adv-city" type="text" placeholder="e.g. Amsterdam, London, New York"/>
-      </div>
-      <p class="adv-hint">Used for local prices, restaurants and nearby deals.</p>
-    </div>
-
-    <!-- License key -->
-    <div class="adv-section">
-      <div class="adv-section-lbl">Beta / Tester code</div>
-      <div class="adv-field">
-        <div class="adv-field-row">
-          <input id="adv-tester-code" type="text" placeholder="Enter invite code" spellcheck="false" autocomplete="off"/>
-          <button class="adv-activate-btn" id="adv-tester-btn">Redeem →</button>
-        </div>
-      </div>
-      <p class="adv-hint" id="adv-tester-status"></p>
-    </div>
-
-    <div class="adv-divider"></div>
-
-    <!-- AI Provider -->
-    <div class="adv-section">
-      <div class="adv-section-lbl">AI provider</div>
-      <div class="adv-prov-grid" id="adv-prov-grid">
-        <div class="adv-pcard active" data-prov="builtin">
-          <span class="adv-pcard-icon">◉</span>
-          <span class="adv-pcard-name">Sidekick</span>
-          <span class="adv-pcard-sub">Default · No setup</span>
-        </div>
-        <div class="adv-pcard" data-prov="ollama">
-          <span class="adv-pcard-icon">○</span>
-          <span class="adv-pcard-name">Ollama</span>
-          <span class="adv-pcard-sub">Local · Private</span>
-        </div>
-        <div class="adv-pcard" data-prov="claude">
-          <span class="adv-pcard-icon">◈</span>
-          <span class="adv-pcard-name">Own Key</span>
-          <span class="adv-pcard-sub">Your API key</span>
-        </div>
-      </div>
-      <div id="adv-own-key-field" class="adv-field" style="margin-top:10px;display:none">
-        <label>API Key</label>
-        <input id="adv-own-key" type="password" placeholder="sk-ant-… or similar"/>
-      </div>
-    </div>
-
-  </div>
-  <div id="adv-footer">
-    <button id="adv-save-btn">Save changes</button>
-  </div>
-</div>
+<!-- Advanced Settings — now fully inline in settings page -->
 
 <!-- Custom confirm dialog -->
 <div id="confirm-overlay" style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(15,10,5,.7);align-items:center;justify-content:center">

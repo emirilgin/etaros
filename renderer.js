@@ -303,16 +303,39 @@ document.getElementById('tl-max')  ?.addEventListener('click', () => window.sk.s
 
 // ─── Buttons ──────────────────────────────────────────────────────────────────
 // settings button removed from sidebar
-settingsFsBtn.addEventListener('click',  () => window.sk.openSettings());
+settingsFsBtn.addEventListener('click',  () => openSettingsPage('profile'));
 upBtn.addEventListener('click',          () => openSettingsPage('plan'));
 clearBtn.addEventListener('click', () => window.sk.clearHistory());
 
-// No-key banner
+// No-key banner → open inline settings at the AI / Gemini-key section
 const noKeyBanner = document.getElementById('no-key-banner');
 const noKeyBtn    = document.getElementById('no-key-settings-btn');
-if (noKeyBtn) noKeyBtn.addEventListener('click', () => window.sk.openSettings());
+if (noKeyBtn) noKeyBtn.addEventListener('click', () => openSettingsPage('advanced'));
 window.sk.on('no-key', () => { if (noKeyBanner) noKeyBanner.style.display = 'flex'; });
 window.sk.on('key-ok',  () => { if (noKeyBanner) noKeyBanner.style.display = 'none'; });
+
+// ─── Offline detection ────────────────────────────────────────────────────────
+// Anticipate the failure: show status before the user wastes a message offline.
+const offlineBanner = document.createElement('div');
+offlineBanner.id = 'offline-banner';
+offlineBanner.style.cssText =
+  'display:none;position:fixed;top:44px;left:0;right:0;z-index:9997;padding:7px 12px;' +
+  'background:#7a1f1f;color:#ffe;font-size:12.5px;text-align:center;font-weight:500;' +
+  '-webkit-app-region:no-drag;letter-spacing:.01em';
+offlineBanner.textContent = '⚠ You\'re offline — AI features need an internet connection.';
+document.body.appendChild(offlineBanner);
+
+function setOnlineState(online) {
+  offlineBanner.style.display = online ? 'none' : 'block';
+  if (send) send.disabled = !online;
+  if (msg)  msg.placeholder = online
+    ? (msg.dataset.basePlaceholder || msg.placeholder)
+    : 'Offline — reconnect to chat';
+}
+if (msg) msg.dataset.basePlaceholder = msg.placeholder;
+window.addEventListener('online',  () => { setOnlineState(true);  showToast('Back online', 'ok'); });
+window.addEventListener('offline', () => { setOnlineState(false); });
+setOnlineState(navigator.onLine);
 
 // Scan
 async function doScan(btn) {
@@ -2043,7 +2066,21 @@ function openSettingsPage(section = 'profile') {
     const ownKey      = document.getElementById('adv-own-key');
     if (ownKeyField) ownKeyField.style.display = (prov === 'claude') ? '' : 'none';
     if (ownKey)      ownKey.value = s.apiKey || '';
+    // Personal Gemini key
+    const gKey    = document.getElementById('adv-gemini-key');
+    const gStatus = document.getElementById('adv-gemini-status');
+    if (gKey) gKey.value = s.geminiKey || '';
+    if (gStatus) {
+      gStatus.innerHTML = s.geminiKey
+        ? '✓ Using your personal key — higher daily quota.'
+        : 'Using shared key. Hit the daily limit? Paste your own free key from <a href="#" id="adv-gemini-link" style="color:var(--orange)">aistudio.google.com</a> for a higher personal quota.';
+      // Re-bind link (innerHTML wiped listener)
+      document.getElementById('adv-gemini-link')?.addEventListener('click', e => {
+        e.preventDefault(); window.sk.openUrl('https://aistudio.google.com/app/apikey');
+      });
+    }
   });
+  updateTesterStatus();
 
   window.sk.getProfile().then(p => {
     const n = document.getElementById('sp-name');
@@ -2124,7 +2161,15 @@ document.getElementById('sp-save-btn')?.addEventListener('click', async () => {
   const avatar   = spAvatarDataUrl || undefined;
   const activePill = document.querySelector('.adv-pill.active');
   const activeProv = document.querySelector('.adv-pcard.active');
-  // Save profile + advanced settings in one go
+
+  // Smart key routing: a Gemini key (AIza…) in any field goes to geminiKey,
+  // a Claude key (sk-ant…) goes to apiKey — prevents the "pasted in wrong box" trap.
+  let apiKey    = document.getElementById('adv-own-key')?.value.trim()    || '';
+  let geminiKey = document.getElementById('adv-gemini-key')?.value.trim() || '';
+  if (/^AIza/i.test(apiKey))    { geminiKey = apiKey; apiKey = ''; }
+  if (/^sk-ant/i.test(geminiKey)) { apiKey = geminiKey; geminiKey = ''; }
+
+  // Save profile + settings in one go
   await Promise.all([
     window.sk.saveProfile({ name, language, ...(avatar ? { avatar } : {}) }),
     window.sk.saveSettings({
@@ -2133,12 +2178,24 @@ document.getElementById('sp-save-btn')?.addEventListener('click', async () => {
       autoScan:     document.getElementById('adv-auto-scan')?.checked    ?? false,
       startOnLogin: document.getElementById('adv-login')?.checked        ?? false,
       provider:     activeProv ? activeProv.dataset.prov                 : 'builtin',
-      apiKey:       document.getElementById('adv-own-key')?.value.trim() || '',
+      apiKey,
+      geminiKey,
     }),
   ]);
   spAvatarDataUrl = null;
   settingsPage?.classList.remove('open');
   showToast('Settings saved', 'ok');
+});
+
+// Clear personal Gemini key
+document.getElementById('adv-gemini-clear')?.addEventListener('click', () => {
+  const g = document.getElementById('adv-gemini-key');
+  if (g) g.value = '';
+});
+// Open Google AI Studio to get a free key
+document.getElementById('adv-gemini-link')?.addEventListener('click', e => {
+  e.preventDefault();
+  window.sk.openUrl('https://aistudio.google.com/app/apikey');
 });
 
 document.getElementById('sp-upgrade-btn')?.addEventListener('click', () => openSettingsPage('plan'));
@@ -2164,51 +2221,17 @@ document.getElementById('sp-logout-btn')?.addEventListener('click', () => {
   });
 });
 
-// ─── Advanced Settings page ───────────────────────────────────────────────────
-const advancedPage = document.getElementById('advanced-page');
-
-function openAdvancedPage() {
-  if (!advancedPage) return;
-  // Close settings page if open so advanced slides over it
-  settingsPage?.classList.remove('open');
-  advancedPage.classList.add('open');
-  // Load current settings
-  window.sk.getSettings().then(s => {
-    const city      = document.getElementById('adv-city');
-    const autoScan  = document.getElementById('adv-auto-scan');
-    const loginItem = document.getElementById('adv-login');
-    if (city)      city.value       = s.city        || '';
-    if (autoScan)  autoScan.checked = Boolean(s.autoScan);
-    if (loginItem) loginItem.checked = Boolean(s.startOnLogin);
-    // Scan interval pills
-    const interval = Number(s.scanInterval ?? 30);
-    document.querySelectorAll('.adv-pill').forEach(p =>
-      p.classList.toggle('active', Number(p.dataset.val) === interval));
-    // Provider cards
-    const prov = s.provider || 'builtin';
-    document.querySelectorAll('.adv-pcard').forEach(c =>
-      c.classList.toggle('active', c.dataset.prov === prov));
-    // Own key field
-    const ownKeyField = document.getElementById('adv-own-key-field');
-    const ownKey      = document.getElementById('adv-own-key');
-    if (ownKeyField) ownKeyField.style.display = (prov === 'claude') ? '' : 'none';
-    if (ownKey) ownKey.value = s.apiKey || '';
-  });
-  // Update tester status
+// ─── Advanced Settings (inline in settings page) ──────────────────────────────
+// Tester status helper — called when settings page opens
+function updateTesterStatus() {
   window.sk.checkLicense().then(lic => {
     const el = document.getElementById('adv-tester-status');
     if (!el) return;
-    if (lic.tier === 'max') el.textContent = '✓ Max access active';
+    if (lic.tier === 'max')      el.textContent = '✓ Max access active';
     else if (lic.tier === 'pro') el.textContent = '✓ Pro access active';
     else el.textContent = '';
   });
 }
-
-document.getElementById('adv-back')?.addEventListener('click', () => {
-  advancedPage?.classList.remove('open');
-  // Re-open settings page on Advanced tab
-  openSettingsPage('advanced');
-});
 
 // Interval pills
 document.querySelectorAll('.adv-pill').forEach(pill =>

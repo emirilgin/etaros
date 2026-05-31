@@ -1,9 +1,9 @@
 'use strict';
 
 const { init: sentryRendererInit } = require('@sentry/electron/renderer');
-sentryRendererInit({
-  dsn: 'https://e43ea3481b44b42aebfaf0723599733e@o4511469742391296.ingest.de.sentry.io/4511469748355152',
-});
+let _sentryDsn = '';
+try { _sentryDsn = require('./app.config').sentryDsn || ''; } catch { /* no config */ }
+if (_sentryDsn) sentryRendererInit({ dsn: _sentryDsn });
 
 const { contextBridge, ipcRenderer } = require('electron');
 

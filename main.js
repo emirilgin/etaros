@@ -1,9 +1,9 @@
 'use strict';
 
 const { init: sentryInit } = require('@sentry/electron/main');
-sentryInit({
-  dsn: 'https://e43ea3481b44b42aebfaf0723599733e@o4511469742391296.ingest.de.sentry.io/4511469748355152',
-});
+let _sentryDsn = '';
+try { _sentryDsn = require('./app.config').sentryDsn || ''; } catch { /* no config */ }
+if (_sentryDsn) sentryInit({ dsn: _sentryDsn });
 
 const {
   app, BrowserWindow, BrowserView, desktopCapturer, ipcMain,
@@ -715,6 +715,16 @@ async function streamGeminiWithModel(modelName, key, systemPrompt, history) {
   return full;
 }
 
+// Turn raw network/SDK errors into something a human understands
+function friendlyError(err) {
+  const msg = String(err?.message ?? err ?? '');
+  if (/fetch failed|ENOTFOUND|ECONNREFUSED|ETIMEDOUT|EAI_AGAIN|getaddrinfo|network|ERR_INTERNET|dns/i.test(msg)
+      || err?.name === 'AbortError' || err?.code === 'ENOTFOUND') {
+    return "Can't reach the AI — you appear to be offline. Check your internet connection and try again.";
+  }
+  return msg.split('\n')[0]; // first line only, never dump giant JSON at the user
+}
+
 async function streamGemini(systemPrompt, history) {
   const key = getGeminiKey();
   if (!key) throw new Error('No AI key set. Open Settings → AI → paste your free Gemini key from aistudio.google.com → Save. Only need to do this once.');
@@ -880,7 +890,7 @@ async function chat(userText, thumbnail) {
 
   } catch (err) {
     console.error('[chat]', err.message);
-    push('stream-error', { message: err.message });
+    push('stream-error', { message: friendlyError(err) });
     chatHistory.pop();
   } finally {
     isStreaming = false;
@@ -1113,7 +1123,7 @@ function registerIPC() {
 
   ipcMain.handle('save-settings', (_, s) => {
     if (s.apiKey       != null) { store.set('apiKey',       s.apiKey);      anthropic = null; cachedKey = ''; }
-    if (s.geminiKey    != null) { store.set('geminiKey', s.geminiKey); push(s.geminiKey ? 'key-ok' : 'no-key', {}); }
+    if (s.geminiKey    != null) { store.set('geminiKey', s.geminiKey); push(getGeminiKey() ? 'key-ok' : 'no-key', {}); }
     if (s.city         != null)   store.set('city',         s.city);
     if (s.scanInterval != null)   store.set('scanInterval', s.scanInterval);
     if (s.autoScan     != null)   store.set('autoScan',     s.autoScan);
@@ -1375,7 +1385,7 @@ function registerIPC() {
       push('stream-done', { _tier: usage.tier, _used: usage.used, _limit: usage.limit });
     } catch (err) {
       console.error('[analyze-image]', err.message);
-      push('stream-error', { message: err.message });
+      push('stream-error', { message: friendlyError(err) });
     } finally {
       isStreaming = false;
     }
