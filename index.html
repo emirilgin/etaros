@@ -8,33 +8,33 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
 :root{
-  /* Base — very dark, slightly cool (airweave-inspired) */
-  --bg:         #090910;
-  --bg-hi:      #0d0d14;
-  --surface:    #141420;
-  --card:       #1a1a28;
-  --card-h:     #20202e;
-  --border:     #1e1e2c;
-  --border2:    #282838;
+  /* Base — warm cream/white (clean, professional) */
+  --bg:         #F9F7F3;
+  --bg-hi:      #F3F0EA;
+  --surface:    #FFFFFF;
+  --card:       #F6F3EE;
+  --card-h:     #EDE9E2;
+  --border:     #E4DDD5;
+  --border2:    #D4CCC2;
 
-  /* Brand orange — warm, distinct against cool bg */
-  --orange:     #cf6e3c;
-  --orange-dim: rgba(207,110,60,.13);
-  --orange-glow:rgba(207,110,60,.07);
-  --orange-t:   #e07848;
-  --orange-hi:  #f0a070;
+  /* Brand — warm orange */
+  --orange:     #C0601E;
+  --orange-dim: rgba(192,96,30,.09);
+  --orange-glow:rgba(192,96,30,.05);
+  --orange-t:   #A34E18;
+  --orange-hi:  #D4723A;
 
   /* Status colors */
-  --green: #4db87a; --green-bg: rgba(77,184,122,.1);
-  --red:   #c05858; --red-bg:   rgba(192,88,88,.1);
-  --blue:  #5888c8; --blue-bg:  rgba(88,136,200,.1);
-  --amber: #c09040; --amber-bg: rgba(192,144,64,.1);
+  --green: #2A7A50; --green-bg: rgba(42,122,80,.1);
+  --red:   #B83030; --red-bg:   rgba(184,48,48,.1);
+  --blue:  #3460A8; --blue-bg:  rgba(52,96,168,.1);
+  --amber: #906818; --amber-bg: rgba(144,104,24,.1);
 
-  /* Text scale — cooler neutrals */
-  --t1: #ebebf0;
-  --t2: #72707c;
-  --t3: #3e3d48;
-  --t4: #252430;
+  /* Text scale — warm neutrals */
+  --t1: #1A1714;
+  --t2: #6A6460;
+  --t3: #A09890;
+  --t4: #C4BDB5;
 
   --r:    12px;
   --r-s:   8px;
@@ -287,7 +287,54 @@ html,body{
 }
 .new-chat-btn:hover{ background:var(--card); color:var(--t1); border-color:var(--border2); }
 
-.sb-spacer{ flex:1; }
+/* ── New chat button ── */
+.new-chat-btn{
+  width:100%; display:flex; align-items:center; gap:8px;
+  padding:9px 14px; border-radius:var(--r-s);
+  background:var(--surface); border:1px solid var(--border);
+  color:var(--t2); font-family:inherit; font-size:13px; font-weight:500;
+  cursor:pointer; transition:background .14s,border-color .14s,color .14s;
+  letter-spacing:.005em;
+}
+.new-chat-btn:hover{
+  background:var(--card-h); border-color:var(--border2); color:var(--t1);
+}
+
+/* ── Conversation list ── */
+#conv-list{
+  flex:1; overflow-y:auto; padding:4px 0;
+}
+#conv-list::-webkit-scrollbar{ width:0; }
+.conv-item{
+  display:flex; align-items:center; gap:0;
+  padding:8px 18px; margin:1px 6px;
+  border-radius:var(--r-s); cursor:pointer;
+  transition:background .13s;
+}
+.conv-item:hover{ background:var(--card); }
+.conv-item.active{ background:var(--card); }
+.conv-title{
+  flex:1; font-size:13px; color:var(--t2);
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+  font-weight:400;
+}
+.conv-item.active .conv-title{ color:var(--t1); font-weight:500; }
+.conv-item:hover .conv-title{ color:var(--t1); }
+.conv-date{
+  font-size:10.5px; color:var(--t4); flex-shrink:0; margin-left:6px;
+}
+.conv-del{
+  background:none; border:none; cursor:pointer; color:var(--t4);
+  font-size:10px; padding:2px 4px; border-radius:3px;
+  opacity:0; transition:opacity .12s,color .12s; flex-shrink:0;
+}
+.conv-item:hover .conv-del{ opacity:1; }
+.conv-del:hover{ color:var(--red); }
+.conv-empty{
+  padding:12px 18px; font-size:12px; color:var(--t4); font-style:italic;
+}
+
+.sb-spacer{ flex:0; }
 
 /* ═══ MAIN ══════════════════════════════════════════════════════════════════════ */
 #main{
@@ -883,9 +930,9 @@ html,body{
   position:fixed; inset:0; z-index:999;
   display:none; flex-direction:column; align-items:center; justify-content:center;
   gap:14px;
-  background:rgba(10,8,6,.88);
+  background:rgba(249,247,243,.92);
   backdrop-filter:blur(10px);
-  border:2px dashed rgba(200,98,46,.5);
+  border:2px dashed rgba(192,96,30,.4);
   pointer-events:none;
 }
 #drop-zone.active{ display:flex; }
@@ -897,7 +944,7 @@ html,body{
 /* ═══ MEMORY MODAL ═════════════════════════════════════════════════════════════════ */
 #memory-modal{
   display:none; position:fixed; inset:0; z-index:200;
-  background:rgba(0,0,0,.6); backdrop-filter:blur(4px);
+  background:rgba(30,20,10,.35); backdrop-filter:blur(6px);
   align-items:center; justify-content:center;
   animation:fadeIn .18s ease both;
 }
@@ -905,9 +952,9 @@ html,body{
 @keyframes fadeIn{ from{opacity:0} to{opacity:1} }
 .mem-panel{
   width:560px; max-height:72vh;
-  background:var(--bg-hi); border:1px solid var(--border2);
+  background:var(--surface); border:1px solid var(--border);
   border-radius:18px; display:flex; flex-direction:column;
-  box-shadow:0 8px 32px rgba(0,0,0,.5); overflow:hidden;
+  box-shadow:0 8px 40px rgba(30,20,10,.18); overflow:hidden;
   animation:slideUp .22s cubic-bezier(.16,.8,.3,1) both;
 }
 @keyframes slideUp{ from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:none} }
@@ -1017,7 +1064,6 @@ html,body{
 
       <!-- Brand row -->
       <div class="sb-brand">
-        <!-- Sidekick mark: geometric eye — "second pair of eyes" -->
         <div class="sb-mark">
           <svg viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
             <path d="M3 16C3 16 8.5 7 16 7C23.5 7 29 16 29 16C29 16 23.5 25 16 25C8.5 25 3 16 3 16Z"
@@ -1026,47 +1072,35 @@ html,body{
             <circle cx="16" cy="16" r="2.3" fill="url(#sk-g1)"/>
             <defs>
               <linearGradient id="sk-g1" x1="3" y1="7" x2="29" y2="25" gradientUnits="userSpaceOnUse">
-                <stop offset="0%" stop-color="#f0a070"/>
-                <stop offset="100%" stop-color="#c85828"/>
+                <stop offset="0%" stop-color="#D4723A"/>
+                <stop offset="100%" stop-color="#A34E18"/>
               </linearGradient>
             </defs>
           </svg>
         </div>
         <span class="sb-name">Sidekick</span>
         <span id="tier-badge"></span>
-        <!-- Compact icon buttons in brand row -->
-        <button class="sb-icon-btn" id="scan-sidebar-btn" title="Scan screen">
-          <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="4" height="4" rx=".8" stroke="currentColor" stroke-width="1.3"/><rect x="11" y="1" width="4" height="4" rx=".8" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="11" width="4" height="4" rx=".8" stroke="currentColor" stroke-width="1.3"/><rect x="11" y="11" width="4" height="4" rx=".8" stroke="currentColor" stroke-width="1.3"/><circle cx="8" cy="8" r="2" fill="currentColor"/></svg>
-        </button>
-        <button class="sb-icon-btn" id="upload-sidebar-btn" title="Upload image">
-          <svg viewBox="0 0 16 16" fill="none"><path d="M8 11V4M5 7l3-3 3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 13h10" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
-        </button>
       </div>
 
       <!-- New chat button -->
-      <div style="padding:0 10px 14px;">
-        <button class="new-chat-btn" id="clear-chat-btn" title="New conversation">
-          <svg viewBox="0 0 16 16" fill="none" style="width:13px;height:13px"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <div style="padding:0 10px 8px;">
+        <button class="new-chat-btn" id="new-chat-btn" title="New conversation">
+          <svg viewBox="0 0 16 16" fill="none" style="width:13px;height:13px;flex-shrink:0"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
           New chat
         </button>
       </div>
 
-      <!-- Navigation -->
-      <div class="sb-label" style="padding-top:14px">Workspace</div>
-      <button class="nav-item tab-btn active" data-tab="chat"><span class="nav-icon">◉</span>Chat</button>
-      <button class="nav-item tab-btn" data-tab="notes"><span class="nav-icon">◇</span>Notes</button>
-      <button class="nav-item tab-btn" data-tab="savings"><span class="nav-icon">◆</span>Savings</button>
-      <button class="nav-item tab-btn" data-tab="diet"><span class="nav-icon">○</span>Diet</button>
-      <button class="nav-item tab-btn" data-tab="search"><span class="nav-icon">◈</span>Search</button>
-
-      <!-- Focus Modes -->
-      <div class="sb-divider" style="margin-top:10px"></div>
-      <div class="sb-label">Focus Mode</div>
-      <div id="mode-bar"><!-- populated by renderer.js --></div>
-      <div id="mode-tagline"></div>
+      <!-- Conversation history -->
+      <div id="conv-list"></div>
 
       <div class="sb-spacer"></div>
       <div class="sb-divider"></div>
+
+      <!-- Secondary nav -->
+      <button class="nav-item tab-btn" data-tab="notes"><span class="nav-icon">◇</span>Notes</button>
+      <button class="nav-item tab-btn" data-tab="search"><span class="nav-icon">◈</span>Search</button>
+
+      <div class="sb-divider" style="margin:6px 14px"></div>
 
       <!-- Bottom actions -->
       <button class="sb-bottom-btn" id="memory-btn"><span class="nav-icon">◎</span>Memory</button>
@@ -1110,8 +1144,8 @@ html,body{
 
       <!-- Upgrade banner -->
       <div id="upgrade">
-        <h4>Your free trial is up</h4>
-        <p>Ghost has been watching. Unlock Vault, Bloom, Flow &amp; Hawk — Pro is <strong>$9/mo</strong>. Pays for itself the first time it catches a subscription trap.</p>
+        <h4>Free trial complete</h4>
+        <p>Upgrade to Pro for unlimited messages and priority AI — <strong>$9/mo</strong>.</p>
         <button id="up-btn">Upgrade in Settings →</button>
       </div>
 
@@ -1226,64 +1260,6 @@ html,body{
         </div>
       </div>
 
-      <!-- ── Savings panel ───────────────────────────────────────────── -->
-      <div id="savings-panel" class="tab-panel">
-        <div class="life-panel-inner">
-
-          <!-- Stats row -->
-          <div class="life-stats-row" id="savings-stats-row"></div>
-
-          <!-- Chart -->
-          <div class="chart-wrap">
-            <div class="chart-title">Savings over time · last 14 days</div>
-            <canvas class="chart-canvas" id="savings-chart" height="130"></canvas>
-          </div>
-
-          <!-- Add form -->
-          <div class="life-add-form">
-            <input class="life-add-input" id="saving-item"   type="text"   placeholder="What did you save on? (e.g. 'Netflix')"/>
-            <input class="life-add-input" id="saving-amount" type="number" placeholder="$ amount" style="max-width:110px" min="0" step="0.01"/>
-            <button class="life-add-btn" id="saving-add-btn">+ Log Saving</button>
-          </div>
-
-          <!-- Recent chips -->
-          <div id="savings-chips"></div>
-
-          <!-- Entries -->
-          <div class="life-section-hdr">History</div>
-          <div id="savings-entries"></div>
-
-        </div>
-      </div>
-
-      <!-- ── Diet panel ──────────────────────────────────────────────── -->
-      <div id="diet-panel" class="tab-panel">
-        <div class="life-panel-inner">
-
-          <!-- Stats row -->
-          <div class="life-stats-row" id="diet-stats-row"></div>
-
-          <!-- Chart -->
-          <div class="chart-wrap">
-            <div class="chart-title">Daily calories · last 7 days</div>
-            <canvas class="chart-canvas" id="diet-chart" height="130"></canvas>
-          </div>
-
-          <!-- Add form (kcal auto-estimated by AI) -->
-          <div class="life-add-form">
-            <input class="life-add-input" id="diet-item" type="text" placeholder="What did you eat? e.g. chicken salad, big mac…"/>
-            <button class="life-add-btn" id="diet-add-btn">Log Meal →</button>
-          </div>
-
-          <!-- Recent chips -->
-          <div id="diet-chips"></div>
-
-          <!-- Entries -->
-          <div class="life-section-hdr">Meals logged</div>
-          <div id="diet-entries"></div>
-
-        </div>
-      </div>
 
       <!-- ── Search panel ─────────────────────────────────────────────── -->
       <div id="search-panel" class="tab-panel">

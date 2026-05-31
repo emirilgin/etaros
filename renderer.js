@@ -130,83 +130,87 @@ expandBtn.addEventListener('click', () => window.sk.setMode('fullscreen'));
 shrinkBtn.addEventListener('click', () => window.sk.setMode('sidebar'));
 hideBtn.addEventListener('click',   () => window.sk.hideWindow());
 
-// ─── Focus mode bar ───────────────────────────────────────────────────────────
-const modeBar     = document.getElementById('mode-bar');
-const modeTagline = document.getElementById('mode-tagline');
+// ─── Conversation list ────────────────────────────────────────────────────────
+const convList = document.getElementById('conv-list');
 
-function renderModeBar(modeData) {
-  if (!modeData) return;
-  modeBar.innerHTML = '';
-  const { active, modes } = modeData;
+function renderConvList(conversations, activeChatId) {
+  if (!convList) return;
+  if (!conversations?.length) {
+    convList.innerHTML = '<div class="conv-empty">No conversations yet</div>';
+    return;
+  }
+  const fmtConvDate = ts => {
+    if (!ts) return '';
+    const d = new Date(ts);
+    const now = new Date();
+    if (d.toDateString() === now.toDateString()) return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const days = Math.floor((now - d) / 86400000);
+    if (days < 7) return ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'][d.getDay()];
+    return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
+  };
+  convList.innerHTML = conversations.map(c => `
+    <div class="conv-item${c.id === activeChatId ? ' active' : ''}" data-id="${esc(c.id)}">
+      <span class="conv-title">${esc(c.title || 'New chat')}</span>
+      <span class="conv-date">${fmtConvDate(c.updatedAt)}</span>
+      <button class="conv-del" data-id="${esc(c.id)}" title="Delete">×</button>
+    </div>
+  `).join('');
 
-  modes.forEach(m => {
-    const btn = document.createElement('button');
-    btn.className = 'mode-btn' +
-      (m.id === active  ? ' active'  : '') +
-      (m.locked         ? ' locked'  : '');
-    btn.style.setProperty('--mode-color', m.color);
-    btn.title = m.locked ? `${m.name} — Pro/Max only` : m.tagline;
-    btn.innerHTML = `
-      <span class="mode-icon-sym" style="color:var(--mode-color,var(--orange))">${m.icon}</span>
-      <span class="mode-name">${m.name}</span>
-      ${m.locked ? '<span class="mode-lock">pro</span>' : ''}
-    `;
-
-    if (!m.locked) {
-      btn.addEventListener('click', async () => {
-        const res = await window.sk.setMode(m.id);
-        if (res?.reason === 'upgrade') {
-          window.sk.openSettings();
-          return;
-        }
-        if (res?.ok) {
-          document.querySelectorAll('.mode-btn').forEach(b => {
-            b.classList.toggle('active', b.querySelector('.mode-name').textContent === m.name);
+  convList.querySelectorAll('.conv-item').forEach(el => {
+    el.addEventListener('click', async e => {
+      if (e.target.classList.contains('conv-del')) return;
+      const id = el.dataset.id;
+      const res = await window.sk.loadChat(id);
+      if (res) {
+        convList.querySelectorAll('.conv-item').forEach(x => x.classList.toggle('active', x.dataset.id === id));
+        clearFeed();
+        if (res.messages?.length) {
+          res.messages.forEach(m => {
+            if (m.role === 'user')      appendUserBubble(m.content, null);
+            else if (m.role === 'assistant') appendAiGroup(m.content);
           });
-          updateModeTagline(m);
+        } else {
+          showEmpty();
         }
-      });
-    } else {
-      btn.addEventListener('click', () => window.sk.openSettings());
-    }
-
-    modeBar.appendChild(btn);
+      }
+    });
   });
-
-  const activeModeObj = modes.find(m => m.id === active);
-  if (activeModeObj) updateModeTagline(activeModeObj);
-}
-
-function updateModeTagline(m) {
-  modeTagline.innerHTML = `<span>${m.name}</span> — ${m.tagline}`;
-  modeTagline.style.display = 'block';
-  document.documentElement.style.setProperty('--mode-color', m.color);
-}
-
-// ─── Stats bar ────────────────────────────────────────────────────────────────
-const statsBar = document.getElementById('stats-bar');
-
-function renderStats(s) {
-  if (!s) return;
-  const hasAny = s.threats > 0 || s.saved > 0 || s.scans > 0;
-  statsBar.dataset.empty = hasAny ? 'false' : 'true';
-  if (!hasAny) return;
-  document.getElementById('stat-threats-n').textContent = s.threats;
-  document.getElementById('stat-saved-n').textContent   =
-    s.saved >= 1000 ? `$${(s.saved/1000).toFixed(1)}k` : `$${s.saved.toFixed(s.saved < 10 ? 2 : 0)}`;
-  document.getElementById('stat-scans-n').textContent   = s.scans >= 1000 ? `${(s.scans/1000).toFixed(1)}k` : s.scans;
-}
-
-window.sk.on('stats-updated', renderStats);
-
-// Listen for mode changes pushed from main
-window.sk.on('mode-changed', ({ mode, icon, name, color }) => {
-  document.querySelectorAll('.mode-btn').forEach(b => {
-    b.classList.toggle('active', b.querySelector('.mode-name')?.textContent === name);
+  convList.querySelectorAll('.conv-del').forEach(btn => {
+    btn.addEventListener('click', async e => {
+      e.stopPropagation();
+      const id = btn.dataset.id;
+      const res = await window.sk.deleteChat(id);
+      renderConvList(res.conversations, res.activeChatId);
+      if (res.activeChatId !== id) return;
+      clearFeed(); showEmpty();
+    });
   });
-  modeTagline.innerHTML = `<span>${name}</span> — `;
-  document.documentElement.style.setProperty('--mode-color', color);
+}
+
+// New chat button
+document.getElementById('new-chat-btn')?.addEventListener('click', async () => {
+  const res = await window.sk.newChat();
+  renderConvList(res.conversations, res.id);
+  clearFeed(); showEmpty();
 });
+
+// Listen for conv updates from main (after each AI reply)
+window.sk.on('conv-updated', ({ conversations, activeChatId }) => {
+  renderConvList(conversations, activeChatId);
+});
+
+function clearFeed() {
+  if (!feed) return;
+  const children = Array.from(feed.children);
+  children.forEach(c => {
+    if (c.id !== 'empty' && c.id !== 'thinking') c.remove();
+  });
+}
+
+function showEmpty() {
+  if (empty) empty.style.display = '';
+  hasMessages = false;
+}
 
 // ─── Traffic lights (fullscreen macOS titlebar) ───────────────────────────────
 document.getElementById('tl-close')?.addEventListener('click', () => window.sk.hideWindow());
@@ -219,8 +223,7 @@ document.getElementById('tl-max')  ?.addEventListener('click', () => {
 settingsBtn.addEventListener('click',    () => window.sk.openSettings());
 settingsFsBtn.addEventListener('click',  () => window.sk.openSettings());
 upBtn.addEventListener('click',          () => window.sk.openSettings());
-clearBtn.addEventListener('click',       () => window.sk.clearHistory());
-newChatBtn.addEventListener('click',     () => window.sk.clearHistory());
+clearBtn.addEventListener('click', () => window.sk.clearHistory());
 
 // No-key banner
 const noKeyBanner = document.getElementById('no-key-banner');
@@ -432,11 +435,24 @@ function makeGroup(metaLabel) {
   const el = document.createElement('div');
   el.className = 'group';
   el.innerHTML = `
-    <div class="avatar">S</div>
+    <div class="avatar">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M1.5 8C1.5 8 4 3.5 8 3.5C12 3.5 14.5 8 14.5 8C14.5 8 12 12.5 8 12.5C4 12.5 1.5 8 1.5 8Z" stroke="url(#av-g)" stroke-width="1.2" fill="none" stroke-linejoin="round" stroke-linecap="round"/><circle cx="8" cy="8" r="2.5" stroke="url(#av-g)" stroke-width="1.2" fill="none"/><circle cx="8" cy="8" r="1.1" fill="url(#av-g)"/><defs><linearGradient id="av-g" x1="1.5" y1="3.5" x2="14.5" y2="12.5" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#D4723A"/><stop offset="100%" stop-color="#A34E18"/></linearGradient></defs></svg>
+    </div>
     <div class="group-r">
       <div class="g-meta">${esc(metaLabel)} <span class="g-time">${now()}</span></div>
     </div>`;
   return el;
+}
+
+// Render a complete AI message (for history restore)
+function appendAiGroup(text) {
+  showFeed();
+  const el = makeGroup('Sidekick');
+  const msgDiv = document.createElement('div');
+  msgDiv.className = 'chat-msg';
+  msgDiv.innerHTML = md(text);
+  el.querySelector('.group-r').appendChild(msgDiv);
+  feed.insertBefore(el, thinking);
 }
 
 // ─── Render: streaming ────────────────────────────────────────────────────────
@@ -1553,17 +1569,29 @@ async function init() {
   upgrade.style.display   = 'none';
   tierBadge.style.display = 'none';
 
-  const [lic, mode, focusMode, stats] = await Promise.all([
+  const [lic, mode, convData] = await Promise.all([
     window.sk.checkLicense(),
     window.sk.getWindowMode(),
-    window.sk.getMode(),
-    window.sk.getStats(),
+    window.sk.getConversations(),
   ]);
 
-  applyMode(mode || 'sidebar');
-  renderModeBar(focusMode);
-  renderStats(stats);
+  applyMode(mode || 'fullscreen');
   setTierDisplay(lic.tier, lic.used, lic.limit);
+
+  // Render conversation list
+  if (convData) renderConvList(convData.conversations, convData.activeChatId);
+
+  // Restore last conversation messages into feed
+  if (convData?.conversations?.length) {
+    const lastConv = convData.conversations.find(c => c.id === convData.activeChatId)
+      ?? convData.conversations[0];
+    if (lastConv?.messages?.length) {
+      lastConv.messages.forEach(m => {
+        if (m.role === 'user')           appendUserBubble(m.content, null);
+        else if (m.role === 'assistant') appendAiGroup(m.content);
+      });
+    }
+  }
 
   if (lic.tier === 'free' && lic.used < lic.limit) {
     trialInfo.style.display = 'block';

@@ -46,135 +46,28 @@ const FREE_TOTAL = 15;  // beta: enough messages to properly evaluate the app
 // Pro = unlimited daily — no cap. Max = unlimited + better model.
 
 // ─── System prompts ───────────────────────────────────────────────────────────
-// ─── Focus Modes ──────────────────────────────────────────────────────────────
-// Each mode is a hyper-focused scan personality. Free users get Ghost only.
-// Pro/Max unlock all 5.
-const MODES = {
-  ghost: {
-    id: 'ghost', icon: '◉', name: 'Ghost', color: '#8b7fd4',
-    tagline: 'Privacy & security guard',
-    tier: 'free',
-    prompt: `You are Sidekick in Ghost Mode — a silent cybersecurity guardian watching for privacy threats and security risks.
+// ─── Scan prompt — single unified Sidekick mode ──────────────────────────────
+const SCAN_PROMPT_BASE = `You are Sidekick — a smart, calm second pair of eyes watching the user's screen.
 
-FOCUS EXCLUSIVELY ON:
-- Phishing: look-alike domains (g00gle.com, paypa1.com), fake login pages, suspicious URLs
-- Credential harvesting: password/2FA forms on HTTP or suspicious sites
-- Dark patterns: fake urgency, hidden unsubscribe, pre-ticked data-consent boxes
-- Data exposure: personal info entered on sketchy sites
-- Tracking: sites pushing excessive permissions (location, microphone, contacts)
-- Social engineering: too-good-to-be-true offers, fake tech support, fake prizes
-- Malware: fake download buttons, bundled software warnings, suspicious installers
-- Privacy violations: apps/sites collecting far more data than the task requires
+Watch for anything worth flagging across these areas:
+- Security: phishing, fake login pages, suspicious URLs, credential harvesting
+- Finance: subscription traps, hidden fees, overcharging, fake discounts, scams
+- Shopping: flag if item is cheaper elsewhere (name store + exact price)
+- Health: food ordering? Give calorie estimate, healthier swap at same place
+- Focus: distraction sites during work hours? One brief non-judgmental note
+- Privacy: excessive data collection, sketchy permissions
 
-BE SILENT on normal safe activity. Only flag genuine security/privacy risks.
+BE SILENT on normal safe activity. Only flag when genuinely useful.
+One sharp insight beats five weak ones.
 
 Respond ONLY as valid JSON:
-{"items":[{"type":"risk|warn|tip","title":"threat name under 8 words","detail":"exactly what is suspicious and why","action":"specific step to stay safe","notify":true,"query":null}],"summary":"one sharp threat assessment","context":"security"}
+{"items":[{"type":"risk|warn|save|tip|rec","title":"insight under 8 words","detail":"specific, concrete — names, amounts, URLs","action":"one clear next step","notify":false,"query":"search term or null"}],"summary":"one sentence verdict","context":"security|finance|shopping|health|productivity"}
 
-notify:true only for active phishing/attack/credential theft. Return {"items":[],"summary":"","context":"security"} when nothing suspicious.`,
-  },
-
-  vault: {
-    id: 'vault', icon: '◈', name: 'Vault', color: '#5ab47a',
-    tagline: 'Wealth guard',
-    tier: 'pro',
-    prompt: `You are Sidekick in Vault Mode — a financial bodyguard watching for anything threatening the user's money.
-
-FOCUS EXCLUSIVELY ON:
-- Subscription traps: auto-renewing charges, hard-to-cancel services, "free trial" converting to paid
-- Hidden fees: surprise shipping, processing fees, taxes added late in checkout
-- Overcharging: items priced above market rate — name the cheaper alternative + exact price
-- Price manipulation: fake "was $X now $Y" discounts, fake scarcity, countdown timers
-- Financial dark patterns: pre-ticked upsells, confusing refund policies, cancellation friction
-- Better rates: if they're paying for something, flag if competitor is cheaper
-- Impulsive spending triggers: "limited time", "only 2 left", FOMO — call them out
-- Subscription fatigue: if multiple subscription pages visible, name the combined monthly cost
-
-Respond ONLY as valid JSON:
-{"items":[{"type":"save|warn|tip","title":"financial issue under 8 words","detail":"exact amounts, store names, prices — be specific","action":"concrete money-saving step","notify":false,"query":"search term for price comparison or null"}],"summary":"one sharp financial verdict","context":"finance"}
-
-notify:true only for active financial scam or confirmed overcharge >$20. Return {"items":[],"summary":"","context":"finance"} when nothing notable.`,
-  },
-
-  bloom: {
-    id: 'bloom', icon: '◇', name: 'Bloom', color: '#4db89e',
-    tagline: 'Health coach',
-    tier: 'pro',
-    prompt: `You are Sidekick in Bloom Mode — a calm, honest health companion watching what the user eats, orders, and reads.
-
-FOCUS EXCLUSIVELY ON:
-- Food ordering: on UberEats/DoorDash/restaurant sites, give real calorie estimates, flag unhealthy choices
-- Nutritional red flags: ultra-processed foods, excessive sugar/sodium/saturated fat — specific not preachy
-- Healthier swaps: name a specific better alternative at the same restaurant
-- Health misinformation: pseudoscience, miracle supplements, detox claims — call them out gently
-- Wellness scams: overpriced supplements with no evidence, fake "doctor endorsed" products
-- Positive reinforcement: if ordering something healthy, briefly acknowledge it
-- Pattern spotting: frequently ordering from same unhealthy place, note the pattern
-
-Be encouraging not lecturing. One actionable insight beats five warnings.
-
-Respond ONLY as valid JSON:
-{"items":[{"type":"rec|warn|tip","title":"health insight under 8 words","detail":"specific food, real calorie numbers, ingredients","action":"healthier alternative or next step","notify":false,"query":null}],"summary":"one warm health note","context":"health"}
-
-Return {"items":[],"summary":"","context":"health"} when nothing health-relevant on screen.`,
-  },
-
-  flow: {
-    id: 'flow', icon: '◌', name: 'Flow', color: '#d4a43e',
-    tagline: 'Focus guard',
-    tier: 'pro',
-    prompt: `You are Sidekick in Flow Mode — a sharp productivity guardian keeping the user in deep work and out of distraction traps.
-
-FOCUS EXCLUSIVELY ON:
-- Distraction detection: Reddit, Twitter/X, YouTube, TikTok, Instagram, news sites during work
-- Notification traps: sites pushing browser notification permissions, badge counts, red dots
-- Content rabbit holes: "recommended" feeds, autoplay videos, comment sections
-- Context switching: too many unrelated open tabs, task-jumping patterns
-- Procrastination patterns: opening social media after a hard task, Wikipedia spirals
-- Acknowledge good focus: if they're clearly working hard, a brief positive note is fine
-
-Be brief and non-judgmental. One observation. Don't lecture.
-
-Respond ONLY as valid JSON:
-{"items":[{"type":"tip|warn","title":"focus note under 8 words","detail":"what you spotted and why it matters","action":"one concrete refocus step","notify":false,"query":null}],"summary":"one sharp focus note","context":"productivity"}
-
-Return {"items":[],"summary":"","context":"productivity"} when user appears focused on productive work.`,
-  },
-
-  hawk: {
-    id: 'hawk', icon: '◆', name: 'Hawk', color: '#d4703e',
-    tagline: 'Deal hunter',
-    tier: 'pro',
-    prompt: `You are Sidekick in Hawk Mode — a razor-sharp deal hunter watching for savings and price intelligence.
-
-FOCUS EXCLUSIVELY ON:
-- Live price comparison: when shopping, is this item cheaper elsewhere RIGHT NOW? Name store + price
-- Coupon codes: actively suggest working promo codes for the site/product visible
-- Cashback: flag if retailer has cashback via TopCashback, Rakuten, Honey
-- Price history: if price seems inflated, note "this typically sells for $X"
-- Bundle deals: if buying separately, flag if bundle is better value
-- Student/professional discounts: flag if applicable from context
-- Timing: "this goes on sale every Black Friday" type intelligence
-- Shipping: free shipping thresholds, click & collect savings
-
-Be specific: "Buy on Amazon for $23 less" beats "try other stores."
-
-Respond ONLY as valid JSON:
-{"items":[{"type":"save|tip","title":"deal insight under 8 words","detail":"exact price, store name, savings amount","action":"direct next step to save","notify":false,"query":"best search term to find it cheaper"}],"summary":"one sharp deal verdict","context":"shopping"}
-
-Return {"items":[],"summary":"","context":"shopping"} when no shopping activity visible.`,
-  },
-};
-
-function getActiveMode() {
-  const id = String(store.get('activeMode') ?? 'ghost');
-  return MODES[id] ?? MODES.ghost;
-}
+notify:true only for active phishing or financial scam. Return {"items":[],"summary":"","context":"general"} when nothing notable.`;
 
 function getScanPrompt() {
-  const mode = getActiveMode();
   const city = String(store.get('city') ?? '').trim();
-  return mode.prompt + (city ? `\n\nUser location: ${city}.` : '');
+  return SCAN_PROMPT_BASE + (city ? `\n\nUser location: ${city}.` : '');
 }
 
 const CHAT_PROMPT_BASE = `You are Sidekick — a sharp, witty AI companion who sees the user's screen in real time and remembers everything about them. You're like that brilliant friend who notices everything, knows your history, and tells it straight — direct, specific, occasionally funny, never boring.
@@ -286,7 +179,72 @@ let retryTimer     = null;
 let anthropic      = null;
 let cachedKey      = '';
 let chatHistory    = [];
+let activeChatId   = null;
 let lastNotifyTime = 0;
+
+// ─── Conversation persistence ─────────────────────────────────────────────────
+// Conversations stored as: [{ id, title, messages: [{role,content,_b64?}], updatedAt }]
+const CONV_MAX = 50;
+
+function getConversations() {
+  return Array.isArray(store.get('conversations')) ? store.get('conversations') : [];
+}
+
+function saveConversations(convs) {
+  store.set('conversations', convs.slice(0, CONV_MAX));
+}
+
+function saveCurrentChat() {
+  if (!chatHistory.length || !activeChatId) return;
+  const convs = getConversations();
+  const idx   = convs.findIndex(c => c.id === activeChatId);
+  // Title = first user message, truncated
+  const firstUser = chatHistory.find(m => m.role === 'user');
+  const title = firstUser ? String(firstUser.content).slice(0, 60) : 'New chat';
+  const entry = { id: activeChatId, title, messages: chatHistory, updatedAt: Date.now() };
+  if (idx >= 0) convs[idx] = entry;
+  else convs.unshift(entry);
+  convs.sort((a, b) => b.updatedAt - a.updatedAt);
+  saveConversations(convs);
+}
+
+function loadChat(id) {
+  const convs = getConversations();
+  const conv  = convs.find(c => c.id === id);
+  if (!conv) return null;
+  activeChatId = id;
+  chatHistory  = Array.isArray(conv.messages) ? conv.messages : [];
+  return { id, title: conv.title, messages: chatHistory };
+}
+
+function newChat() {
+  saveCurrentChat(); // persist current before switching
+  activeChatId = randomUUID();
+  chatHistory  = [];
+  return { id: activeChatId, conversations: getConversations() };
+}
+
+function deleteConversation(id) {
+  const convs = getConversations().filter(c => c.id !== id);
+  saveConversations(convs);
+  if (activeChatId === id) {
+    activeChatId = randomUUID();
+    chatHistory  = [];
+  }
+  return { conversations: convs, activeChatId };
+}
+
+// Init active chat on startup — restore last conversation
+function initChat() {
+  const convs = getConversations();
+  if (convs.length) {
+    activeChatId = convs[0].id;
+    chatHistory  = Array.isArray(convs[0].messages) ? convs[0].messages : [];
+  } else {
+    activeChatId = randomUUID();
+    chatHistory  = [];
+  }
+}
 const NOTIFY_COOLDOWN_MS = 5 * 60_000; // max 1 OS notification per 5 min
 
 // ─── Tier system — HMAC-signed key validation ─────────────────────────────────
@@ -651,6 +609,10 @@ async function chat(userText, thumbnail) {
     // Extract facts from this exchange in background (non-blocking)
     extractAndLearn(userText, reply).catch(() => {});
 
+    // Persist conversation
+    saveCurrentChat();
+    push('conv-updated', { conversations: getConversations(), activeChatId });
+
     // Bump usage counter and send tier info back to renderer
     const usage = bumpUsage();
     push('stream-done', { _tier: usage.tier, _used: usage.used, _limit: usage.limit });
@@ -923,27 +885,14 @@ function registerIPC() {
 
   ipcMain.handle('get-stats', () => getStats());
 
-  // Mode system
-  ipcMain.handle('get-mode',  () => {
-    const mode = getActiveMode();
-    const tier = getTier();
-    return {
-      active: mode.id,
-      modes: Object.values(MODES).map(m => ({
-        id: m.id, icon: m.icon, name: m.name, color: m.color,
-        tagline: m.tagline, tier: m.tier,
-        locked: m.tier !== 'free' && tier === 'free',
-      })),
-    };
-  });
-  ipcMain.handle('set-mode', (_, id) => {
-    if (!MODES[id]) return { ok: false };
-    const tier = getTier();
-    if (MODES[id].tier !== 'free' && tier === 'free') return { ok: false, reason: 'upgrade' };
-    store.set('activeMode', id);
-    push('mode-changed', { mode: id, icon: MODES[id].icon, name: MODES[id].name, color: MODES[id].color });
-    return { ok: true };
-  });
+  // Conversation management
+  ipcMain.handle('get-conversations', () => ({
+    conversations: getConversations(),
+    activeChatId,
+  }));
+  ipcMain.handle('new-chat',    () => newChat());
+  ipcMain.handle('load-chat',   (_, id) => loadChat(id));
+  ipcMain.handle('delete-chat', (_, id) => deleteConversation(id));
 
   ipcMain.handle('check-ollama', () => getOllamaStatus());
 
@@ -1128,6 +1077,7 @@ function setupAutoUpdater() {
 
 // ─── Boot ─────────────────────────────────────────────────────────────────────
 app.whenReady().then(() => {
+  initChat(); // restore last conversation
   createMainWindow();
   createTray();
   registerIPC();
