@@ -761,7 +761,9 @@ async function chat(userText, thumbnail) {
 }
 
 // ─── Core: proactive scan ─────────────────────────────────────────────────────
-async function proactiveScan(thumbnail) {
+// manual=true  → always show results in chat (user explicitly asked)
+// manual=false → only show if real risk/warn detected, otherwise stay silent
+async function proactiveScan(thumbnail, manual = false) {
   if (isStreaming) return;
 
   // Silently skip if free user has hit their limit (don't nag)
@@ -785,27 +787,28 @@ async function proactiveScan(thumbnail) {
     journalEntry(parsed.summary, parsed.context);
 
     // Fire OS notification ONLY for active risk/warn items explicitly marked notify:true
-    const notifyItems = parsed.items.filter(i => i.notify && (i.type === 'risk' || i.type === 'warn'));
+    const urgentItems = parsed.items.filter(i => i.type === 'risk' || i.type === 'warn');
+    const notifyItems = urgentItems.filter(i => i.notify);
     if (notifyItems.length) {
       const top = notifyItems[0];
       fireNotification(top.title, top.detail || top.action || '');
     }
 
-    // NOTE: scan results are NOT added to chatHistory — keeps chat context clean
-    // Track stats: scan count + threats caught
+    // Track stats
     const scans   = Number(store.get('statScans')   ?? 0) + 1;
-    const threats = Number(store.get('statThreats') ?? 0)
-      + parsed.items.filter(i => i.type === 'risk' || i.type === 'warn').length;
+    const threats = Number(store.get('statThreats') ?? 0) + urgentItems.length;
     store.set('statScans',   scans);
     store.set('statThreats', threats);
     push('stats-updated', getStats());
 
-    push('analysis', parsed);
+    // Show in chat: always for manual scan, only for real threats on auto-scan
+    const shouldShow = manual || urgentItems.length > 0;
+    if (shouldShow) push('analysis', parsed);
 
   } catch (err) {
     console.error('[scan]', err.message);
-    push('error', { message: err.message });
-    scheduleRetry(thumbnail);
+    if (manual) push('error', { message: err.message });
+    else scheduleRetry(thumbnail);
   } finally {
     push('scan-status', { scanning: false });
   }
@@ -1074,7 +1077,7 @@ function registerIPC() {
   });
   ipcMain.handle('manual-scan', async () => {
     const thumb = await captureScreen();
-    if (thumb) { lastBitmap = thumb.resize({ width: 160 }).toBitmap(); await proactiveScan(thumb); }
+    if (thumb) { lastBitmap = thumb.resize({ width: 160 }).toBitmap(); await proactiveScan(thumb, true); }
     return { ok: true };
   });
 
