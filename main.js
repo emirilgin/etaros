@@ -731,6 +731,13 @@ async function chat(userText, thumbnail) {
     return;
   }
 
+  // Strip scan-poisoned messages from history before sending
+  // (old conversations had scan JSON in history which makes AI respond with JSON)
+  chatHistory = chatHistory.filter(m => {
+    const c = String(m.content || '');
+    return !(c.includes('"items"') && c.includes('"summary"') && c.includes('"context"'));
+  });
+
   const b64 = thumbnail ? thumbToB64(thumbnail) : null;
   chatHistory.push({ role: 'user', content: userText, _b64: b64 });
 
