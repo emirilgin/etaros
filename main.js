@@ -788,13 +788,7 @@ async function proactiveScan(thumbnail) {
       fireNotification(top.title, top.detail || top.action || '');
     }
 
-    chatHistory.push({
-      role:    'assistant',
-      content: `I noticed something: ${parsed.summary}\n\n${
-        parsed.items.map(i => `**${i.title}**: ${i.detail}${i.action ? `\n→ ${i.action}` : ''}`).join('\n\n')
-      }`,
-    });
-
+    // NOTE: scan results are NOT added to chatHistory — keeps chat context clean
     // Track stats: scan count + threats caught
     const scans   = Number(store.get('statScans')   ?? 0) + 1;
     const threats = Number(store.get('statThreats') ?? 0)
@@ -1109,7 +1103,7 @@ function registerIPC() {
         push('analysis', parsed);
       }
 
-      chatHistory.push({ role: 'assistant', content: raw });
+      // Don't push raw JSON scan output to chatHistory — pollutes chat context
       const usage = bumpUsage();
       push('stream-done', { _tier: usage.tier, _used: usage.used, _limit: usage.limit });
     } catch (err) {
