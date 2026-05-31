@@ -500,18 +500,9 @@ html,body{
           </div>
         </div>
 
-        <!-- Gemini API Key (always visible — primary AI) -->
-        <div class="sec" id="gemini-key-sec">
-          <div class="sec-label">Gemini API Key</div>
-          <div class="field">
-            <input id="gemini-key" type="password" placeholder="AIzaSy…" autocomplete="off" spellcheck="false"/>
-            <button class="field-btn" id="gemini-eye">○</button>
-          </div>
-          <div class="hint">
-            Free key from <button class="hint-link" id="aistudio-link">aistudio.google.com ↗</button>
-            · Create API key · Saves permanently — only needs to be set once
-          </div>
-        </div>
+        <!-- Gemini key hidden from end-users — set via app.config.js (built-in) -->
+        <input id="gemini-key" type="hidden"/>
+        <div id="gemini-key-sec" style="display:none"></div>
 
         <!-- Own Claude key -->
         <div id="claude-sec" style="display:none">

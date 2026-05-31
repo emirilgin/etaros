@@ -42,7 +42,7 @@ const RETRY_MS        = 15_000;
 const OLLAMA_BASE     = 'http://localhost:11434';
 
 // Tier limits
-const FREE_TOTAL = 15;  // beta: enough messages to properly evaluate the app
+const FREE_TOTAL = 5;   // 5 free messages, then upgrade required
 // Pro = unlimited daily — no cap. Max = unlimited + better model.
 
 // ─── System prompts ───────────────────────────────────────────────────────────
