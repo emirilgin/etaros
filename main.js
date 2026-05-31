@@ -1014,6 +1014,17 @@ function registerIPC() {
     push('profile-updated', { name, avatar, email, language });
     return { ok: true };
   });
+  ipcMain.handle('logout', () => {
+    store.delete('profileName');
+    store.delete('profileEmail');
+    store.delete('profileAvatar');
+    store.delete('profileLang');
+    store.delete('licenseKey');
+    store.delete('setupDone');
+    push('profile-updated', { name: '', avatar: '', email: '', language: 'en' });
+    setTimeout(openSetup, 400);
+    return { ok: true };
+  });
 
   // Returns { tier, used, limit } — no server call needed
   ipcMain.handle('check-license', () => getLicenseInfo());

@@ -219,6 +219,11 @@ function hideConvCtxMenu() {
 
 document.addEventListener('click', e => {
   if (ctxMenu && !ctxMenu.contains(e.target)) hideConvCtxMenu();
+  const pm = document.getElementById('profile-menu');
+  const ur = document.getElementById('sb-user-row');
+  if (pm && ur && !pm.contains(e.target) && !ur.contains(e.target)) {
+    pm.classList.remove('open');
+  }
 });
 
 document.getElementById('ctx-rename')?.addEventListener('click', () => {
@@ -296,7 +301,7 @@ document.getElementById('tl-min')  ?.addEventListener('click', () => window.sk.m
 document.getElementById('tl-max')  ?.addEventListener('click', () => window.sk.setMode('fullscreen'));
 
 // ─── Buttons ──────────────────────────────────────────────────────────────────
-settingsBtn.addEventListener('click',    () => window.sk.openSettings());
+// settings button removed from sidebar
 settingsFsBtn.addEventListener('click',  () => window.sk.openSettings());
 upBtn.addEventListener('click',          () => window.sk.openSettings());
 clearBtn.addEventListener('click', () => window.sk.clearHistory());
@@ -1727,8 +1732,8 @@ function applyProfile({ name, avatar }) {
   }
 }
 
-// Click profile row → open settings sheet
-sbUserRow?.addEventListener('click', openSettingsSheet);
+// Click profile row → toggle profile menu
+sbUserRow?.addEventListener('click', e => { e.stopPropagation(); toggleProfileMenu(); });
 
 window.sk.on('profile-updated', applyProfile);
 
@@ -1737,95 +1742,118 @@ async function loadProfile() {
   applyProfile(p);
 }
 
-// ─── Settings sheet ───────────────────────────────────────────────────────────
-const settingsOverlay = document.getElementById('settings-overlay');
-const settingsSheet   = document.getElementById('settings-sheet');
-
-function openSettingsSheet() {
-  settingsOverlay.classList.add('open');
-  // Load profile into fields
+// ─── Profile menu ─────────────────────────────────────────────────────────────
+function toggleProfileMenu() {
+  const pm  = document.getElementById('profile-menu');
+  const row = document.getElementById('sb-user-row');
+  if (!pm) return;
+  if (pm.classList.contains('open')) { pm.classList.remove('open'); return; }
+  // Position above the profile row
+  const rect = row.getBoundingClientRect();
+  pm.style.left   = '8px';
+  pm.style.bottom = (window.innerHeight - rect.top + 6) + 'px';
+  // Sync name/email/avatar
   window.sk.getProfile().then(p => {
-    if (p.name)  document.getElementById('sheet-name').value  = p.name !== 'You' ? p.name : '';
-    if (p.email) document.getElementById('sheet-email').value = p.email;
-    if (p.language) document.getElementById('sheet-lang').value = p.language;
-    // Avatar
-    const bigAv = document.getElementById('sheet-big-avatar');
-    if (p.avatar) {
-      bigAv.innerHTML = `<img src="${p.avatar}" alt="avatar"/>`;
-    } else {
-      bigAv.innerHTML = `<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.5"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
-    }
+    document.getElementById('pm-name').textContent  = (p.name && p.name !== 'You') ? p.name : 'You';
+    document.getElementById('pm-email').textContent = p.email || '';
+    const av = document.getElementById('pm-avatar');
+    if (av) av.innerHTML = p.avatar
+      ? `<img src="${p.avatar}" alt=""/>`
+      : `<svg viewBox="0 0 20 20" fill="none"><circle cx="10" cy="7" r="3.5" stroke="currentColor" stroke-width="1.3"/><path d="M3 17c0-3.3 3.1-6 7-6s7 2.7 7 6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>`;
   });
-  // Load tier
+  pm.classList.add('open');
+}
+
+document.getElementById('pm-settings-btn')?.addEventListener('click', () => {
+  document.getElementById('profile-menu').classList.remove('open');
+  openSettingsPage();
+});
+document.getElementById('pm-help-btn')?.addEventListener('click', () => {
+  document.getElementById('profile-menu').classList.remove('open');
+  window.sk.openUrl('mailto:support@emirilgin.com');
+});
+document.getElementById('pm-logout-btn')?.addEventListener('click', async () => {
+  document.getElementById('profile-menu').classList.remove('open');
+  if (!confirm('Log out? This will clear your profile and license key.')) return;
+  await window.sk.logout();
+});
+
+// ─── Full-screen settings page ────────────────────────────────────────────────
+const settingsPage = document.getElementById('settings-page');
+let spAvatarDataUrl = null;
+
+function openSettingsPage() {
+  if (!settingsPage) return;
+  settingsPage.classList.add('open');
+  spAvatarDataUrl = null;
+  window.sk.getProfile().then(p => {
+    const n = document.getElementById('sp-name');
+    const em = document.getElementById('sp-email');
+    const lg = document.getElementById('sp-lang');
+    if (n)  n.value  = (p.name && p.name !== 'You') ? p.name : '';
+    if (em) em.value = p.email || '';
+    if (lg && p.language) lg.value = p.language;
+    const av = document.getElementById('sp-big-avatar');
+    if (av) av.innerHTML = p.avatar
+      ? `<img src="${p.avatar}" alt=""/>`
+      : `<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.5"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+  });
   window.sk.checkLicense().then(lic => {
-    const badge = document.getElementById('sheet-tier-badge');
-    const desc  = document.getElementById('sheet-tier-desc');
-    const upBtn = document.getElementById('sheet-upgrade-btn');
+    const badge = document.getElementById('sp-tier-badge');
+    const desc  = document.getElementById('sp-tier-desc');
+    const upBtn = document.getElementById('sp-upgrade-btn');
     if (lic.tier === 'max') {
-      badge.className = 'sheet-plan-tier max'; badge.textContent = 'Max';
-      desc.textContent = 'Unlimited messages · Claude (Anthropic)';
-      upBtn.style.display = 'none';
+      if (badge) { badge.className = 'sp-plan-tier max'; badge.textContent = 'Max'; }
+      if (desc)  desc.textContent = 'Unlimited · Claude (Anthropic)';
+      if (upBtn) upBtn.style.display = 'none';
     } else if (lic.tier === 'pro') {
-      badge.className = 'sheet-plan-tier pro'; badge.textContent = 'Pro';
-      desc.textContent = 'Unlimited messages · Google Gemini';
-      upBtn.style.display = 'none';
+      if (badge) { badge.className = 'sp-plan-tier pro'; badge.textContent = 'Pro'; }
+      if (desc)  desc.textContent = 'Unlimited · Google Gemini';
+      if (upBtn) upBtn.style.display = 'none';
     } else {
-      badge.className = 'sheet-plan-tier free'; badge.textContent = 'Free';
+      if (badge) { badge.className = 'sp-plan-tier free'; badge.textContent = 'Free'; }
       const rem = Math.max(0, lic.limit - lic.used);
-      desc.textContent = `${rem} of ${lic.limit} free messages remaining`;
-      upBtn.style.display = '';
+      if (desc)  desc.textContent = `${rem} of ${lic.limit} free messages remaining`;
+      if (upBtn) upBtn.style.display = '';
     }
   });
 }
 
-function closeSettingsSheet() {
-  settingsOverlay.classList.remove('open');
-}
+document.getElementById('sp-back')?.addEventListener('click', () => settingsPage?.classList.remove('open'));
 
-document.getElementById('settings-sheet-close')?.addEventListener('click', closeSettingsSheet);
-settingsOverlay?.addEventListener('click', e => { if (e.target === settingsOverlay) closeSettingsSheet(); });
-
-// Avatar change in sheet
-const sheetPfpInput = document.getElementById('sheet-pfp-input');
-let sheetAvatarDataUrl = null;
-
-document.getElementById('sheet-big-avatar')?.addEventListener('click', () => sheetPfpInput?.click());
-document.getElementById('sheet-avatar-hint')?.addEventListener('click', () => sheetPfpInput?.click());
-
-sheetPfpInput?.addEventListener('change', async () => {
-  const file = sheetPfpInput.files[0];
+const spPfpInput = document.getElementById('sp-pfp-input');
+document.getElementById('sp-big-avatar')?.addEventListener('click', () => spPfpInput?.click());
+document.getElementById('sp-avatar-hint')?.addEventListener('click', () => spPfpInput?.click());
+spPfpInput?.addEventListener('change', () => {
+  const file = spPfpInput.files[0];
   if (!file) return;
   const reader = new FileReader();
   reader.onload = e => {
-    sheetAvatarDataUrl = e.target.result;
-    document.getElementById('sheet-big-avatar').innerHTML = `<img src="${sheetAvatarDataUrl}" alt="avatar"/>`;
+    spAvatarDataUrl = e.target.result;
+    const av = document.getElementById('sp-big-avatar');
+    if (av) av.innerHTML = `<img src="${spAvatarDataUrl}" alt=""/>`;
   };
   reader.readAsDataURL(file);
-  sheetPfpInput.value = '';
+  spPfpInput.value = '';
 });
 
-document.getElementById('sheet-save-btn')?.addEventListener('click', async () => {
-  const name     = document.getElementById('sheet-name').value.trim();
-  const email    = document.getElementById('sheet-email').value.trim();
-  const language = document.getElementById('sheet-lang').value;
-  const avatar   = sheetAvatarDataUrl || undefined;
-  await window.sk.saveProfile({ name: name || 'You', email, language, ...(avatar ? { avatar } : {}) });
-  sheetAvatarDataUrl = null;
-  closeSettingsSheet();
+document.getElementById('sp-save-btn')?.addEventListener('click', async () => {
+  const name     = document.getElementById('sp-name')?.value.trim() || 'You';
+  const email    = document.getElementById('sp-email')?.value.trim() || '';
+  const language = document.getElementById('sp-lang')?.value || 'en';
+  const avatar   = spAvatarDataUrl || undefined;
+  await window.sk.saveProfile({ name, email, language, ...(avatar ? { avatar } : {}) });
+  spAvatarDataUrl = null;
+  settingsPage?.classList.remove('open');
 });
 
-document.getElementById('sheet-upgrade-btn')?.addEventListener('click', () => {
-  closeSettingsSheet();
-  window.sk.openSettings();
-});
-
-document.getElementById('sheet-settings-btn')?.addEventListener('click', () => {
-  closeSettingsSheet();
-  window.sk.openSettings();
-});
-
-document.getElementById('sheet-help-btn')?.addEventListener('click', () => {
-  window.sk.openUrl('mailto:support@emirilgin.com');
+document.getElementById('sp-upgrade-btn')?.addEventListener('click',  () => window.sk.openSettings());
+document.getElementById('sp-advanced-btn')?.addEventListener('click', () => window.sk.openSettings());
+document.getElementById('sp-help-btn2')?.addEventListener('click',    () => window.sk.openUrl('mailto:support@emirilgin.com'));
+document.getElementById('sp-logout-btn')?.addEventListener('click', async () => {
+  if (!confirm('Log out? This will clear your profile and license key.')) return;
+  await window.sk.logout();
+  settingsPage?.classList.remove('open');
 });
 
 init();

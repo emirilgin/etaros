@@ -30,6 +30,7 @@ contextBridge.exposeInMainWorld('sk', {
   saveSettings: (s)    => ipcRenderer.invoke('save-settings', s),
   getProfile:   ()     => ipcRenderer.invoke('get-profile'),
   saveProfile:  (p)    => ipcRenderer.invoke('save-profile', p),
+  logout:       ()     => ipcRenderer.invoke('logout'),
   checkLicense: ()     => ipcRenderer.invoke('check-license'),
   checkOllama:  ()     => ipcRenderer.invoke('check-ollama'),
   getStats:     ()     => ipcRenderer.invoke('get-stats'),
