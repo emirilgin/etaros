@@ -516,33 +516,33 @@ dropClose.addEventListener('click', clearDropPreview);
 function appendUser(text) {
   showFeed();
   maybeTimeDivider();
-  const el = document.createElement('div');
-  el.className = 'user-bubble';
-  let inner = '';
+  const wrap = document.createElement('div');
+  wrap.className = 'user-wrap';
+  const bub = document.createElement('div');
+  bub.className = 'user-bubble';
   if (pendingPreview) {
-    inner += `<div class="screen-thumb-wrap">
+    bub.innerHTML = `<div class="screen-thumb-wrap">
       <img class="screen-thumb" src="data:image/jpeg;base64,${pendingPreview}" alt="screen">
       <span class="screen-thumb-label">SCREEN</span>
     </div>`;
     pendingPreview = null;
   }
-  inner += `${esc(text)}<span class="bubble-time">${now()}</span>`;
-  el.innerHTML = inner;
-  feed.insertBefore(el, thinking);
+  bub.innerHTML += esc(text);
+  wrap.appendChild(bub);
+  feed.insertBefore(wrap, thinking);
   scrollBottom(true);
 }
 
 // ─── Render: AI group ─────────────────────────────────────────────────────────
-function makeGroup(metaLabel) {
+const AI_ICON_SVG = `<svg viewBox="0 0 32 32" fill="none"><path d="M3 16C3 16 8.5 7 16 7C23.5 7 29 16 29 16C29 16 23.5 25 16 25C8.5 25 3 16 3 16Z" stroke="url(#gi)" stroke-width="1.8" fill="none" stroke-linejoin="round" stroke-linecap="round"/><circle cx="16" cy="16" r="5" stroke="url(#gi)" stroke-width="1.8" fill="none"/><circle cx="16" cy="16" r="2.3" fill="url(#gi)"/><defs><linearGradient id="gi" x1="3" y1="7" x2="29" y2="25" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#D4723A"/><stop offset="100%" stop-color="#A34E18"/></linearGradient></defs></svg>`;
+
+function makeGroup(label) {
   const el = document.createElement('div');
   el.className = 'group';
-  el.innerHTML = `
-    <div class="avatar">
-      <svg viewBox="0 0 16 16" fill="none"><path d="M1.5 8C1.5 8 4 3.5 8 3.5C12 3.5 14.5 8 14.5 8C14.5 8 12 12.5 8 12.5C4 12.5 1.5 8 1.5 8Z" stroke="url(#av-g)" stroke-width="1.2" fill="none" stroke-linejoin="round" stroke-linecap="round"/><circle cx="8" cy="8" r="2.5" stroke="url(#av-g)" stroke-width="1.2" fill="none"/><circle cx="8" cy="8" r="1.1" fill="url(#av-g)"/><defs><linearGradient id="av-g" x1="1.5" y1="3.5" x2="14.5" y2="12.5" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#D4723A"/><stop offset="100%" stop-color="#A34E18"/></linearGradient></defs></svg>
-    </div>
-    <div class="group-r">
-      <div class="g-meta">${esc(metaLabel)} <span class="g-time">${now()}</span></div>
-    </div>`;
+  el.innerHTML = `<div class="g-label">
+    <div class="g-icon">${AI_ICON_SVG}</div>
+    ${esc(label)}<span class="g-time">${now()}</span>
+  </div>`;
   return el;
 }
 
@@ -553,7 +553,7 @@ function appendAiGroup(text) {
   const msgDiv = document.createElement('div');
   msgDiv.className = 'chat-msg';
   msgDiv.innerHTML = md(text);
-  el.querySelector('.group-r').appendChild(msgDiv);
+  el.appendChild(msgDiv);
   feed.insertBefore(el, thinking);
 }
 
@@ -561,11 +561,10 @@ function appendAiGroup(text) {
 function createStreamEl() {
   showFeed();
   const el = makeGroup('Sidekick');
-  const right = el.querySelector('.group-r');
   const msgDiv = document.createElement('div');
   msgDiv.className = 'chat-msg';
-  msgDiv.innerHTML = '<div class="chat-body"></div><span class="stream-cursor">▋</span>';
-  right.appendChild(msgDiv);
+  msgDiv.innerHTML = '<div class="chat-body"></div><span class="stream-cursor"></span>';
+  el.appendChild(msgDiv);
   feed.insertBefore(el, thinking);
   return el;
 }
@@ -593,7 +592,6 @@ function renderAnalysis(data) {
   maybeTimeDivider();
   const items = Array.isArray(data.items) ? data.items : [];
   const group = makeGroup('Sidekick noticed');
-  const right = group.querySelector('.group-r');
   const wrap  = document.createElement('div');
   wrap.className = 'cards-wrap';
 
@@ -667,12 +665,12 @@ function renderAnalysis(data) {
     wrap.appendChild(c);
   });
 
-  right.appendChild(wrap);
+  group.appendChild(wrap);
   if (data.summary) {
     const s = document.createElement('div');
     s.className = 'g-summary';
     s.textContent = data.summary;
-    right.appendChild(s);
+    group.appendChild(s);
   }
 
   if (data?._tier) setTierDisplay(data._tier, data._used, data._limit);
@@ -684,10 +682,10 @@ function renderAnalysis(data) {
 function appendError(message) {
   showFeed();
   if (streamEl) { finalizeStream({}); }
-  const el = document.createElement('div');
-  el.className = 'err';
-  el.innerHTML = `<span style="font-size:13px;flex-shrink:0;opacity:.7">△</span><div>${esc(message)}<span>Retrying in 15 s…</span></div>`;
-  feed.insertBefore(el, thinking);
+  const wrap = document.createElement('div');
+  wrap.className = 'err';
+  wrap.innerHTML = `<div class="err-inner"><span style="opacity:.6">△</span> ${esc(message)}</div>`;
+  feed.insertBefore(wrap, thinking);
   scrollBottom();
 }
 
