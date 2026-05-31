@@ -1411,117 +1411,13 @@ function registerIPC() {
     push('history-cleared', {});
   });
 
-  // ── Auto-estimate calories for a food item ────────────────────────────────
-  ipcMain.handle('estimate-kcal', async (_, item) => {
-    try {
-      const key = getGeminiKey();
-      if (!key) return null;
-      const genai = new GoogleGenerativeAI(key);
-      const model = genai.getGenerativeModel({ model: 'gemini-2.0-flash' });
-      const result = await model.generateContent(
-        `How many calories (kcal) are in a typical single serving of: "${item}"?\n` +
-        `Reply with ONLY an integer number. No units, no explanation, no punctuation. Just the number.`
-      );
-      const text = result.response.text().trim().replace(/\D/g, '');
-      const kcal = parseInt(text, 10);
-      return isNaN(kcal) ? null : Math.min(Math.max(kcal, 0), 5000);
-    } catch { return null; }
-  });
-
+  // ── Memory (facts the AI learns about you) ─────────────────────────────────
   ipcMain.handle('get-memory',    ()      => ({ facts: getMemory(), journal: (store.get('journal') ?? []).slice(0, 30) }));
   ipcMain.handle('clear-memory',  ()      => { saveMemory([]); store.set('journal', []); return { ok: true }; });
   ipcMain.handle('delete-fact',   (_, k)  => { saveMemory(getMemory().filter(f => f.key !== k)); return { ok: true }; });
   ipcMain.handle('add-note',      (_, text) => {
     upsertFacts([{ key: 'note_' + Date.now(), value: text, type: 'personal' }]);
     extractAndLearn(text, '').catch(() => {});
-    return { ok: true };
-  });
-
-  // ── Notes ──────────────────────────────────────────────────────────────────
-  ipcMain.handle('get-notes', () => store.get('notes') ?? []);
-  ipcMain.handle('save-note', (_, { id, text, pinned }) => {
-    const notes = store.get('notes') ?? [];
-    const idx   = notes.findIndex(n => n.id === id);
-    if (idx >= 0) { notes[idx] = { ...notes[idx], text, pinned: !!pinned, updated: Date.now() }; }
-    else          { notes.unshift({ id: randomUUID(), text, pinned: !!pinned, created: Date.now(), updated: Date.now() }); }
-    store.set('notes', notes.slice(0, 500));
-    return { ok: true };
-  });
-  ipcMain.handle('delete-note', (_, id) => {
-    store.set('notes', (store.get('notes') ?? []).filter(n => n.id !== id));
-    return { ok: true };
-  });
-  ipcMain.handle('pin-note', (_, id) => {
-    const notes = (store.get('notes') ?? []).map(n => n.id === id ? { ...n, pinned: !n.pinned } : n);
-    store.set('notes', notes);
-    return { ok: true };
-  });
-
-  // ── Links (URL analysis with alternatives) ────────────────────────────────
-  ipcMain.handle('get-links', () => store.get('savedLinks', []));
-  ipcMain.handle('delete-link', (_, id) => {
-    store.set('savedLinks', (store.get('savedLinks', [])).filter(l => l.id !== id));
-    return { ok: true };
-  });
-  ipcMain.handle('analyze-link', async (_, { url, note }) => {
-    const key = getGeminiKey();
-    if (!key) throw new Error('No AI key');
-    const genAI = new GoogleGenerativeAI(key);
-    const models = ['gemini-2.0-flash', 'gemini-1.5-flash'];
-    let lastErr;
-    for (const modelName of models) {
-      try {
-        const model = genAI.getGenerativeModel({ model: modelName });
-        const prompt = `You are a smart shopping assistant. Analyze this URL and find real alternatives.
-
-URL: ${url}
-${note ? `User note: ${note}` : ''}
-
-Find the product/service and return 3-5 real, specific alternatives with actual working URLs. Focus on cheaper or better value options. If it's a subscription/service, find competitors. If it's a product, find the same or similar at lower prices.
-
-Respond ONLY with valid JSON, no markdown:
-{"title":"product or service name","what":"one sentence describing what this is","domain":"the site domain","alternatives":[{"name":"Alternative name","url":"https://real-url.com/product","why":"Why this is better or cheaper — be specific","saving":"estimated saving or value difference, e.g. '~$15 cheaper' or 'free tier available'"}]}`;
-        const result = await model.generateContent(prompt);
-        const text   = result.response.text();
-        const match  = text.match(/\{[\s\S]*\}/);
-        if (!match) throw new Error('No JSON in response');
-        const parsed = JSON.parse(match[0]);
-        // Save to store
-        const links = store.get('savedLinks', []);
-        links.unshift({ id: randomUUID(), url, note: note || '', ts: Date.now(), ...parsed });
-        store.set('savedLinks', links.slice(0, 200));
-        return parsed;
-      } catch (e) {
-        lastErr = e;
-        if (!e.message?.includes('429') && !e.message?.includes('quota')) throw e;
-      }
-    }
-    throw lastErr;
-  });
-
-  // ── Savings log ────────────────────────────────────────────────────────────
-  ipcMain.handle('get-savings', () => store.get('savings') ?? []);
-  ipcMain.handle('log-saving',  (_, { item, amount, currency = 'USD' }) => {
-    const log = store.get('savings') ?? [];
-    log.unshift({ id: randomUUID(), item, amount: Number(amount), currency, date: Date.now() });
-    store.set('savings', log.slice(0, 1000));
-    return { ok: true };
-  });
-  ipcMain.handle('delete-saving', (_, id) => {
-    store.set('savings', (store.get('savings') ?? []).filter(s => s.id !== id));
-    return { ok: true };
-  });
-
-  // ── Diet log ───────────────────────────────────────────────────────────────
-  ipcMain.handle('get-diet',    () => store.get('diet') ?? []);
-  ipcMain.handle('log-diet',    (_, { item, kcal, action = 'avoided' }) => {
-    const log = store.get('diet') ?? [];
-    log.unshift({ id: randomUUID(), item, kcal: Number(kcal) || 0, action, date: Date.now() });
-    store.set('diet', log.slice(0, 1000));
-    return { ok: true };
-  });
-  ipcMain.handle('delete-diet', (_, id) => {
-    store.set('diet', (store.get('diet') ?? []).filter(d => d.id !== id));
     return { ok: true };
   });
 

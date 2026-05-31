@@ -13,19 +13,6 @@ contextBridge.exposeInMainWorld('sk', {
   clearMemory:  ()          => ipcRenderer.invoke('clear-memory'),
   deleteFact:   (key)       => ipcRenderer.invoke('delete-fact', key),
   addNote:      (text)      => ipcRenderer.invoke('add-note', text),
-  // Notes
-  getNotes:     ()          => ipcRenderer.invoke('get-notes'),
-  saveNote:     (n)         => ipcRenderer.invoke('save-note', n),
-  deleteNote:   (id)        => ipcRenderer.invoke('delete-note', id),
-  pinNote:      (id)        => ipcRenderer.invoke('pin-note', id),
-  // Savings
-  getSavings:   ()          => ipcRenderer.invoke('get-savings'),
-  logSaving:    (s)         => ipcRenderer.invoke('log-saving', s),
-  deleteSaving: (id)        => ipcRenderer.invoke('delete-saving', id),
-  // Diet
-  getDiet:      ()          => ipcRenderer.invoke('get-diet'),
-  logDiet:      (d)         => ipcRenderer.invoke('log-diet', d),
-  deleteDiet:   (id)        => ipcRenderer.invoke('delete-diet', id),
   getSettings:  ()     => ipcRenderer.invoke('get-settings'),
   saveSettings: (s)    => ipcRenderer.invoke('save-settings', s),
   getProfile:   ()     => ipcRenderer.invoke('get-profile'),
@@ -49,10 +36,6 @@ contextBridge.exposeInMainWorld('sk', {
   renameChat: (id, title) => ipcRenderer.invoke('rename-chat', { id, title }),
   pinChat:    (id)        => ipcRenderer.invoke('pin-chat', id),
   chat:         (text) => ipcRenderer.invoke('chat', text),
-  // Links
-  getLinks:     ()           => ipcRenderer.invoke('get-links'),
-  deleteLink:   (id)         => ipcRenderer.invoke('delete-link', id),
-  analyzeLink:  (opts)       => ipcRenderer.invoke('analyze-link', opts),
   showSearchBrowser: (opts) => ipcRenderer.invoke('show-search-browser', opts),
   hideSearchBrowser: ()     => ipcRenderer.invoke('hide-search-browser'),
   getSearchUrl:      ()     => ipcRenderer.invoke('get-search-url'),
@@ -61,7 +44,6 @@ contextBridge.exposeInMainWorld('sk', {
   selectRegion: (r)       => ipcRenderer.send('region-selected', r),
   cancelRegion: ()        => ipcRenderer.send('region-cancelled'),
   analyzeImage: (b64)     => ipcRenderer.invoke('analyze-image', b64),
-  estimateKcal: (item)    => ipcRenderer.invoke('estimate-kcal', item),
 
   // Fire and forget
   hideWindow:     ()       => ipcRenderer.send('hide-window'),
