@@ -1902,6 +1902,28 @@ async function init() {
   } else {
     trialInfo.style.display = 'none';
   }
+
+  // Show app version
+  window.sk.getAppVersion?.().then(v => {
+    const el = document.getElementById('app-version');
+    if (el && v) el.textContent = `v${v}`;
+  }).catch(() => {});
+}
+
+// ─── Custom confirm dialog ────────────────────────────────────────────────────
+function showConfirm(message, onOk) {
+  const overlay = document.getElementById('confirm-overlay');
+  const msg     = document.getElementById('confirm-msg');
+  const okBtn   = document.getElementById('confirm-ok');
+  const cancelBtn = document.getElementById('confirm-cancel');
+  if (!overlay) { if (window.confirm(message)) onOk(); return; }
+  msg.textContent = message;
+  overlay.style.display = 'flex';
+  const close = () => { overlay.style.display = 'none'; };
+  const okHandler     = () => { close(); onOk(); okBtn.removeEventListener('click', okHandler); cancelBtn.removeEventListener('click', cancelHandler); };
+  const cancelHandler = () => { close(); okBtn.removeEventListener('click', okHandler); cancelBtn.removeEventListener('click', cancelHandler); };
+  okBtn.addEventListener('click', okHandler);
+  cancelBtn.addEventListener('click', cancelHandler);
 }
 
 // ─── Profile (avatar + name) ──────────────────────────────────────────────────
@@ -1979,11 +2001,12 @@ document.getElementById('pm-help-btn')?.addEventListener('click', () => {
   document.getElementById('profile-menu').classList.remove('open');
   window.sk.openUrl('mailto:support@emirilgin.com');
 });
-document.getElementById('pm-logout-btn')?.addEventListener('click', async () => {
+document.getElementById('pm-logout-btn')?.addEventListener('click', () => {
   document.getElementById('profile-menu').classList.remove('open');
-  if (!confirm('Log out? This will clear your profile and license key.')) return;
-  showToast('Logged out', 'info');
-  await window.sk.logout();
+  showConfirm('Log out of Sidekick?', async () => {
+    showToast('Logged out', 'info');
+    await window.sk.logout();
+  });
 });
 
 // ─── Full-screen settings page ────────────────────────────────────────────────
@@ -2099,11 +2122,23 @@ document.getElementById('sp-save-btn')?.addEventListener('click', async () => {
   const name     = document.getElementById('sp-name')?.value.trim() || 'You';
   const language = document.getElementById('sp-lang')?.value || 'en';
   const avatar   = spAvatarDataUrl || undefined;
-  // Email not editable — Supabase is authoritative
-  await window.sk.saveProfile({ name, language, ...(avatar ? { avatar } : {}) });
+  const activePill = document.querySelector('.adv-pill.active');
+  const activeProv = document.querySelector('.adv-pcard.active');
+  // Save profile + advanced settings in one go
+  await Promise.all([
+    window.sk.saveProfile({ name, language, ...(avatar ? { avatar } : {}) }),
+    window.sk.saveSettings({
+      city:         document.getElementById('adv-city')?.value.trim()    || '',
+      scanInterval: activePill ? Number(activePill.dataset.val)          : 30,
+      autoScan:     document.getElementById('adv-auto-scan')?.checked    ?? false,
+      startOnLogin: document.getElementById('adv-login')?.checked        ?? false,
+      provider:     activeProv ? activeProv.dataset.prov                 : 'builtin',
+      apiKey:       document.getElementById('adv-own-key')?.value.trim() || '',
+    }),
+  ]);
   spAvatarDataUrl = null;
   settingsPage?.classList.remove('open');
-  showToast('Profile saved', 'ok');
+  showToast('Settings saved', 'ok');
 });
 
 document.getElementById('sp-upgrade-btn')?.addEventListener('click', () => openSettingsPage('plan'));
@@ -2121,11 +2156,12 @@ document.getElementById('plan-pro-action')?.addEventListener('click', () => open
 document.getElementById('plan-max-action')?.addEventListener('click', () => openUpgrade('max'));
 // sp-advanced-btn removed (advanced settings now inline in settings scroll)
 document.getElementById('sp-help-btn2')?.addEventListener('click',    () => window.sk.openUrl('mailto:support@emirilgin.com'));
-document.getElementById('sp-logout-btn')?.addEventListener('click', async () => {
-  if (!confirm('Log out? This will clear your profile and license key.')) return;
-  showToast('Logged out', 'info');
-  await window.sk.logout();
-  settingsPage?.classList.remove('open');
+document.getElementById('sp-logout-btn')?.addEventListener('click', () => {
+  showConfirm('Log out of Sidekick?', async () => {
+    showToast('Logged out', 'info');
+    await window.sk.logout();
+    settingsPage?.classList.remove('open');
+  });
 });
 
 // ─── Advanced Settings page ───────────────────────────────────────────────────
@@ -2209,21 +2245,7 @@ document.getElementById('adv-tester-btn')?.addEventListener('click', async () =>
   window.sk.checkLicense().then(lic => setTierDisplay(lic.tier, lic.used, lic.limit));
 });
 
-// Save advanced settings
-document.getElementById('adv-save-btn')?.addEventListener('click', async () => {
-  const activePill = document.querySelector('.adv-pill.active');
-  const activeProv = document.querySelector('.adv-pcard.active');
-  await window.sk.saveSettings({
-    city:         document.getElementById('adv-city')?.value.trim()     || '',
-    scanInterval: activePill ? Number(activePill.dataset.val)           : 30,
-    autoScan:     document.getElementById('adv-auto-scan')?.checked     ?? false,
-    startOnLogin: document.getElementById('adv-login')?.checked         ?? false,
-    provider:     activeProv ? activeProv.dataset.prov                  : 'builtin',
-    apiKey:       document.getElementById('adv-own-key')?.value.trim()  || '',
-  });
-  showToast('Settings saved', 'ok');
-  advancedPage?.classList.remove('open');
-});
+// adv-save-btn removed — sp-save-btn now saves everything (profile + settings)
 
 // ─── Auth overlay ─────────────────────────────────────────────────────────────
 const authOverlay   = document.getElementById('auth-overlay');
@@ -2277,10 +2299,12 @@ loginBtn?.addEventListener('click', async () => {
 const registerBtn = document.getElementById('auth-register-btn');
 registerBtn.dataset.label = 'Create account';
 registerBtn?.addEventListener('click', async () => {
-  const email    = document.getElementById('auth-reg-email').value.trim();
-  const password = document.getElementById('auth-reg-password').value;
+  const email     = document.getElementById('auth-reg-email').value.trim();
+  const password  = document.getElementById('auth-reg-password').value;
+  const password2 = document.getElementById('auth-reg-password2')?.value;
   if (!email || !password) { setAuthError('Fill in email and password'); return; }
   if (password.length < 6) { setAuthError('Password must be at least 6 characters'); return; }
+  if (password2 !== undefined && password !== password2) { setAuthError('Passwords do not match'); return; }
   setAuthLoading(registerBtn, true);
   const res = await window.sk.authRegister({ email, password });
   setAuthLoading(registerBtn, false);

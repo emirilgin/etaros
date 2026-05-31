@@ -1401,7 +1401,7 @@ html,body{
             </defs>
           </svg>
         </div>
-        <span class="sb-name">Sidekick</span>
+        <span class="sb-name">Sidekick</span><span id="app-version" style="font-size:9px;color:var(--t4);margin-left:2px;font-weight:400;align-self:flex-end;padding-bottom:1px"></span>
         <span id="tier-badge"></span>
         <button class="sb-icon-btn" id="new-chat-btn" title="New conversation">
           <svg viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
@@ -1979,6 +1979,17 @@ html,body{
   </div>
 </div>
 
+<!-- Custom confirm dialog -->
+<div id="confirm-overlay" style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(15,10,5,.7);display:none;align-items:center;justify-content:center">
+  <div id="confirm-box" style="-webkit-app-region:no-drag;background:#2A1C14;border:1px solid rgba(255,180,80,.15);border-radius:14px;padding:24px 24px 20px;width:260px;display:flex;flex-direction:column;gap:12px">
+    <p id="confirm-msg" style="font-size:14px;color:#F5DEB3;margin:0;line-height:1.5"></p>
+    <div style="display:flex;gap:8px;justify-content:flex-end">
+      <button id="confirm-cancel" style="padding:8px 16px;border-radius:8px;background:transparent;border:1px solid rgba(255,180,80,.2);color:rgba(245,222,179,.6);font-size:13px;cursor:pointer;font-family:inherit">Cancel</button>
+      <button id="confirm-ok" style="padding:8px 16px;border-radius:8px;background:rgba(184,48,48,.8);border:none;color:#fff;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit">Log out</button>
+    </div>
+  </div>
+</div>
+
 <!-- Conv context menu (floating) -->
 <div id="conv-ctx-menu" class="conv-ctx-menu" style="display:none">
   <button class="conv-ctx-item" id="ctx-rename">✏ Rename</button>
@@ -2030,6 +2041,7 @@ html,body{
     <div id="auth-form-register" style="display:none">
       <input class="auth-input" type="email"    id="auth-reg-email"    placeholder="Email" autocomplete="email"/>
       <input class="auth-input" type="password" id="auth-reg-password" placeholder="Password (min 6 chars)" autocomplete="new-password"/>
+      <input class="auth-input" type="password" id="auth-reg-password2" placeholder="Confirm password" autocomplete="new-password"/>
       <button class="auth-btn-primary" id="auth-register-btn">Create account</button>
       <div class="auth-divider"><span>Already have an account?</span></div>
       <button class="auth-btn-secondary" id="auth-goto-login">Sign in</button>

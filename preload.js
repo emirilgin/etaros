@@ -76,7 +76,8 @@ contextBridge.exposeInMainWorld('sk', {
   openUrl:       (url)     => ipcRenderer.send('open-url', url),
   openUrls:      (urls)    => ipcRenderer.send('open-urls', urls),
   clearHistory:  ()        => ipcRenderer.send('clear-history'),
-  getWindowMode: ()        => ipcRenderer.invoke('get-window-mode'),
+  getWindowMode:  ()       => ipcRenderer.invoke('get-window-mode'),
+  getAppVersion:  ()       => ipcRenderer.invoke('get-app-version'),
   installUpdate: ()        => ipcRenderer.send('install-update'),
 
   // Events from main → renderer

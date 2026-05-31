@@ -1522,6 +1522,7 @@ Respond ONLY with valid JSON, no markdown:
     urls.forEach((u, i) => setTimeout(() => shell.openExternal(u), i * 120));
   });
   ipcMain.handle('get-window-mode', () => 'fullscreen');
+  ipcMain.handle('get-app-version', () => app.getVersion());
 
   // ─── Embedded search browser (BrowserView) ────────────────────────────────
   function destroySearchBrowserView() {
