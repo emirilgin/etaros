@@ -950,7 +950,8 @@ function saveSrchRecent(q, catId) {
   localStorage.setItem('sk-searches', JSON.stringify(srchRecent));
 }
 
-let _lastSearchUrl = '';
+let _lastSearchUrl   = '';
+let _lastSearchLabel = '';
 
 function showSearchWebview(url, label) {
   const wv   = document.getElementById('search-webview');
@@ -959,8 +960,11 @@ function showSearchWebview(url, label) {
   const lbl  = document.getElementById('search-web-url-label');
   if (!wv) return false;
   _lastSearchUrl = url;
+  _lastSearchLabel = label || url;
+  // Load URL then make visible
   wv.src = url;
-  wv.style.display = 'flex';
+  wv.classList.add('visible');
+  wv.style.display = 'block';
   body.style.display = 'none';
   bar.style.display  = 'flex';
   if (lbl) lbl.textContent = label || url;
@@ -971,7 +975,7 @@ function hideSearchWebview() {
   const wv   = document.getElementById('search-webview');
   const body = document.getElementById('search-body');
   const bar  = document.getElementById('search-webview-bar');
-  if (wv)   { wv.style.display = 'none'; wv.src = 'about:blank'; }
+  if (wv)   { wv.classList.remove('visible'); wv.style.display = 'none'; wv.src = 'about:blank'; }
   if (body) body.style.display = '';
   if (bar)  bar.style.display  = 'none';
 }
@@ -980,6 +984,39 @@ document.getElementById('search-web-back')?.addEventListener('click', hideSearch
 document.getElementById('search-web-browser')?.addEventListener('click', () => {
   if (_lastSearchUrl) window.sk.openUrl(_lastSearchUrl);
 });
+document.getElementById('search-web-ai')?.addEventListener('click', () => {
+  const q = _lastSearchLabel || document.getElementById('search-input')?.value || '';
+  if (!q) return;
+  // Switch to chat and ask AI for price comparison
+  switchTab('chat');
+  const prompt = `I'm looking to buy: "${q}"\n\nPlease compare prices and options:\n• Find the cheapest places to buy this (online + local stores)\n• Compare quality/reviews across options\n• Tell me if I should wait for a sale or buy now\n• Any coupons, cashback, or discount codes?\n• Recommend the best value option`;
+  setTimeout(() => {
+    if (msg) { msg.value = prompt; msg.style.height = 'auto'; sendMsg(); }
+  }, 80);
+});
+
+// Keep webview links in-app; open new tabs inside the webview
+(function setupWebviewEvents() {
+  const wv = document.getElementById('search-webview');
+  if (!wv) return;
+  wv.addEventListener('new-window', e => {
+    e.preventDefault();
+    if (e.url && e.url !== 'about:blank') wv.src = e.url;
+  });
+  wv.addEventListener('did-navigate', e => {
+    if (e.url && e.url !== 'about:blank') {
+      _lastSearchUrl = e.url;
+      const lbl = document.getElementById('search-web-url-label');
+      if (lbl && e.url.includes('google.com/search')) {
+        try {
+          const u = new URL(e.url);
+          const q2 = u.searchParams.get('q');
+          if (q2) lbl.textContent = q2;
+        } catch {}
+      }
+    }
+  });
+})();
 
 function doSearch(query, catOverride) {
   const q = (query || document.getElementById('search-input')?.value || '').trim();
@@ -1920,14 +1957,105 @@ document.getElementById('sp-save-btn')?.addEventListener('click', async () => {
   showToast('Profile saved', 'ok');
 });
 
-document.getElementById('sp-upgrade-btn')?.addEventListener('click',  () => window.sk.openSettings());
-document.getElementById('sp-advanced-btn')?.addEventListener('click', () => window.sk.openSettings());
+document.getElementById('sp-upgrade-btn')?.addEventListener('click',  () => openSettingsPage('plan'));
+document.getElementById('sp-advanced-btn')?.addEventListener('click', () => openAdvancedPage());
 document.getElementById('sp-help-btn2')?.addEventListener('click',    () => window.sk.openUrl('mailto:support@emirilgin.com'));
 document.getElementById('sp-logout-btn')?.addEventListener('click', async () => {
   if (!confirm('Log out? This will clear your profile and license key.')) return;
   showToast('Logged out', 'info');
   await window.sk.logout();
   settingsPage?.classList.remove('open');
+});
+
+// ─── Advanced Settings page ───────────────────────────────────────────────────
+const advancedPage = document.getElementById('advanced-page');
+
+function openAdvancedPage() {
+  if (!advancedPage) return;
+  // Close settings page if open so advanced slides over it
+  settingsPage?.classList.remove('open');
+  advancedPage.classList.add('open');
+  // Load current settings
+  window.sk.getSettings().then(s => {
+    const city      = document.getElementById('adv-city');
+    const licKey    = document.getElementById('adv-license-key');
+    const autoScan  = document.getElementById('adv-auto-scan');
+    const loginItem = document.getElementById('adv-login');
+    if (city)      city.value       = s.city        || '';
+    if (licKey)    licKey.value     = s.licenseKey  || '';
+    if (autoScan)  autoScan.checked = Boolean(s.autoScan);
+    if (loginItem) loginItem.checked = Boolean(s.startOnLogin);
+    // Scan interval pills
+    const interval = Number(s.scanInterval ?? 30);
+    document.querySelectorAll('.adv-pill').forEach(p =>
+      p.classList.toggle('active', Number(p.dataset.val) === interval));
+    // Provider cards
+    const prov = s.provider || 'builtin';
+    document.querySelectorAll('.adv-pcard').forEach(c =>
+      c.classList.toggle('active', c.dataset.prov === prov));
+    // Own key field
+    const ownKeyField = document.getElementById('adv-own-key-field');
+    const ownKey      = document.getElementById('adv-own-key');
+    if (ownKeyField) ownKeyField.style.display = (prov === 'claude') ? '' : 'none';
+    if (ownKey) ownKey.value = s.apiKey || '';
+  });
+  // Update license status
+  window.sk.checkLicense().then(lic => {
+    const el = document.getElementById('adv-license-status');
+    if (!el) return;
+    if (lic.tier === 'max') el.textContent = '✓ Max plan active';
+    else if (lic.tier === 'pro') el.textContent = '✓ Pro plan active';
+    else el.textContent = `Free — ${Math.max(0, lic.limit - lic.used)} of ${lic.limit} messages remaining`;
+  });
+}
+
+document.getElementById('adv-back')?.addEventListener('click', () => {
+  advancedPage?.classList.remove('open');
+  // Re-open settings page on Advanced tab
+  openSettingsPage('advanced');
+});
+
+// Interval pills
+document.querySelectorAll('.adv-pill').forEach(pill =>
+  pill.addEventListener('click', () => {
+    document.querySelectorAll('.adv-pill').forEach(p => p.classList.remove('active'));
+    pill.classList.add('active');
+  }));
+
+// Provider cards
+document.querySelectorAll('.adv-pcard').forEach(card =>
+  card.addEventListener('click', () => {
+    document.querySelectorAll('.adv-pcard').forEach(c => c.classList.remove('active'));
+    card.classList.add('active');
+    const ownKeyField = document.getElementById('adv-own-key-field');
+    if (ownKeyField) ownKeyField.style.display = (card.dataset.prov === 'claude') ? '' : 'none';
+  }));
+
+// Activate license key
+document.getElementById('adv-activate-btn')?.addEventListener('click', async () => {
+  const key = document.getElementById('adv-license-key')?.value.trim();
+  if (!key) return;
+  await window.sk.saveSettings({ licenseKey: key });
+  const lic = await window.sk.checkLicense();
+  const el  = document.getElementById('adv-license-status');
+  if (el) el.textContent = lic.tier !== 'free' ? `✓ ${lic.tier.toUpperCase()} plan activated!` : 'Key not recognized';
+  showToast(lic.tier !== 'free' ? 'License activated!' : 'Key not recognized', lic.tier !== 'free' ? 'ok' : 'err');
+});
+
+// Save advanced settings
+document.getElementById('adv-save-btn')?.addEventListener('click', async () => {
+  const activePill = document.querySelector('.adv-pill.active');
+  const activeProv = document.querySelector('.adv-pcard.active');
+  await window.sk.saveSettings({
+    city:         document.getElementById('adv-city')?.value.trim()     || '',
+    scanInterval: activePill ? Number(activePill.dataset.val)           : 30,
+    autoScan:     document.getElementById('adv-auto-scan')?.checked     ?? false,
+    startOnLogin: document.getElementById('adv-login')?.checked         ?? false,
+    provider:     activeProv ? activeProv.dataset.prov                  : 'builtin',
+    apiKey:       document.getElementById('adv-own-key')?.value.trim()  || '',
+  });
+  showToast('Settings saved', 'ok');
+  advancedPage?.classList.remove('open');
 });
 
 init();

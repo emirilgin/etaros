@@ -1133,14 +1133,69 @@ html,body{
 #sp-save-btn:hover { opacity:.88; }
 
 /* Search webview */
-#search-webview-bar { display:none; align-items:center; gap:8px; padding:7px 12px; border-bottom:1px solid var(--border); flex-shrink:0; background:var(--bg-hi); }
-#search-web-back { background:none; border:none; cursor:pointer; color:var(--t2); font-size:12.5px; font-family:inherit; padding:4px 8px; border-radius:var(--r-xs); transition:background .12s; display:flex; align-items:center; gap:4px; }
+#search-webview-bar { display:none; align-items:center; gap:6px; padding:7px 10px; border-bottom:1px solid var(--border); flex-shrink:0; background:var(--bg-hi); }
+#search-web-back { background:none; border:none; cursor:pointer; color:var(--t2); font-size:12px; font-family:inherit; padding:4px 8px; border-radius:var(--r-xs); transition:background .12s; display:flex; align-items:center; gap:4px; flex-shrink:0; }
 #search-web-back:hover { background:var(--surface); color:var(--t1); }
 #search-web-back svg { width:11px; height:11px; }
-.swv-url { flex:1; font-size:11.5px; color:var(--t3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:center; }
-#search-web-browser { background:none; border:1px solid var(--border); cursor:pointer; color:var(--t3); font-size:11.5px; font-family:inherit; padding:4px 10px; border-radius:20px; transition:background .12s,color .12s; flex-shrink:0; }
+.swv-url { flex:1; font-size:11px; color:var(--t3); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; text-align:center; }
+#search-web-browser { background:none; border:1px solid var(--border); cursor:pointer; color:var(--t3); font-size:11px; font-family:inherit; padding:4px 9px; border-radius:20px; transition:background .12s,color .12s; flex-shrink:0; }
 #search-web-browser:hover { background:var(--surface); color:var(--t2); }
-webview#search-webview { display:none; flex:1; border:none; width:100%; min-height:0; }
+#search-web-ai { background:var(--orange-dim); border:1px solid rgba(192,96,30,.3); cursor:pointer; color:var(--orange-t); font-size:11px; font-family:inherit; font-weight:600; padding:4px 10px; border-radius:20px; transition:background .12s; flex-shrink:0; }
+#search-web-ai:hover { background:rgba(192,96,30,.18); }
+webview#search-webview { display:none; width:100%; border:none; min-height:0; }
+webview#search-webview.visible { display:flex; flex:1; }
+
+/* ── Advanced settings full-screen page ── */
+#advanced-page { position:fixed; inset:0; z-index:360; background:var(--bg); display:flex; flex-direction:column; transform:translateX(100%); transition:transform .26s cubic-bezier(.16,.8,.3,1); }
+#advanced-page.open { transform:translateX(0); }
+#adv-hdr { height:44px; flex-shrink:0; display:flex; align-items:center; padding:0 16px; border-bottom:1px solid var(--border); background:var(--bg-hi); -webkit-app-region:drag; }
+#adv-back { -webkit-app-region:no-drag; display:flex; align-items:center; gap:5px; height:28px; padding:0 10px; border-radius:var(--r-xs); background:none; border:none; cursor:pointer; font-family:inherit; font-size:12.5px; color:var(--t2); transition:color .12s,background .12s; }
+#adv-back:hover { color:var(--t1); background:var(--surface); }
+#adv-back svg { width:12px; height:12px; }
+#adv-title { flex:1; text-align:center; font-size:13px; font-weight:600; color:var(--t2); pointer-events:none; }
+#adv-body { flex:1; overflow-y:auto; padding:0 0 24px; }
+#adv-body::-webkit-scrollbar { width:4px; }
+#adv-body::-webkit-scrollbar-thumb { background:var(--border); border-radius:2px; }
+.adv-section { padding:16px 20px 4px; }
+.adv-section-lbl { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--t3); padding-bottom:8px; }
+.adv-field { display:flex; flex-direction:column; gap:4px; margin-bottom:10px; }
+.adv-field label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.09em; color:var(--t3); }
+.adv-field input { height:40px; padding:0 12px; background:var(--surface); border:1px solid var(--border); border-radius:var(--r-s); color:var(--t1); font-family:inherit; font-size:14px; outline:none; transition:border-color .15s; }
+.adv-field input:focus { border-color:var(--orange); }
+.adv-field input::placeholder { color:var(--t4); }
+.adv-field-row { display:flex; gap:6px; }
+.adv-field-row input { flex:1; }
+.adv-field-row .adv-activate-btn { height:40px; padding:0 14px; background:var(--orange); color:#fff; border:none; border-radius:var(--r-s); font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; transition:opacity .15s; flex-shrink:0; }
+.adv-field-row .adv-activate-btn:hover { opacity:.88; }
+.adv-pills { display:grid; grid-template-columns:repeat(4,1fr); gap:5px; }
+.adv-pill { padding:9px 4px; text-align:center; background:var(--surface); border:1px solid var(--border); border-radius:var(--r-s); cursor:pointer; font-size:12px; color:var(--t2); font-family:inherit; transition:background .14s,border-color .14s,color .14s; user-select:none; }
+.adv-pill:hover { background:var(--card); color:var(--t1); }
+.adv-pill.active { background:var(--orange-dim); border-color:var(--orange); color:var(--orange-t); font-weight:600; }
+.adv-pill small { display:block; font-size:10px; opacity:.65; margin-top:1px; }
+.adv-toggle-row { display:flex; align-items:center; justify-content:space-between; padding:11px 0; border-bottom:1px solid var(--border); }
+.adv-toggle-row:last-child { border-bottom:none; }
+.adv-toggle-info { display:flex; flex-direction:column; gap:2px; }
+.adv-toggle-label { font-size:13.5px; color:var(--t1); }
+.adv-toggle-sub { font-size:11.5px; color:var(--t3); }
+.adv-sw { position:relative; width:38px; height:22px; flex-shrink:0; }
+.adv-sw input { opacity:0; width:0; height:0; position:absolute; }
+.adv-sw-t { position:absolute; inset:0; background:var(--card); border:1px solid var(--border2); border-radius:11px; cursor:pointer; transition:background .2s,border-color .2s; }
+.adv-sw-t::after { content:''; position:absolute; top:3px; left:3px; width:14px; height:14px; border-radius:50%; background:var(--t3); transition:transform .2s,background .2s; }
+.adv-sw input:checked+.adv-sw-t { background:var(--orange-dim); border-color:var(--orange); }
+.adv-sw input:checked+.adv-sw-t::after { transform:translateX(16px); background:var(--orange); }
+.adv-prov-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:5px; margin-top:4px; }
+.adv-pcard { background:var(--surface); border:2px solid var(--border); border-radius:var(--r-s); padding:11px 9px; cursor:pointer; display:flex; flex-direction:column; gap:4px; transition:border-color .16s,background .16s; user-select:none; }
+.adv-pcard:hover { background:var(--card); }
+.adv-pcard.active { border-color:var(--orange); background:var(--orange-dim); }
+.adv-pcard-icon { font-size:15px; }
+.adv-pcard-name { font-size:12px; font-weight:600; color:var(--t1); }
+.adv-pcard-sub { font-size:10.5px; color:var(--t3); line-height:1.4; }
+.adv-pcard.active .adv-pcard-name { color:var(--orange-t); }
+.adv-hint { font-size:11.5px; color:var(--t3); line-height:1.6; margin-top:4px; }
+.adv-divider { height:1px; background:var(--border); margin:8px 20px; }
+#adv-footer { flex-shrink:0; padding:12px 20px 20px; border-top:1px solid var(--border); background:var(--bg); }
+#adv-save-btn { width:100%; height:40px; background:var(--orange); color:#fff; border:none; border-radius:var(--r-s); font-family:inherit; font-size:14px; font-weight:600; cursor:pointer; transition:opacity .15s; }
+#adv-save-btn:hover { opacity:.88; }
 
 /* Conv context menu */
 .conv-menu-btn { background:none; border:none; cursor:pointer; color:var(--t3); padding:2px 5px; border-radius:4px; opacity:0; transition:opacity .12s,color .12s; flex-shrink:0; font-size:13px; line-height:1; }
@@ -1402,14 +1457,16 @@ webview#search-webview { display:none; flex:1; border:none; width:100%; min-heig
             Back
           </button>
           <span class="swv-url" id="search-web-url-label"></span>
-          <button id="search-web-browser">↗ Open in browser</button>
+          <button id="search-web-ai">◆ AI Compare</button>
+          <button id="search-web-browser">↗ Browser</button>
         </div>
         <div class="search-body" id="search-body"></div>
         <!-- Embedded search webview -->
         <webview id="search-webview"
           partition="persist:search"
           useragent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-          allowpopups></webview>
+          allowpopups
+          src="about:blank"></webview>
       </div>
 
     </div><!-- /main -->
@@ -1606,6 +1663,106 @@ webview#search-webview { display:none; flex:1; border:none; width:100%; min-heig
     <button id="sp-save-btn">Save changes</button>
   </div>
 </div>
+<!-- Advanced Settings full-screen page -->
+<div id="advanced-page">
+  <div id="adv-hdr">
+    <button id="adv-back">
+      <svg viewBox="0 0 12 12" fill="none"><path d="M8 2L4 6l4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Back
+    </button>
+    <span id="adv-title">Advanced Settings</span>
+    <div style="width:60px;-webkit-app-region:no-drag"></div>
+  </div>
+  <div id="adv-body">
+
+    <!-- Scan interval -->
+    <div class="adv-section">
+      <div class="adv-section-lbl">Scan interval</div>
+      <div class="adv-pills" id="adv-interval-pills">
+        <button class="adv-pill" data-val="15">15s<small>Fast</small></button>
+        <button class="adv-pill active" data-val="30">30s<small>Default</small></button>
+        <button class="adv-pill" data-val="60">60s<small>Gentle</small></button>
+        <button class="adv-pill" data-val="0">Off<small>Manual</small></button>
+      </div>
+      <p class="adv-hint">How often Sidekick silently scans your screen.</p>
+    </div>
+
+    <!-- Behaviour toggles -->
+    <div class="adv-section">
+      <div class="adv-section-lbl">Behaviour</div>
+      <div class="adv-toggle-row">
+        <div class="adv-toggle-info">
+          <span class="adv-toggle-label">Auto-scan</span>
+          <span class="adv-toggle-sub">Watch screen continuously in the background</span>
+        </div>
+        <label class="adv-sw"><input type="checkbox" id="adv-auto-scan"/><span class="adv-sw-t"></span></label>
+      </div>
+      <div class="adv-toggle-row">
+        <div class="adv-toggle-info">
+          <span class="adv-toggle-label">Launch at login</span>
+          <span class="adv-toggle-sub">Start Sidekick when you sign in</span>
+        </div>
+        <label class="adv-sw"><input type="checkbox" id="adv-login"/><span class="adv-sw-t"></span></label>
+      </div>
+    </div>
+
+    <div class="adv-divider"></div>
+
+    <!-- City -->
+    <div class="adv-section">
+      <div class="adv-section-lbl">Your city</div>
+      <div class="adv-field">
+        <input id="adv-city" type="text" placeholder="e.g. Amsterdam, London, New York"/>
+      </div>
+      <p class="adv-hint">Used for local prices, restaurants and nearby deals.</p>
+    </div>
+
+    <!-- License key -->
+    <div class="adv-section">
+      <div class="adv-section-lbl">License key</div>
+      <div class="adv-field">
+        <div class="adv-field-row">
+          <input id="adv-license-key" type="text" placeholder="Paste license key here" spellcheck="false" autocomplete="off"/>
+          <button class="adv-activate-btn" id="adv-activate-btn">Activate →</button>
+        </div>
+      </div>
+      <p class="adv-hint" id="adv-license-status"></p>
+    </div>
+
+    <div class="adv-divider"></div>
+
+    <!-- AI Provider -->
+    <div class="adv-section">
+      <div class="adv-section-lbl">AI provider</div>
+      <div class="adv-prov-grid" id="adv-prov-grid">
+        <div class="adv-pcard active" data-prov="builtin">
+          <span class="adv-pcard-icon">◉</span>
+          <span class="adv-pcard-name">Sidekick</span>
+          <span class="adv-pcard-sub">Default · No setup</span>
+        </div>
+        <div class="adv-pcard" data-prov="ollama">
+          <span class="adv-pcard-icon">○</span>
+          <span class="adv-pcard-name">Ollama</span>
+          <span class="adv-pcard-sub">Local · Private</span>
+        </div>
+        <div class="adv-pcard" data-prov="claude">
+          <span class="adv-pcard-icon">◈</span>
+          <span class="adv-pcard-name">Own Key</span>
+          <span class="adv-pcard-sub">Your API key</span>
+        </div>
+      </div>
+      <div id="adv-own-key-field" class="adv-field" style="margin-top:10px;display:none">
+        <label>API Key</label>
+        <input id="adv-own-key" type="password" placeholder="sk-ant-… or similar"/>
+      </div>
+    </div>
+
+  </div>
+  <div id="adv-footer">
+    <button id="adv-save-btn">Save changes</button>
+  </div>
+</div>
+
 <!-- Conv context menu (floating) -->
 <div id="conv-ctx-menu" class="conv-ctx-menu" style="display:none">
   <button class="conv-ctx-item" id="ctx-rename">✏ Rename</button>
