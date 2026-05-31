@@ -1996,13 +1996,9 @@ const settingsPage = document.getElementById('settings-page');
 let spAvatarDataUrl = null;
 
 function switchSettingsTab(tabId) {
-  document.querySelectorAll('.sp-tab').forEach(t =>
-    t.classList.toggle('active', t.dataset.spTab === tabId));
-  document.querySelectorAll('.sp-tab-content').forEach(c =>
-    c.classList.toggle('active', c.id === `sp-tab-${tabId}`));
-  // Save footer only relevant on profile tab
-  const footer = document.getElementById('sp-footer');
-  if (footer) footer.style.display = tabId === 'profile' ? '' : 'none';
+  // Settings is now a single scrollable page — scroll to section
+  const target = document.getElementById(`sp-tab-${tabId}`);
+  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function openSettingsPage(section = 'profile') {
@@ -2032,14 +2028,14 @@ function openSettingsPage(section = 'profile') {
       tile.classList.toggle('highlighted', tier === 'pro' && lic.tier === 'free');
       if (action) {
         if (lic.tier === tier) {
-          action.className = 'sp-plan-tile-action current-lbl';
-          action.textContent = 'Current plan';
+          action.className = 'sp-plan-row-btn current-lbl';
+          action.textContent = 'Current';
         } else if (tier === 'free') {
-          action.className = 'sp-plan-tile-action locked';
+          action.className = 'sp-plan-row-btn locked';
           action.textContent = 'Downgrade';
         } else {
-          action.className = 'sp-plan-tile-action upgrade';
-          action.textContent = tier === 'pro' ? 'Get Pro →' : 'Get Max →';
+          action.className = 'sp-plan-row-btn upgrade';
+          action.textContent = 'Upgrade →';
         }
       }
     });
