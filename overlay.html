@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"/>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{
+  width:100vw;height:100vh;overflow:hidden;
+  cursor:crosshair;user-select:none;
+  background:transparent;
+}
+canvas{display:block;position:fixed;inset:0;width:100vw;height:100vh;}
+#hint{
+  position:fixed;top:16px;left:50%;transform:translateX(-50%);
+  background:rgba(0,0,0,.72);color:#fff;
+  font-family:-apple-system,BlinkMacSystemFont,sans-serif;
+  font-size:13px;font-weight:500;padding:7px 16px;
+  border-radius:20px;letter-spacing:.01em;pointer-events:none;
+  backdrop-filter:blur(8px);
+}
+</style>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="hint">Drag to select region · ESC to cancel</div>
+<script>
+'use strict';
+
+const canvas = document.getElementById('c');
+const ctx    = canvas.getContext('2d');
+const hint   = document.getElementById('hint');
+const dpr    = window.devicePixelRatio || 1;
+
+// Physical canvas size
+canvas.width  = window.innerWidth  * dpr;
+canvas.height = window.innerHeight * dpr;
+ctx.scale(dpr, dpr);
+
+const W = window.innerWidth;
+const H = window.innerHeight;
+
+let sx = 0, sy = 0, ex = 0, ey = 0, down = false;
+
+function draw() {
+  ctx.clearRect(0, 0, W, H);
+
+  // Dark overlay
+  ctx.fillStyle = 'rgba(0,0,0,.52)';
+  ctx.fillRect(0, 0, W, H);
+
+  if (!down) return;
+
+  const x = Math.min(sx, ex), y = Math.min(sy, ey);
+  const w = Math.abs(ex - sx),  h = Math.abs(ey - sy);
+  if (w < 2 || h < 2) return;
+
+  // Clear selected region (show through)
+  ctx.clearRect(x, y, w, h);
+
+  // Subtle tint inside selection
+  ctx.fillStyle = 'rgba(255,255,255,.04)';
+  ctx.fillRect(x, y, w, h);
+
+  // Border
+  ctx.strokeStyle = 'rgba(255,255,255,.9)';
+  ctx.lineWidth   = 1.5 / dpr;
+  ctx.setLineDash([]);
+  ctx.strokeRect(x + .5, y + .5, w - 1, h - 1);
+
+  // Corner handles
+  const hs = 6;
+  ctx.fillStyle = '#fff';
+  [[x,y],[x+w,y],[x,y+h],[x+w,y+h]].forEach(([cx,cy]) => {
+    ctx.fillRect(cx - hs/2, cy - hs/2, hs, hs);
+  });
+
+  // Size label
+  const label = `${Math.round(w)} × ${Math.round(h)}`;
+  const lx = x + w / 2, ly = y > 28 ? y - 8 : y + h + 20;
+  ctx.font = `500 12px -apple-system,sans-serif`;
+  const tw = ctx.measureText(label).width;
+  ctx.fillStyle = 'rgba(0,0,0,.72)';
+  ctx.beginPath();
+  ctx.roundRect(lx - tw/2 - 8, ly - 16, tw + 16, 22, 6);
+  ctx.fill();
+  ctx.fillStyle = '#fff';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(label, lx, ly - 4);
+}
+
+canvas.addEventListener('mousedown', e => {
+  sx = ex = e.clientX;
+  sy = ey = e.clientY;
+  down = true;
+  hint.style.display = 'none';
+  draw();
+});
+
+canvas.addEventListener('mousemove', e => {
+  if (!down) return;
+  ex = e.clientX; ey = e.clientY;
+  draw();
+});
+
+canvas.addEventListener('mouseup', e => {
+  if (!down) return;
+  ex = e.clientX; ey = e.clientY;
+  down = false;
+
+  const x = Math.min(sx, ex), y = Math.min(sy, ey);
+  const w = Math.abs(ex - sx),  h = Math.abs(ey - sy);
+
+  if (w < 8 || h < 8) { window.sk.cancelRegion(); return; }
+
+  window.sk.selectRegion({
+    x: Math.round(x),
+    y: Math.round(y),
+    width:  Math.round(w),
+    height: Math.round(h),
+    screenWidth:  window.screen.width,
+    screenHeight: window.screen.height,
+    dpr,
+  });
+});
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') window.sk.cancelRegion();
+});
+
+draw();
+</script>
+</body>
+</html>

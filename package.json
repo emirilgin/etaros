@@ -37,6 +37,7 @@
       "index.html",
       "settings.html",
       "setup.html",
+      "overlay.html",
       "app.config.js"
     ],
     "publish": {

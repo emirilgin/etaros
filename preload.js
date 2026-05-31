@@ -40,6 +40,9 @@ contextBridge.exposeInMainWorld('sk', {
   deleteChat:       (id) => ipcRenderer.invoke('delete-chat', id),
   chat:         (text) => ipcRenderer.invoke('chat', text),
   manualScan:   ()        => ipcRenderer.invoke('manual-scan'),
+  regionSelect: ()        => ipcRenderer.invoke('region-select'),
+  selectRegion: (r)       => ipcRenderer.send('region-selected', r),
+  cancelRegion: ()        => ipcRenderer.send('region-cancelled'),
   analyzeImage: (b64)     => ipcRenderer.invoke('analyze-image', b64),
   estimateKcal: (item)    => ipcRenderer.invoke('estimate-kcal', item),
 

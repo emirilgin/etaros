@@ -242,7 +242,32 @@ async function doScan(btn) {
 scanBtn.addEventListener('click',    () => doScan(scanBtn));
 scanFsBtn?.addEventListener('click', () => doScan(scanFsBtn));
 document.getElementById('scan-sidebar-btn')?.addEventListener('click', () => doScan(scanBtn));
-document.getElementById('scan-input-btn')?.addEventListener('click',   () => doScan(scanBtn));
+document.getElementById('scan-input-btn')?.addEventListener('click', () => doScan(scanBtn));
+
+// Region selector button — CMD+SHIFT+4 style
+document.getElementById('region-btn')?.addEventListener('click', async () => {
+  const btn = document.getElementById('region-btn');
+  if (btn) { btn.style.opacity = '.4'; btn.style.pointerEvents = 'none'; }
+  try {
+    const result = await window.sk.regionSelect();
+    if (result?.b64) {
+      // Show as attached image, same as drag-drop
+      pendingPreview = result.b64;
+      const previewBar  = document.getElementById('drop-preview-bar');
+      const previewImg  = document.getElementById('drop-preview-img');
+      const previewName = document.getElementById('drop-preview-name');
+      if (previewBar && previewImg) {
+        previewImg.src      = `data:image/jpeg;base64,${result.b64}`;
+        if (previewName) previewName.textContent = 'Region screenshot';
+        previewBar.style.display = '';
+        msg.placeholder = 'Ask about this region, or send to analyze…';
+        msg.focus();
+      }
+    }
+  } finally {
+    if (btn) { btn.style.opacity = ''; btn.style.pointerEvents = ''; }
+  }
+});
 document.getElementById('clear-chat-btn')?.addEventListener('click',   () => window.sk.clearHistory());
 
 // ─── Quick messages (chips + fs-nav) ─────────────────────────────────────────

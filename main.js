@@ -223,6 +223,89 @@ let cachedKey      = '';
 let chatHistory    = [];
 let activeChatId   = null;
 let lastNotifyTime = 0;
+let overlayWindow  = null;
+
+// ─── Region selector ──────────────────────────────────────────────────────────
+function startRegionSelect() {
+  return new Promise(resolve => {
+    if (overlayWindow && !overlayWindow.isDestroyed()) overlayWindow.close();
+
+    const display     = screen.getPrimaryDisplay();
+    const scaleFactor = display.scaleFactor;
+
+    overlayWindow = new BrowserWindow({
+      x: display.bounds.x, y: display.bounds.y,
+      width:  display.bounds.width,
+      height: display.bounds.height,
+      frame: false, transparent: true,
+      alwaysOnTop: true, skipTaskbar: true,
+      resizable: false, movable: false,
+      focusable: true, hasShadow: false,
+      enableLargerThanScreen: true,
+      webPreferences: {
+        preload:          path.join(__dirname, 'preload.js'),
+        contextIsolation: true,
+        nodeIntegration:  false,
+        sandbox:          false,
+      },
+    });
+
+    if (process.platform === 'darwin') {
+      overlayWindow.setAlwaysOnTop(true, 'screen-saver');
+    }
+
+    overlayWindow.loadFile('overlay.html');
+    overlayWindow.show();
+    overlayWindow.focus();
+
+    const onSelected = async (_, region) => {
+      cleanup();
+      // Hide overlay before capture so it's not in the screenshot
+      overlayWindow?.hide();
+      await new Promise(r => setTimeout(r, 180));
+
+      try {
+        // Capture at physical pixel resolution
+        const physW = Math.round(display.bounds.width  * scaleFactor);
+        const physH = Math.round(display.bounds.height * scaleFactor);
+        const sources = await desktopCapturer.getSources({
+          types: ['screen'],
+          thumbnailSize: { width: physW, height: physH },
+        });
+        if (!sources.length) { overlayWindow?.close(); overlayWindow = null; return resolve(null); }
+
+        // Crop: logical coords × scaleFactor (handle retina)
+        const sf = region.dpr || scaleFactor;
+        const cropped = sources[0].thumbnail.crop({
+          x:      Math.max(0, Math.round(region.x      * sf)),
+          y:      Math.max(0, Math.round(region.y      * sf)),
+          width:  Math.max(1, Math.round(region.width  * sf)),
+          height: Math.max(1, Math.round(region.height * sf)),
+        });
+
+        const b64 = cropped.toJPEG(92).toString('base64');
+        overlayWindow?.close(); overlayWindow = null;
+        resolve(b64);
+      } catch (err) {
+        console.error('[region]', err.message);
+        overlayWindow?.close(); overlayWindow = null;
+        resolve(null);
+      }
+    };
+
+    const onCancelled = () => { cleanup(); overlayWindow?.close(); overlayWindow = null; resolve(null); };
+
+    function cleanup() {
+      ipcMain.removeListener('region-selected',  onSelected);
+      ipcMain.removeListener('region-cancelled', onCancelled);
+    }
+
+    ipcMain.once('region-selected',  onSelected);
+    ipcMain.once('region-cancelled', onCancelled);
+
+    overlayWindow.on('closed', () => { cleanup(); overlayWindow = null; resolve(null); });
+  });
+}
 
 // ─── Conversation persistence ─────────────────────────────────────────────────
 // Conversations stored as: [{ id, title, messages: [{role,content,_b64?}], updatedAt }]
@@ -949,6 +1032,14 @@ function registerIPC() {
     return { ok: true };
   });
 
+  // Region selector — CMD+SHIFT+4 style
+  ipcMain.handle('region-select', async () => {
+    mainWindow?.hide(); // hide main window so overlay is clean
+    await new Promise(r => setTimeout(r, 120));
+    const b64 = await startRegionSelect();
+    mainWindow?.show(); mainWindow?.focus();
+    return { b64 };
+  });
   ipcMain.handle('manual-scan', async () => {
     const thumb = await captureScreen();
     if (thumb) { lastBitmap = thumb.resize({ width: 160 }).toBitmap(); await proactiveScan(thumb); }
