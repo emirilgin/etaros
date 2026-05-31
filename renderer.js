@@ -375,6 +375,10 @@ msg.addEventListener('input', () => {
 
 // ─── Send ─────────────────────────────────────────────────────────────────────
 async function sendMsg() {
+  if (pendingDropB64) {
+    await analyzeDropped(pendingDropB64, dropPreviewName?.textContent);
+    return;
+  }
   const text = msg.value.trim();
   if (!text || streamEl) return;
   appendUser(text);
@@ -452,15 +456,6 @@ function push_screen_preview(b64) {
 document.addEventListener('sidekick-preview', ({ detail }) => { pendingPreview = detail.b64; });
 
 // Override sendMsg to include attached image
-const _origSendMsg = sendMsg;
-async function sendMsg() {
-  if (pendingDropB64) {
-    await analyzeDropped(pendingDropB64, dropPreviewName.textContent);
-  } else {
-    await _origSendMsg();
-  }
-}
-
 // Drag events — whole window
 document.addEventListener('dragenter', e => {
   if (!e.dataTransfer.types.includes('Files')) return;
