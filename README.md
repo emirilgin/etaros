@@ -5,8 +5,8 @@
 # Sidekick
 ### Your second pair of eyes.
 
-Always watching. Catches scams, bad deals, and subscription traps
-before they cost you — in real time.
+A desktop AI that watches your screen and flags scams, bad deals, phishing,
+and subscription traps in real time — before they cost you.
 
 <br/>
 
@@ -14,7 +14,7 @@ before they cost you — in real time.
 
 | Mac — Apple Silicon (M1/M2/M3/M4) | Mac — Intel (pre-2020) | Windows 10/11 |
 |:---:|:---:|:---:|
-| `Sidekick-*-arm64.dmg` | `Sidekick-*-x64.dmg` | `Sidekick-*-Setup.exe` |
+| `Sidekick-*-arm64.dmg` | `Sidekick-*.dmg` | `Sidekick.Setup.*.exe` |
 
 [![Version](https://img.shields.io/github/v/release/emirilgin/sidekick?style=flat-square&color=cf6e3c&label=latest)](https://github.com/emirilgin/sidekick/releases/latest)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows-lightgray?style=flat-square)](https://github.com/emirilgin/sidekick/releases/latest)
@@ -24,26 +24,28 @@ before they cost you — in real time.
 
 ---
 
-> **Mac install:** Open `.dmg` → drag to Applications → right-click → Open → "Open Anyway"  
-> **Windows:** Run `.exe` → if SmartScreen appears → "More info" → "Run anyway"  
-> **Not sure which Mac?** About This Mac → chip says M-series → `arm64.dmg` · Intel → `x64.dmg`
+> **Mac install:** Open `.dmg` → drag to Applications → right-click → Open → "Open Anyway"
+> **Windows:** Run `.exe` → if SmartScreen appears → "More info" → "Run anyway"
+> **Not sure which Mac?** About This Mac → chip says M-series → `arm64.dmg` · Intel → `.dmg`
 
 ---
 
 ## What it does
 
-Sidekick watches your screen in real time and flags threats before they cost you.
-Five focus modes — each a different lens on what matters:
+Sidekick quietly scans your screen on an interval and surfaces short, specific
+insights when something matters. One AI, five things it looks for:
 
-```
-◉ Ghost  — Phishing, fake logins, dark patterns, trackers          [Free]
-◈ Vault  — Hidden fees, subscription traps, price manipulation     [Pro]
-◇ Bloom  — Health misinformation, wellness scams, bad food choices [Pro]
-◌ Flow   — Distractions, rabbit holes, focus killers               [Pro]
-◆ Hawk   — Better prices, coupon codes, cashback opportunities     [Pro]
-```
+| | Looks for |
+|---|---|
+| 🛡️ **Security** | Phishing pages, fake logins, tech-support scams, credential risks |
+| 💸 **Finance** | Hidden fees, subscription traps, the real cost of a recurring charge |
+| 🛒 **Shopping** | Cheaper alternatives, better deals, price comparisons |
+| 🥗 **Health** | Wellness scams, pseudoscience, overpriced supplements |
+| 🎯 **Productivity** | Distractions and rabbit holes worth noticing |
 
-**100% private.** Screenshots never leave your device. No account required to start.
+Insights are concrete, never vague — *"This URL misspells PayPal as paypai.com,
+a known phishing domain"*, not *"this could be a scam."* You can also chat with
+it directly and drag in any image to analyze.
 
 ---
 
@@ -51,13 +53,27 @@ Five focus modes — each a different lens on what matters:
 
 | | Free | Pro | Max |
 |---|:---:|:---:|:---:|
-| Ghost mode | ✓ | ✓ | ✓ |
-| All 5 modes | — | ✓ | ✓ |
-| Messages | 15 total | Unlimited | Unlimited |
-| AI model | Gemini | Gemini | Claude Sonnet |
-| Price | $0 | $9/mo | $39/mo |
+| Screen scanning | ✓ | ✓ | ✓ |
+| Chat messages | 5 / month | Unlimited | Unlimited |
+| AI Compare (find alternatives) | — | ✓ | ✓ |
+| AI model | Gemini | Gemini | Claude (best) |
+| Price | $0 | $9/mo | $19/mo |
 
-[Get Pro](https://buy.stripe.com/fZu5kEgrI7766ct9cE14405) · [Get Max](https://buy.stripe.com/eVqaEY1wOajicAR88A14402)
+Upgrade from inside the app (**Settings → Plan**).
+
+---
+
+## Privacy — honest version
+
+- **Screen analysis uses an AI model.** By default that's Google Gemini, so the
+  screenshots being analyzed are sent to Google's API. If you want analysis to
+  stay fully on your machine, switch to **Ollama** (local) in Settings → AI.
+- **An account is required** (email + password, via Supabase) to sign in and
+  track your plan.
+- **Crash reporting** is on by default (Sentry) to catch bugs — diagnostics only.
+- Your conversations, learned facts, and settings are stored **locally** in an
+  encrypted, machine-locked store. Scanning can be paused any time from the tray.
+- Bring your own key (Gemini or Claude) in Settings → AI to use your own quota.
 
 ---
 
@@ -73,26 +89,27 @@ npm start
 ```
 
 ```bash
-npm run build:mac   # arm64 + x64 DMG
+npm run build:mac   # arm64 + Intel DMG
 npm run build:win   # Windows NSIS installer
-npm run gen-icon    # Regenerate app icon from scripts/gen-icon.js
+npm run gen-icon    # Regenerate app icon
 ```
 
-See [DEPLOY.md](DEPLOY.md) for server + Stripe setup.
+`app.config.js` holds all secrets (API keys, Supabase, Stripe, license secret)
+and is **gitignored** — never commit it. See [DEPLOY.md](DEPLOY.md) for the
+Supabase + Stripe backend setup.
 
----
+### Stack
 
-## Privacy
-
-- All analysis runs on-device or via your own API key
-- No telemetry, no analytics, no accounts
-- Local data stored in encrypted machine-locked store
-- Scanning can be paused any time from tray
+- **Electron** — desktop shell (macOS + Windows)
+- **Google Gemini** — default vision/chat model, with a model fallback chain
+- **Ollama** — optional local model · **Claude** — optional, powers Max tier
+- **Supabase** — accounts, auth, and plan/tier storage
+- **Stripe** — Pro/Max checkout via payment links + webhook
 
 ---
 
 <div align="center">
 
-Made in the Netherlands · MIT License
+Made in the Netherlands · MIT License © 2026 Emir Ilgin
 
 </div>
