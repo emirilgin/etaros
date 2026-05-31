@@ -950,16 +950,51 @@ function saveSrchRecent(q, catId) {
   localStorage.setItem('sk-searches', JSON.stringify(srchRecent));
 }
 
+let _lastSearchUrl = '';
+
+function showSearchWebview(url, label) {
+  const wv   = document.getElementById('search-webview');
+  const body = document.getElementById('search-body');
+  const bar  = document.getElementById('search-webview-bar');
+  const lbl  = document.getElementById('search-web-url-label');
+  if (!wv) return false;
+  _lastSearchUrl = url;
+  wv.src = url;
+  wv.style.display = 'flex';
+  body.style.display = 'none';
+  bar.style.display  = 'flex';
+  if (lbl) lbl.textContent = label || url;
+  return true;
+}
+
+function hideSearchWebview() {
+  const wv   = document.getElementById('search-webview');
+  const body = document.getElementById('search-body');
+  const bar  = document.getElementById('search-webview-bar');
+  if (wv)   { wv.style.display = 'none'; wv.src = 'about:blank'; }
+  if (body) body.style.display = '';
+  if (bar)  bar.style.display  = 'none';
+}
+
+document.getElementById('search-web-back')?.addEventListener('click', hideSearchWebview);
+document.getElementById('search-web-browser')?.addEventListener('click', () => {
+  if (_lastSearchUrl) window.sk.openUrl(_lastSearchUrl);
+});
+
 function doSearch(query, catOverride) {
   const q = (query || document.getElementById('search-input')?.value || '').trim();
   if (!q) return;
   const catId = catOverride !== undefined ? catOverride : (selectedCat || detectCat(q));
-  const cat   = SEARCH_CATS.find(c => c.id === catId);
   saveSrchRecent(q, catId);
-  const urls = cat
-    ? cat.sites(q, '')
-    : [`https://www.google.com/search?q=${enc(q)}`, `https://duckduckgo.com/?q=${enc(q)}`];
-  window.sk.openUrls(urls);
+  // Always open Google in embedded webview as primary
+  const url = `https://www.google.com/search?q=${enc(q)}`;
+  const opened = showSearchWebview(url, q);
+  if (!opened) {
+    // Fallback: open in browser
+    const cat  = SEARCH_CATS.find(c => c.id === catId);
+    const urls = cat ? cat.sites(q, '') : [url, `https://duckduckgo.com/?q=${enc(q)}`];
+    window.sk.openUrls(urls);
+  }
   renderSearch();
 }
 
@@ -1025,6 +1060,7 @@ function renderSearch() {
 }
 
 function loadSearch() {
+  hideSearchWebview();
   renderSearch();
   setTimeout(() => document.getElementById('search-input')?.focus(), 60);
 }
@@ -1776,9 +1812,17 @@ function toggleProfileMenu() {
   pm.classList.add('open');
 }
 
-document.getElementById('pm-settings-btn')?.addEventListener('click', () => {
+document.getElementById('pm-profile-btn')?.addEventListener('click', () => {
   document.getElementById('profile-menu').classList.remove('open');
-  openSettingsPage();
+  openSettingsPage('profile');
+});
+document.getElementById('pm-plan-btn')?.addEventListener('click', () => {
+  document.getElementById('profile-menu').classList.remove('open');
+  openSettingsPage('plan');
+});
+document.getElementById('pm-advanced-btn')?.addEventListener('click', () => {
+  document.getElementById('profile-menu').classList.remove('open');
+  openSettingsPage('advanced');
 });
 document.getElementById('pm-help-btn')?.addEventListener('click', () => {
   document.getElementById('profile-menu').classList.remove('open');
@@ -1795,9 +1839,20 @@ document.getElementById('pm-logout-btn')?.addEventListener('click', async () => 
 const settingsPage = document.getElementById('settings-page');
 let spAvatarDataUrl = null;
 
-function openSettingsPage() {
+function switchSettingsTab(tabId) {
+  document.querySelectorAll('.sp-tab').forEach(t =>
+    t.classList.toggle('active', t.dataset.spTab === tabId));
+  document.querySelectorAll('.sp-tab-content').forEach(c =>
+    c.classList.toggle('active', c.id === `sp-tab-${tabId}`));
+  // Save footer only relevant on profile tab
+  const footer = document.getElementById('sp-footer');
+  if (footer) footer.style.display = tabId === 'profile' ? '' : 'none';
+}
+
+function openSettingsPage(section = 'profile') {
   if (!settingsPage) return;
   settingsPage.classList.add('open');
+  switchSettingsTab(section);
   spAvatarDataUrl = null;
   window.sk.getProfile().then(p => {
     const n = document.getElementById('sp-name');
@@ -1831,6 +1886,10 @@ function openSettingsPage() {
     }
   });
 }
+
+// Tab click handlers
+document.querySelectorAll('.sp-tab').forEach(tab =>
+  tab.addEventListener('click', () => switchSettingsTab(tab.dataset.spTab)));
 
 document.getElementById('sp-back')?.addEventListener('click', () => settingsPage?.classList.remove('open'));
 
