@@ -569,12 +569,15 @@ async function streamGeminiWithModel(modelName, key, systemPrompt, history) {
     systemInstruction: systemPrompt,
   });
 
-  const geminiHistory = history.slice(0, -1).map(m => ({
+  // Build history: exclude last msg (sent separately), drop leading model msgs (Gemini requires user first)
+  let geminiHistory = history.slice(0, -1).map(m => ({
     role:  m.role === 'assistant' ? 'model' : 'user',
     parts: m._b64
       ? [{ inlineData: { mimeType: 'image/jpeg', data: m._b64 } }, { text: m.content }]
       : [{ text: m.content }],
   }));
+  // Drop any leading model messages — Gemini requires first turn to be 'user'
+  while (geminiHistory.length && geminiHistory[0].role === 'model') geminiHistory.shift();
 
   const last      = history[history.length - 1];
   const lastParts = last._b64
