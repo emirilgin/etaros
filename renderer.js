@@ -275,6 +275,7 @@ document.getElementById('new-chat-btn')?.addEventListener('click', async () => {
   const res = await window.sk.newChat();
   renderConvList(res.conversations, res.id);
   clearFeed(); showEmpty();
+  showToast('New conversation', 'info', 1800);
 });
 
 // Listen for conv updates from main (after each AI reply)
@@ -738,6 +739,7 @@ window.sk.on('stream-error', ({ message }) => {
   hdrDot.classList.remove('on');
   if (streamEl) { streamEl.remove(); streamEl = null; streamBuffer = ''; }
   appendError(message);
+  showToast('Something went wrong', 'err', 3500);
 });
 
 window.sk.on('analysis', renderAnalysis);
@@ -748,6 +750,7 @@ window.sk.on('scan-status', ({ scanning }) => {
   if (scanning && !streamEl) {
     thinkTime.textContent  = now();
     thinking.style.display = 'flex';
+    showToast('Scanning screen…', 'info', 2000);
   } else {
     thinking.style.display = 'none';
   }
@@ -872,6 +875,7 @@ memClearBtn?.addEventListener('click', async () => {
   if (!confirm('Clear all memory? Sidekick will forget everything it knows about you.')) return;
   await window.sk.clearMemory();
   openMemory();
+  showToast('Memory cleared', 'ok');
 });
 
 // ─── Search engine ───────────────────────────────────────────────────────────
@@ -1742,6 +1746,21 @@ async function loadProfile() {
   applyProfile(p);
 }
 
+// ─── Toast ────────────────────────────────────────────────────────────────────
+function showToast(text, type = '', duration = 2800) {
+  const container = document.getElementById('toast-container');
+  if (!container) return;
+  const icons = { ok: '✓', err: '✕', info: '◆', '': '◆' };
+  const el = document.createElement('div');
+  el.className = `toast${type ? ' ' + type : ''}`;
+  el.innerHTML = `<span class="toast-icon">${icons[type] || '◆'}</span>${text}`;
+  container.appendChild(el);
+  setTimeout(() => {
+    el.classList.add('out');
+    el.addEventListener('animationend', () => el.remove(), { once: true });
+  }, duration);
+}
+
 // ─── Profile menu ─────────────────────────────────────────────────────────────
 function toggleProfileMenu() {
   const pm  = document.getElementById('profile-menu');
@@ -1775,6 +1794,7 @@ document.getElementById('pm-help-btn')?.addEventListener('click', () => {
 document.getElementById('pm-logout-btn')?.addEventListener('click', async () => {
   document.getElementById('profile-menu').classList.remove('open');
   if (!confirm('Log out? This will clear your profile and license key.')) return;
+  showToast('Logged out', 'info');
   await window.sk.logout();
 });
 
@@ -1845,6 +1865,7 @@ document.getElementById('sp-save-btn')?.addEventListener('click', async () => {
   await window.sk.saveProfile({ name, email, language, ...(avatar ? { avatar } : {}) });
   spAvatarDataUrl = null;
   settingsPage?.classList.remove('open');
+  showToast('Profile saved', 'ok');
 });
 
 document.getElementById('sp-upgrade-btn')?.addEventListener('click',  () => window.sk.openSettings());
@@ -1852,6 +1873,7 @@ document.getElementById('sp-advanced-btn')?.addEventListener('click', () => wind
 document.getElementById('sp-help-btn2')?.addEventListener('click',    () => window.sk.openUrl('mailto:support@emirilgin.com'));
 document.getElementById('sp-logout-btn')?.addEventListener('click', async () => {
   if (!confirm('Log out? This will clear your profile and license key.')) return;
+  showToast('Logged out', 'info');
   await window.sk.logout();
   settingsPage?.classList.remove('open');
 });
