@@ -1938,6 +1938,162 @@ html,body{
   <button class="conv-ctx-item danger" id="ctx-delete">✕ Delete</button>
 </div>
 
+<!-- ─── Auth overlay ──────────────────────────────────────────────────────── -->
+<div id="auth-overlay" style="display:none">
+  <div class="auth-card">
+    <!-- Logo -->
+    <div class="auth-logo">
+      <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M24 3C31 3 45 10 45 24C45 38 31 45 24 45C17 45 3 38 3 24C3 10 17 3 24 3Z" fill="url(#al-rad)"/>
+        <path d="M24 7C28.5 7 37 11.5 39.5 18C34.8 12 29.5 10 24 10C18.5 10 13.2 12 8.5 18C11 11.5 19.5 7 24 7Z" fill="rgba(255,255,255,0.16)"/>
+        <path d="M12 24C15.2 19 19.3 17 24 17C28.7 17 32.8 19 36 24C32.8 29 28.7 31 24 31C19.3 31 15.2 29 12 24Z" stroke="rgba(255,255,255,0.9)" stroke-width="1.4" fill="rgba(255,255,255,0.08)" stroke-linejoin="round"/>
+        <circle cx="24" cy="24" r="5" stroke="rgba(255,255,255,0.75)" stroke-width="1.3" fill="rgba(255,255,255,0.1)"/>
+        <circle cx="24" cy="24" r="2.3" fill="white"/>
+        <defs>
+          <radialGradient id="al-rad" cx="44%" cy="34%" r="64%" gradientUnits="objectBoundingBox">
+            <stop offset="0%"   stop-color="#FCC078"/>
+            <stop offset="48%"  stop-color="#D46030"/>
+            <stop offset="100%" stop-color="#A02A0E"/>
+          </radialGradient>
+        </defs>
+      </svg>
+    </div>
+    <h2 class="auth-title">Sidekick</h2>
+    <p class="auth-sub" id="auth-subtitle">Sign in to your account</p>
+
+    <div id="auth-error" class="auth-error" style="display:none"></div>
+    <div id="auth-success" class="auth-success" style="display:none"></div>
+
+    <!-- Login form -->
+    <div id="auth-form-login">
+      <input class="auth-input" type="email"    id="auth-email"    placeholder="Email" autocomplete="email"/>
+      <input class="auth-input" type="password" id="auth-password" placeholder="Password" autocomplete="current-password"/>
+      <button class="auth-btn-primary" id="auth-login-btn">Sign in</button>
+      <button class="auth-link" id="auth-forgot-btn">Forgot password?</button>
+      <div class="auth-divider"><span>No account?</span></div>
+      <button class="auth-btn-secondary" id="auth-goto-register">Create account — it's free</button>
+    </div>
+
+    <!-- Register form -->
+    <div id="auth-form-register" style="display:none">
+      <input class="auth-input" type="email"    id="auth-reg-email"    placeholder="Email" autocomplete="email"/>
+      <input class="auth-input" type="password" id="auth-reg-password" placeholder="Password (min 6 chars)" autocomplete="new-password"/>
+      <button class="auth-btn-primary" id="auth-register-btn">Create account</button>
+      <div class="auth-divider"><span>Already have an account?</span></div>
+      <button class="auth-btn-secondary" id="auth-goto-login">Sign in</button>
+    </div>
+
+    <!-- Forgot password form -->
+    <div id="auth-form-forgot" style="display:none">
+      <p class="auth-reset-info">Enter your email to receive a reset link.</p>
+      <input class="auth-input" type="email" id="auth-reset-email" placeholder="Email" autocomplete="email"/>
+      <button class="auth-btn-primary" id="auth-reset-btn">Send reset link</button>
+      <button class="auth-btn-secondary" id="auth-goto-login2">Back to sign in</button>
+    </div>
+  </div>
+</div>
+
+<style>
+#auth-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: #1E1410;
+  display: flex; align-items: center; justify-content: center;
+  -webkit-app-region: drag;
+}
+.auth-card {
+  -webkit-app-region: no-drag;
+  background: #2A1C14;
+  border: 1px solid rgba(255,180,80,.12);
+  border-radius: 16px;
+  padding: 32px 28px 28px;
+  width: 280px;
+  display: flex; flex-direction: column; align-items: center; gap: 0;
+}
+.auth-logo svg { width: 52px; height: 52px; }
+.auth-title {
+  margin: 12px 0 4px;
+  font-size: 18px; font-weight: 600;
+  color: #F5DEB3;
+  letter-spacing: -.3px;
+}
+.auth-sub {
+  margin: 0 0 20px;
+  font-size: 12px; color: rgba(245,222,179,.45);
+}
+.auth-input {
+  width: 100%; box-sizing: border-box;
+  background: rgba(255,255,255,.06);
+  border: 1px solid rgba(255,180,80,.15);
+  border-radius: 8px;
+  color: #F5DEB3;
+  font-size: 13px;
+  padding: 9px 12px;
+  margin-bottom: 8px;
+  outline: none;
+  transition: border-color .15s;
+}
+.auth-input:focus { border-color: rgba(255,180,80,.4); }
+.auth-input::placeholder { color: rgba(245,222,179,.3); }
+.auth-btn-primary {
+  width: 100%;
+  background: linear-gradient(135deg, #D46030, #A02A0E);
+  border: none; border-radius: 8px;
+  color: #fff; font-size: 13px; font-weight: 600;
+  padding: 10px; cursor: pointer;
+  margin-top: 4px;
+  transition: opacity .15s;
+}
+.auth-btn-primary:hover { opacity: .85; }
+.auth-btn-primary:disabled { opacity: .4; cursor: not-allowed; }
+.auth-btn-secondary {
+  width: 100%;
+  background: rgba(255,255,255,.05);
+  border: 1px solid rgba(255,180,80,.15);
+  border-radius: 8px;
+  color: rgba(245,222,179,.7); font-size: 12px;
+  padding: 9px; cursor: pointer;
+  transition: background .15s;
+}
+.auth-btn-secondary:hover { background: rgba(255,255,255,.09); }
+.auth-link {
+  background: none; border: none;
+  color: rgba(245,222,179,.4); font-size: 11px;
+  cursor: pointer; margin: 6px auto 2px;
+  display: block; padding: 2px;
+}
+.auth-link:hover { color: rgba(245,222,179,.7); }
+.auth-divider {
+  width: 100%; display: flex; align-items: center; gap: 8px;
+  margin: 12px 0 8px;
+}
+.auth-divider::before, .auth-divider::after {
+  content: ''; flex: 1; height: 1px;
+  background: rgba(255,180,80,.1);
+}
+.auth-divider span { font-size: 11px; color: rgba(245,222,179,.3); white-space: nowrap; }
+.auth-error {
+  width: 100%; background: rgba(200,50,50,.15);
+  border: 1px solid rgba(200,50,50,.3);
+  border-radius: 7px; color: #FF8080;
+  font-size: 12px; padding: 8px 10px;
+  margin-bottom: 10px; text-align: center;
+}
+.auth-success {
+  width: 100%; background: rgba(50,180,80,.1);
+  border: 1px solid rgba(50,180,80,.25);
+  border-radius: 7px; color: #80D880;
+  font-size: 12px; padding: 8px 10px;
+  margin-bottom: 10px; text-align: center;
+}
+.auth-reset-info {
+  font-size: 12px; color: rgba(245,222,179,.5);
+  text-align: center; margin: 0 0 12px;
+}
+#auth-form-login, #auth-form-register, #auth-form-forgot {
+  width: 100%;
+}
+</style>
+
 <script src="renderer.js"></script>
 </body>
 </html>

@@ -2085,9 +2085,18 @@ document.getElementById('sp-save-btn')?.addEventListener('click', async () => {
 });
 
 document.getElementById('sp-upgrade-btn')?.addEventListener('click', () => openSettingsPage('plan'));
-// Plan tile upgrade buttons → open settings/billing window
-document.getElementById('plan-pro-action')?.addEventListener('click', () => window.sk.openSettings());
-document.getElementById('plan-max-action')?.addEventListener('click', () => window.sk.openSettings());
+// Plan tile upgrade buttons → open Stripe with user ID
+async function openUpgrade(planTier) {
+  const res = await window.sk.authGetUpgradeUrl({ planTier });
+  if (res?.url) {
+    window.sk.openUrl(res.url);
+  } else {
+    // Fallback: no Stripe links configured yet
+    showToast('Payment not configured yet', 'info');
+  }
+}
+document.getElementById('plan-pro-action')?.addEventListener('click', () => openUpgrade('pro'));
+document.getElementById('plan-max-action')?.addEventListener('click', () => openUpgrade('max'));
 document.getElementById('sp-advanced-btn')?.addEventListener('click', () => openAdvancedPage());
 document.getElementById('sp-help-btn2')?.addEventListener('click',    () => window.sk.openUrl('mailto:support@emirilgin.com'));
 document.getElementById('sp-logout-btn')?.addEventListener('click', async () => {
@@ -2188,5 +2197,120 @@ document.getElementById('adv-save-btn')?.addEventListener('click', async () => {
   advancedPage?.classList.remove('open');
 });
 
-init();
-loadProfile();
+// ─── Auth overlay ─────────────────────────────────────────────────────────────
+const authOverlay   = document.getElementById('auth-overlay');
+const authError     = document.getElementById('auth-error');
+const authSuccess   = document.getElementById('auth-success');
+const authSubtitle  = document.getElementById('auth-subtitle');
+
+function showAuthForm(name) {
+  document.getElementById('auth-form-login').style.display    = name === 'login'    ? '' : 'none';
+  document.getElementById('auth-form-register').style.display = name === 'register' ? '' : 'none';
+  document.getElementById('auth-form-forgot').style.display   = name === 'forgot'   ? '' : 'none';
+  authError.style.display   = 'none';
+  authSuccess.style.display = 'none';
+  authSubtitle.textContent =
+    name === 'register' ? 'Create a free account' :
+    name === 'forgot'   ? 'Reset your password' :
+                          'Sign in to your account';
+}
+
+function setAuthError(msg)   { authError.textContent = msg;   authError.style.display   = ''; authSuccess.style.display = 'none'; }
+function setAuthSuccess(msg) { authSuccess.textContent = msg; authSuccess.style.display = ''; authError.style.display   = 'none'; }
+
+function setAuthLoading(btn, loading) {
+  btn.disabled = loading;
+  btn.textContent = loading ? '...' : btn.dataset.label ?? btn.textContent;
+}
+
+// Navigation
+document.getElementById('auth-goto-register')?.addEventListener('click', () => showAuthForm('register'));
+document.getElementById('auth-goto-login')?.addEventListener('click',    () => showAuthForm('login'));
+document.getElementById('auth-goto-login2')?.addEventListener('click',   () => showAuthForm('login'));
+document.getElementById('auth-forgot-btn')?.addEventListener('click',    () => showAuthForm('forgot'));
+
+// Login
+const loginBtn = document.getElementById('auth-login-btn');
+loginBtn.dataset.label = 'Sign in';
+loginBtn?.addEventListener('click', async () => {
+  const email    = document.getElementById('auth-email').value.trim();
+  const password = document.getElementById('auth-password').value;
+  if (!email || !password) { setAuthError('Fill in email and password'); return; }
+  setAuthLoading(loginBtn, true);
+  const res = await window.sk.authLogin({ email, password });
+  setAuthLoading(loginBtn, false);
+  if (!res.ok) { setAuthError(res.error ?? 'Login failed'); return; }
+  authOverlay.style.display = 'none';
+  init();
+  loadProfile();
+});
+
+// Register
+const registerBtn = document.getElementById('auth-register-btn');
+registerBtn.dataset.label = 'Create account';
+registerBtn?.addEventListener('click', async () => {
+  const email    = document.getElementById('auth-reg-email').value.trim();
+  const password = document.getElementById('auth-reg-password').value;
+  if (!email || !password) { setAuthError('Fill in email and password'); return; }
+  if (password.length < 6) { setAuthError('Password must be at least 6 characters'); return; }
+  setAuthLoading(registerBtn, true);
+  const res = await window.sk.authRegister({ email, password });
+  setAuthLoading(registerBtn, false);
+  if (!res.ok) { setAuthError(res.error ?? 'Registration failed'); return; }
+  if (res.needsConfirmation) {
+    setAuthSuccess('Check your email to confirm your account, then sign in.');
+    showAuthForm('login');
+    return;
+  }
+  authOverlay.style.display = 'none';
+  init();
+  loadProfile();
+});
+
+// Reset password
+const resetBtn = document.getElementById('auth-reset-btn');
+resetBtn.dataset.label = 'Send reset link';
+resetBtn?.addEventListener('click', async () => {
+  const email = document.getElementById('auth-reset-email').value.trim();
+  if (!email) { setAuthError('Enter your email'); return; }
+  setAuthLoading(resetBtn, true);
+  const res = await window.sk.authResetPassword({ email });
+  setAuthLoading(resetBtn, false);
+  if (!res.ok) { setAuthError(res.error ?? 'Failed'); return; }
+  setAuthSuccess('Reset link sent! Check your inbox.');
+});
+
+// Enter key on inputs
+['auth-email', 'auth-password'].forEach(id => {
+  document.getElementById(id)?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') loginBtn.click();
+  });
+});
+['auth-reg-email', 'auth-reg-password'].forEach(id => {
+  document.getElementById(id)?.addEventListener('keydown', e => {
+    if (e.key === 'Enter') registerBtn.click();
+  });
+});
+
+// tier-updated event from main (after Stripe payment)
+window.sk.on('tier-updated', ({ tier }) => {
+  window.sk.checkLicense().then(lic => setTierDisplay(lic.tier, lic.used, lic.limit));
+  if (tier !== 'free') showToast(`Upgraded to ${tier.charAt(0).toUpperCase() + tier.slice(1)}! 🎉`, 'ok');
+});
+
+// ─── Startup: check session ────────────────────────────────────────────────────
+async function startApp() {
+  const session = await window.sk.authSession();
+  if (session?.loggedIn) {
+    authOverlay.style.display = 'none';
+    init();
+    loadProfile();
+  } else {
+    // Show login overlay — but only if Supabase is configured
+    // If not configured (dev mode / ownerMode), skip auth
+    authOverlay.style.display = 'flex';
+    showAuthForm('login');
+  }
+}
+
+startApp();

@@ -32,6 +32,12 @@ contextBridge.exposeInMainWorld('sk', {
   saveProfile:  (p)    => ipcRenderer.invoke('save-profile', p),
   logout:       ()     => ipcRenderer.invoke('logout'),
   checkLicense: ()     => ipcRenderer.invoke('check-license'),
+  // Auth
+  authLogin:        (opts) => ipcRenderer.invoke('auth-login', opts),
+  authRegister:     (opts) => ipcRenderer.invoke('auth-register', opts),
+  authSession:      ()     => ipcRenderer.invoke('auth-session'),
+  authResetPassword:(opts) => ipcRenderer.invoke('auth-reset-password', opts),
+  authGetUpgradeUrl:(opts) => ipcRenderer.invoke('auth-get-upgrade-url', opts),
   checkOllama:  ()     => ipcRenderer.invoke('check-ollama'),
   getStats:     ()     => ipcRenderer.invoke('get-stats'),
   // Conversation management

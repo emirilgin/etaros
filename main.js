@@ -34,6 +34,20 @@ const { GoogleGenerativeAI } = require('@google/generative-ai');
 let APP_CONFIG = { geminiKey: '', anthropicKey: '' };
 try { APP_CONFIG = require('./app.config'); } catch { /* no config yet */ }
 
+// ─── Supabase client ──────────────────────────────────────────────────────────
+const { createClient: createSupabaseClient } = require('@supabase/supabase-js');
+let _supabase = null;
+function getSupabase() {
+  if (_supabase) return _supabase;
+  const url = APP_CONFIG.supabaseUrl;
+  const key = APP_CONFIG.supabaseAnonKey;
+  if (!url || !key) return null;
+  _supabase = createSupabaseClient(url, key, {
+    auth: { persistSession: false }, // we handle session storage ourselves via electron-store
+  });
+  return _supabase;
+}
+
 // ─── Constants ────────────────────────────────────────────────────────────────
 const WINDOW_WIDTH    = 360;
 const COLLAPSED_WIDTH = 48;
@@ -416,51 +430,73 @@ function tierFromKeyOffline(key) {
   return null;
 }
 
-// Validate key against Supabase server, cache result 24h
-async function validateKeyWithServer(key) {
-  const serverUrl = APP_CONFIG.serverUrl;
-  if (!serverUrl) return null; // no server configured yet
+// Fetch tier from Supabase profile — cache 30min
+async function refreshTierFromServer() {
+  if (APP_CONFIG.ownerMode) return 'max';
+  const sb = getSupabase();
+  if (!sb) return null;
 
-  const cacheKey = `serverTier_${key}`;
-  const cacheTime = store.get(`${cacheKey}_ts`);
-  const CACHE_TTL = 24 * 60 * 60 * 1000;
+  const accessToken  = store.get('sbAccessToken');
+  const refreshToken = store.get('sbRefreshToken');
+  if (!accessToken) return null;
 
-  if (cacheTime && Date.now() - Number(cacheTime) < CACHE_TTL) {
-    return store.get(cacheKey) ?? null;
+  const CACHE_TTL = 30 * 60 * 1000; // 30 min
+  const cachedTs  = store.get('sbTierTs');
+  if (cachedTs && Date.now() - Number(cachedTs) < CACHE_TTL) {
+    return store.get('sbTier') ?? null;
   }
 
   try {
-    const res = await fetch(`${serverUrl}/functions/v1/validate-key`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ key, machineId: getMachineId() }),
-      signal: AbortSignal.timeout(5000),
+    // Restore session so we can make authenticated requests
+    const { data: sessionData, error: sessionErr } = await sb.auth.setSession({
+      access_token:  accessToken,
+      refresh_token: refreshToken,
     });
-    const data = await res.json();
-    if (data.ok && data.tier) {
-      store.set(cacheKey, data.tier);
-      store.set(`${cacheKey}_ts`, Date.now());
-      return data.tier;
-    } else {
-      // Key invalid/revoked on server — clear cache, downgrade
-      store.delete(cacheKey);
-      store.delete(`${cacheKey}_ts`);
-      if (data.error === 'revoked' || data.error === 'not_found') return 'free';
+    if (sessionErr || !sessionData?.session) {
+      console.warn('[auth] session restore failed:', sessionErr?.message);
+      return null;
     }
+
+    // Save refreshed tokens
+    store.set('sbAccessToken',  sessionData.session.access_token);
+    store.set('sbRefreshToken', sessionData.session.refresh_token);
+
+    // Fetch profile
+    const { data: profile, error: profileErr } = await sb
+      .from('profiles')
+      .select('tier')
+      .eq('id', sessionData.session.user.id)
+      .single();
+
+    if (profileErr || !profile) {
+      console.warn('[auth] profile fetch failed:', profileErr?.message);
+      return null;
+    }
+
+    store.set('sbTier',   profile.tier ?? 'free');
+    store.set('sbTierTs', Date.now());
+    console.log('[auth] tier refreshed:', profile.tier);
+    push('tier-updated', { tier: profile.tier ?? 'free' });
+    return profile.tier;
   } catch (e) {
-    console.warn('[license] server unreachable, using offline fallback:', e.message);
+    console.warn('[auth] refreshTierFromServer failed:', e.message);
+    return null;
   }
-  return null; // null = server failed, caller falls back to offline
 }
 
 function getTierSync() {
   if (APP_CONFIG.ownerMode) return 'max';
+  // Supabase account tier takes priority
+  const userId = store.get('sbUserId');
+  if (userId) {
+    const t = store.get('sbTier');
+    if (t) return t;
+  }
+  // Legacy: license key fallback
   const key = String(store.get('licenseKey') ?? '').trim().toUpperCase();
   if (!key) return 'free';
-  // Check server cache first
   const cached = store.get(`serverTier_${key}`);
   if (cached) return cached;
-  // Fall back to offline
   return tierFromKeyOffline(key) ?? 'free';
 }
 
@@ -1076,7 +1112,20 @@ function registerIPC() {
     push('profile-updated', { name, avatar, email, language });
     return { ok: true };
   });
-  ipcMain.handle('logout', () => {
+  ipcMain.handle('logout', async () => {
+    // Sign out from Supabase
+    const sb = getSupabase();
+    if (sb) {
+      const token = store.get('sbAccessToken');
+      if (token) {
+        try { await sb.auth.admin?.signOut(token); } catch {}
+      }
+    }
+    store.delete('sbAccessToken');
+    store.delete('sbRefreshToken');
+    store.delete('sbUserId');
+    store.delete('sbTier');
+    store.delete('sbTierTs');
     store.delete('profileName');
     store.delete('profileEmail');
     store.delete('profileAvatar');
@@ -1088,13 +1137,75 @@ function registerIPC() {
     return { ok: true };
   });
 
-  // Returns { tier, used, limit } — no server call needed
-  ipcMain.handle('check-license', async () => {
-    // Trigger async server validation (updates cache); return current sync state immediately
-    const key = String(store.get('licenseKey') ?? '').trim().toUpperCase();
-    if (key && !APP_CONFIG.ownerMode) {
-      validateKeyWithServer(key).catch(() => {}); // fire-and-forget
+  // ─── Supabase Auth IPC ────────────────────────────────────────────────────
+
+  ipcMain.handle('auth-login', async (_, { email, password }) => {
+    const sb = getSupabase();
+    if (!sb) return { ok: false, error: 'Supabase not configured' };
+    const { data, error } = await sb.auth.signInWithPassword({ email, password });
+    if (error) return { ok: false, error: error.message };
+    // Persist session
+    store.set('sbAccessToken',  data.session.access_token);
+    store.set('sbRefreshToken', data.session.refresh_token);
+    store.set('sbUserId',       data.user.id);
+    store.set('profileEmail',   data.user.email);
+    // Fetch profile tier
+    await refreshTierFromServer();
+    return { ok: true, user: { id: data.user.id, email: data.user.email } };
+  });
+
+  ipcMain.handle('auth-register', async (_, { email, password }) => {
+    const sb = getSupabase();
+    if (!sb) return { ok: false, error: 'Supabase not configured' };
+    const { data, error } = await sb.auth.signUp({ email, password });
+    if (error) return { ok: false, error: error.message };
+    if (!data.session) {
+      // Email confirmation required
+      return { ok: true, needsConfirmation: true };
     }
+    store.set('sbAccessToken',  data.session.access_token);
+    store.set('sbRefreshToken', data.session.refresh_token);
+    store.set('sbUserId',       data.user.id);
+    store.set('profileEmail',   data.user.email);
+    return { ok: true, user: { id: data.user.id, email: data.user.email } };
+  });
+
+  ipcMain.handle('auth-session', async () => {
+    // ownerMode or no Supabase configured → skip auth, go straight to app
+    if (APP_CONFIG.ownerMode || !APP_CONFIG.supabaseUrl) {
+      return { loggedIn: true, skipAuth: true, tier: 'max' };
+    }
+    const userId = store.get('sbUserId');
+    const email  = store.get('profileEmail') ?? '';
+    if (!userId) return { loggedIn: false };
+    // Refresh tier in background
+    refreshTierFromServer().catch(() => {});
+    return { loggedIn: true, user: { id: userId, email }, tier: getTierSync() };
+  });
+
+  ipcMain.handle('auth-reset-password', async (_, { email }) => {
+    const sb = getSupabase();
+    if (!sb) return { ok: false, error: 'Supabase not configured' };
+    const { error } = await sb.auth.resetPasswordForEmail(email);
+    if (error) return { ok: false, error: error.message };
+    return { ok: true };
+  });
+
+  ipcMain.handle('auth-get-upgrade-url', (_, { planTier }) => {
+    const userId = store.get('sbUserId') ?? '';
+    const email  = store.get('profileEmail') ?? '';
+    // Stripe payment links — set these in app.config.js
+    const links = APP_CONFIG.stripePlanLinks ?? {};
+    const base  = links[planTier] ?? links.pro ?? '';
+    if (!base) return { url: null };
+    const url = `${base}?client_reference_id=${userId}&prefilled_email=${encodeURIComponent(email)}`;
+    return { url };
+  });
+
+  // Returns { tier, used, limit }
+  ipcMain.handle('check-license', async () => {
+    // Fire-and-forget tier refresh
+    refreshTierFromServer().catch(() => {});
     return getLicenseInfo();
   });
 
