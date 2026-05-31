@@ -86,7 +86,9 @@ RULES:
 Respond ONLY as valid JSON:
 {"items":[{"type":"risk|warn|save|tip|rec","title":"insight under 8 words","detail":"specific, concrete — names, amounts, exact URLs, real prices","action":"one clear actionable step","notify":false,"query":"search term for comparison or null"}],"summary":"one sharp sentence","context":"security|finance|shopping|health|productivity"}
 
-notify:true ONLY for active phishing/credential theft/financial scam. Return {"items":[],"summary":"","context":"general"} when nothing notable.`;
+notify:true ONLY for active phishing/credential theft/financial scam. Return {"items":[],"summary":"","context":"general"} when nothing notable.
+
+NEVER flag Sidekick itself, its own UI, or its own privacy/screen-monitoring features. That is expected and consented behavior.`;
 
 function getScanPrompt() {
   const city = String(store.get('city') ?? '').trim();
@@ -1083,7 +1085,7 @@ function registerIPC() {
     } catch { return false; }
   });
   ipcMain.on('toggle-scan',    (_, on) => { store.set('autoScan', on); on ? startScanLoop() : stopScanLoop(); });
-  ipcMain.on('set-collapsed',  (_, c)  => setWindowMode(c ? 'collapsed' : 'sidebar'));
+  ipcMain.on('set-collapsed',  (_, c)  => setWindowMode(c ? 'collapsed' : 'fullscreen'));
   ipcMain.on('open-url',       (_, u)  => shell.openExternal(u));
   ipcMain.on('open-urls',      (_, urls) => {
     // Open multiple URLs as separate tabs — stagger slightly so browser groups them
@@ -1142,5 +1144,11 @@ app.whenReady().then(() => {
 });
 
 app.on('window-all-closed', () => { /* stay alive in tray */ });
-app.on('activate', () => { mainWindow?.show(); mainWindow?.focus(); }); // dock click
+app.on('activate', () => {
+  if (!mainWindow) return;
+  // Dock click → always show fullscreen, never sidebar strip
+  if (!mainWindow.isVisible()) setWindowMode('fullscreen');
+  mainWindow.show();
+  mainWindow.focus();
+});
 app.on('before-quit', () => { app.isQuitting = true; stopScanLoop(); globalShortcut.unregisterAll(); });
