@@ -1333,22 +1333,22 @@ function setupAutoUpdater() {
   // Don't check for updates in dev (no app.asar)
   if (!app.isPackaged) return;
 
-  autoUpdater.autoDownload     = true;
-  autoUpdater.autoInstallOnAppQuit = true;
+  // No code signing → don't attempt silent install; just notify user and open download page
+  autoUpdater.autoDownload         = false;
+  autoUpdater.autoInstallOnAppQuit = false;
 
-  autoUpdater.on('checking-for-update',  ()      => push('update-status', { status: 'checking' }));
-  autoUpdater.on('update-available',     (info)  => push('update-status', { status: 'available',    version: info.version }));
-  autoUpdater.on('update-not-available', ()      => push('update-status', { status: 'up-to-date' }));
-  autoUpdater.on('download-progress',    (prog)  => push('update-status', { status: 'downloading', percent: Math.round(prog.percent) }));
-  autoUpdater.on('update-downloaded',    (info)  => push('update-status', { status: 'ready',       version: info.version }));
-  autoUpdater.on('error',                (err)   => console.warn('[updater]', err.message));
+  autoUpdater.on('update-available',     (info) => push('update-status', { status: 'available', version: info.version }));
+  autoUpdater.on('update-not-available', ()     => {});
+  autoUpdater.on('error',                (err)  => console.warn('[updater]', err.message));
 
   // Check on launch, then every 4 hours
-  setTimeout(() => autoUpdater.checkForUpdatesAndNotify().catch(() => {}), 10_000);
-  setInterval(() => autoUpdater.checkForUpdatesAndNotify().catch(() => {}), 4 * 60 * 60 * 1000);
+  setTimeout(() => autoUpdater.checkForUpdates().catch(() => {}), 10_000);
+  setInterval(() => autoUpdater.checkForUpdates().catch(() => {}), 4 * 60 * 60 * 1000);
 
-  // IPC: renderer can trigger install-and-restart
-  ipcMain.on('install-update', () => autoUpdater.quitAndInstall(false, true));
+  // IPC: renderer opens download page
+  ipcMain.on('install-update', () => {
+    shell.openExternal('https://github.com/emirilgin/sidekick/releases/latest');
+  });
 }
 
 // ─── Boot ─────────────────────────────────────────────────────────────────────

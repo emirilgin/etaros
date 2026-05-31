@@ -754,35 +754,17 @@ const updateBanner = document.getElementById('update-banner');
 const updateMsg    = document.getElementById('update-msg');
 const updateBtn    = document.getElementById('update-btn');
 
-window.sk.on('update-status', ({ status, version, percent }) => {
+window.sk.on('update-status', ({ status, version }) => {
   if (!updateBanner) return;
-  switch (status) {
-    case 'available':
-      updateMsg.textContent = `◆ v${version} available — downloading…`;
-      updateBanner.style.display = 'flex';
-      updateBtn.style.display = 'none';
-      break;
-    case 'downloading':
-      updateMsg.textContent = `↓ Downloading update… ${percent}%`;
-      updateBanner.style.display = 'flex';
-      updateBtn.style.display = 'none';
-      break;
-    case 'ready':
-      updateMsg.textContent = `◆ v${version} ready to install`;
-      updateBtn.style.display = '';
-      updateBanner.style.display = 'flex';
-      break;
-    default:
-      break; // checking / up-to-date: stay hidden
+  if (status === 'available') {
+    updateMsg.textContent = `◆ Sidekick v${version} is available`;
+    if (updateBtn) updateBtn.textContent = 'Download update';
+    updateBanner.style.display = 'flex';
   }
 });
 
 if (updateBtn) {
-  updateBtn.addEventListener('click', () => {
-    updateBtn.textContent = 'Restarting…';
-    updateBtn.disabled = true;
-    window.sk.installUpdate();
-  });
+  updateBtn.addEventListener('click', () => window.sk.installUpdate());
 }
 
 window.sk.on('error',          ({ message })       => appendError(message));
