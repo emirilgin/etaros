@@ -1248,12 +1248,7 @@ function switchTab(name) {
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
   document.querySelectorAll('.tab-panel').forEach(p =>
     p.classList.toggle('active', p.id === name + '-panel'));
-  if (name === 'notes')   { loadNotes();   setTimeout(() => noteInput?.focus(), 60); }
-  if (name === 'savings') { loadSavings(); setTimeout(() => document.getElementById('saving-item')?.focus(), 60); }
-  if (name === 'diet')    { loadDiet();    setTimeout(() => document.getElementById('diet-item')?.focus(), 60); }
-  if (name === 'life')    { loadLife(); }
   if (name === 'search')  { loadSearch(); }
-  if (name === 'links')   { loadLinks(); setTimeout(() => document.getElementById('link-url-input')?.focus(), 60); }
   if (name === 'chat')    { setTimeout(() => msg?.focus(), 60); }
 }
 document.querySelectorAll('.tab-btn').forEach(b => b.addEventListener('click', () => switchTab(b.dataset.tab)));
@@ -2025,7 +2020,8 @@ function openSettingsPage(section = 'profile') {
       const action = document.getElementById(`plan-${tier}-action`);
       if (!tile) return;
       tile.classList.toggle('current', lic.tier === tier);
-      tile.classList.toggle('highlighted', tier === 'pro' && lic.tier === 'free');
+      // Highlight Pro row when user is on free plan
+      tile.style.borderColor = (tier === 'pro' && lic.tier === 'free') ? 'var(--orange)' : '';
       if (action) {
         if (lic.tier === tier) {
           action.className = 'sp-plan-row-btn current-lbl';
@@ -2071,10 +2067,10 @@ spPfpInput?.addEventListener('change', () => {
 
 document.getElementById('sp-save-btn')?.addEventListener('click', async () => {
   const name     = document.getElementById('sp-name')?.value.trim() || 'You';
-  const email    = document.getElementById('sp-email')?.value.trim() || '';
   const language = document.getElementById('sp-lang')?.value || 'en';
   const avatar   = spAvatarDataUrl || undefined;
-  await window.sk.saveProfile({ name, email, language, ...(avatar ? { avatar } : {}) });
+  // Email not editable — Supabase is authoritative
+  await window.sk.saveProfile({ name, language, ...(avatar ? { avatar } : {}) });
   spAvatarDataUrl = null;
   settingsPage?.classList.remove('open');
   showToast('Profile saved', 'ok');
@@ -2290,6 +2286,13 @@ resetBtn?.addEventListener('click', async () => {
   document.getElementById(id)?.addEventListener('keydown', e => {
     if (e.key === 'Enter') registerBtn.click();
   });
+});
+
+// Logout → show login screen
+window.sk.on('logged-out', () => {
+  settingsPage?.classList.remove('open');
+  showAuthOverlay();
+  showAuthForm('login');
 });
 
 // tier-updated event from main (after Stripe payment)

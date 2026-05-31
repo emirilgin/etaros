@@ -1111,17 +1111,22 @@ function registerIPC() {
   });
 
   // Profile (name, email, avatar, language)
-  ipcMain.handle('get-profile', () => ({
-    name:     String(store.get('profileName')   ?? ''),
-    avatar:   String(store.get('profileAvatar') ?? ''),
-    email:    String(store.get('profileEmail')  ?? ''),
-    language: String(store.get('profileLang')   ?? 'en'),
-  }));
-  ipcMain.handle('save-profile', (_, { name, avatar, email, language }) => {
+  ipcMain.handle('get-profile', () => {
+    // Supabase email is authoritative — always prefer it over local store
+    const sbEmail = store.get('profileEmail') ?? '';
+    return {
+      name:     String(store.get('profileName')   ?? ''),
+      avatar:   String(store.get('profileAvatar') ?? ''),
+      email:    sbEmail,
+      language: String(store.get('profileLang')   ?? 'en'),
+    };
+  });
+  ipcMain.handle('save-profile', (_, { name, avatar, language }) => {
+    // Email is NOT editable — set by Supabase auth, never by user input
     if (name     != null) store.set('profileName',   name);
     if (avatar   != null) store.set('profileAvatar', avatar);
-    if (email    != null) store.set('profileEmail',  email);
     if (language != null) store.set('profileLang',   language);
+    const email = store.get('profileEmail') ?? '';
     push('profile-updated', { name, avatar, email, language });
     return { ok: true };
   });
@@ -1143,7 +1148,7 @@ function registerIPC() {
     store.delete('licenseKey');
     store.delete('setupDone');
     push('profile-updated', { name: '', avatar: '', email: '', language: 'en' });
-    setTimeout(openSetup, 400);
+    push('logged-out', {});
     return { ok: true };
   });
 
