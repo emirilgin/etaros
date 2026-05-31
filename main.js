@@ -6,7 +6,7 @@ sentryInit({
 });
 
 const {
-  app, BrowserWindow, desktopCapturer, ipcMain,
+  app, BrowserWindow, WebContentsView, desktopCapturer, ipcMain,
   Tray, Menu, nativeImage, Notification, screen, globalShortcut, shell,
 } = require('electron');
 const path           = require('path');
@@ -221,6 +221,7 @@ let settingsWindow = null;
 let setupWindow    = null;
 let tray           = null;
 let scanTimer      = null;
+let searchView     = null;
 let lastBitmap     = null;
 let isStreaming    = false;
 let retryTimer     = null;
@@ -896,7 +897,6 @@ function createMainWindow() {
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
       contextIsolation: true, nodeIntegration: false, sandbox: false,
-      webviewTag: true,
     },
   });
   mainWindow.loadFile('index.html');
@@ -1227,6 +1227,53 @@ function registerIPC() {
     urls.forEach((u, i) => setTimeout(() => shell.openExternal(u), i * 120));
   });
   ipcMain.handle('get-window-mode', () => 'fullscreen');
+
+  // ─── Embedded search browser (WebContentsView) ────────────────────────────
+  function destroySearchView() {
+    if (searchView && mainWindow && !mainWindow.isDestroyed()) {
+      try { mainWindow.contentView.removeChildView(searchView); } catch {}
+    }
+    searchView = null;
+  }
+
+  ipcMain.handle('show-search-browser', async (_, { url, x, y, width, height }) => {
+    if (!mainWindow || mainWindow.isDestroyed()) return { ok: false };
+    if (!searchView) {
+      searchView = new WebContentsView({
+        webPreferences: {
+          nodeIntegration: false, contextIsolation: true, sandbox: false,
+        },
+      });
+      mainWindow.contentView.addChildView(searchView);
+      searchView.webContents.setUserAgent(
+        'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      );
+      // Keep navigation inside the view — don't open OS browser
+      searchView.webContents.setWindowOpenHandler(({ url: u }) => {
+        searchView?.webContents.loadURL(u);
+        return { action: 'deny' };
+      });
+    }
+    searchView.setBounds({ x: Math.round(x), y: Math.round(y), width: Math.round(width), height: Math.round(height) });
+    await searchView.webContents.loadURL(url);
+    return { ok: true };
+  });
+
+  ipcMain.handle('hide-search-browser', () => {
+    destroySearchView();
+    return { ok: true };
+  });
+
+  ipcMain.handle('get-search-url', () => {
+    return searchView?.webContents.getURL() || '';
+  });
+
+  // Resize search view when main window resizes
+  mainWindow.on('resize', () => {
+    if (!searchView) return;
+    // re-ask renderer for updated bounds
+    mainWindow.webContents.send('search-view-resize');
+  });
 }
 
 // ─── Auto-updater ─────────────────────────────────────────────────────────────

@@ -952,42 +952,67 @@ function saveSrchRecent(q, catId) {
 
 let _lastSearchUrl   = '';
 let _lastSearchLabel = '';
+let _searchViewOpen  = false;
 
-function showSearchWebview(url, label) {
-  const wv   = document.getElementById('search-webview');
+function getSearchViewBounds() {
+  const panel    = document.getElementById('search-panel');
+  const topBar   = document.querySelector('.search-top');
+  const toolbar  = document.getElementById('search-webview-bar');
+  if (!panel) return null;
+  const pr = panel.getBoundingClientRect();
+  const topH    = topBar   ? topBar.getBoundingClientRect().height   : 0;
+  const barH    = toolbar  ? toolbar.getBoundingClientRect().height  : 36;
+  return {
+    x:      Math.round(pr.left),
+    y:      Math.round(pr.top + topH + barH),
+    width:  Math.round(pr.width),
+    height: Math.round(pr.height - topH - barH),
+  };
+}
+
+async function showSearchWebview(url, label) {
+  _lastSearchUrl   = url;
+  _lastSearchLabel = label || url;
+
   const body = document.getElementById('search-body');
   const bar  = document.getElementById('search-webview-bar');
   const lbl  = document.getElementById('search-web-url-label');
-  if (!wv) return false;
-  _lastSearchUrl = url;
-  _lastSearchLabel = label || url;
-  // Load URL then make visible
-  wv.src = url;
-  wv.classList.add('visible');
-  wv.style.display = 'block';
-  body.style.display = 'none';
-  bar.style.display  = 'flex';
-  if (lbl) lbl.textContent = label || url;
+  if (body) body.style.display = 'none';
+  if (bar)  bar.style.display  = 'flex';
+  if (lbl)  lbl.textContent    = label || url;
+
+  const bounds = getSearchViewBounds();
+  if (!bounds) return false;
+  _searchViewOpen = true;
+  await window.sk.showSearchBrowser({ url, ...bounds });
   return true;
 }
 
-function hideSearchWebview() {
-  const wv   = document.getElementById('search-webview');
+async function hideSearchWebview() {
   const body = document.getElementById('search-body');
   const bar  = document.getElementById('search-webview-bar');
-  if (wv)   { wv.classList.remove('visible'); wv.style.display = 'none'; wv.src = 'about:blank'; }
   if (body) body.style.display = '';
   if (bar)  bar.style.display  = 'none';
+  if (_searchViewOpen) {
+    _searchViewOpen = false;
+    await window.sk.hideSearchBrowser();
+  }
 }
 
 document.getElementById('search-web-back')?.addEventListener('click', hideSearchWebview);
-document.getElementById('search-web-browser')?.addEventListener('click', () => {
-  if (_lastSearchUrl) window.sk.openUrl(_lastSearchUrl);
+document.getElementById('search-web-browser')?.addEventListener('click', async () => {
+  const url = await window.sk.getSearchUrl() || _lastSearchUrl;
+  if (url) window.sk.openUrl(url);
 });
-document.getElementById('search-web-ai')?.addEventListener('click', () => {
-  const q = _lastSearchLabel || document.getElementById('search-input')?.value || '';
+document.getElementById('search-web-ai')?.addEventListener('click', async () => {
+  const url = await window.sk.getSearchUrl() || _lastSearchUrl;
+  let q = _lastSearchLabel || document.getElementById('search-input')?.value || '';
+  // Try to extract query from current URL
+  if (url && url.includes('google.com/search')) {
+    try { q = new URL(url).searchParams.get('q') || q; } catch {}
+  }
   if (!q) return;
-  // Switch to chat and ask AI for price comparison
+  await hideSearchWebview();
   switchTab('chat');
   const prompt = `I'm looking to buy: "${q}"\n\nPlease compare prices and options:\n• Find the cheapest places to buy this (online + local stores)\n• Compare quality/reviews across options\n• Tell me if I should wait for a sale or buy now\n• Any coupons, cashback, or discount codes?\n• Recommend the best value option`;
   setTimeout(() => {
@@ -995,28 +1020,13 @@ document.getElementById('search-web-ai')?.addEventListener('click', () => {
   }, 80);
 });
 
-// Keep webview links in-app; open new tabs inside the webview
-(function setupWebviewEvents() {
-  const wv = document.getElementById('search-webview');
-  if (!wv) return;
-  wv.addEventListener('new-window', e => {
-    e.preventDefault();
-    if (e.url && e.url !== 'about:blank') wv.src = e.url;
-  });
-  wv.addEventListener('did-navigate', e => {
-    if (e.url && e.url !== 'about:blank') {
-      _lastSearchUrl = e.url;
-      const lbl = document.getElementById('search-web-url-label');
-      if (lbl && e.url.includes('google.com/search')) {
-        try {
-          const u = new URL(e.url);
-          const q2 = u.searchParams.get('q');
-          if (q2) lbl.textContent = q2;
-        } catch {}
-      }
-    }
-  });
-})();
+// Handle window resize → update search view bounds
+window.sk.on('search-view-resize', async () => {
+  if (!_searchViewOpen) return;
+  const url    = await window.sk.getSearchUrl();
+  const bounds = getSearchViewBounds();
+  if (bounds && url) window.sk.showSearchBrowser({ url, ...bounds });
+});
 
 function doSearch(query, catOverride) {
   const q = (query || document.getElementById('search-input')?.value || '').trim();
@@ -1127,6 +1137,8 @@ function fmtDate(ts) {
 const tabBtns = document.querySelectorAll('.tab-btn');
 
 function switchTab(name) {
+  // Hide search view when leaving search tab
+  if (name !== 'search' && _searchViewOpen) hideSearchWebview();
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b.dataset.tab === name));
   document.querySelectorAll('.tab-panel').forEach(p =>
     p.classList.toggle('active', p.id === name + '-panel'));

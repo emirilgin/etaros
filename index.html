@@ -1142,8 +1142,7 @@ html,body{
 #search-web-browser:hover { background:var(--surface); color:var(--t2); }
 #search-web-ai { background:var(--orange-dim); border:1px solid rgba(192,96,30,.3); cursor:pointer; color:var(--orange-t); font-size:11px; font-family:inherit; font-weight:600; padding:4px 10px; border-radius:20px; transition:background .12s; flex-shrink:0; }
 #search-web-ai:hover { background:rgba(192,96,30,.18); }
-webview#search-webview { display:none; width:100%; border:none; min-height:0; }
-webview#search-webview.visible { display:flex; flex:1; }
+/* search-panel flex fills remaining height when WebContentsView is overlaid */
 
 /* ── Advanced settings full-screen page ── */
 #advanced-page { position:fixed; inset:0; z-index:360; background:var(--bg); display:flex; flex-direction:column; transform:translateX(100%); transition:transform .26s cubic-bezier(.16,.8,.3,1); }
@@ -1461,12 +1460,7 @@ webview#search-webview.visible { display:flex; flex:1; }
           <button id="search-web-browser">↗ Browser</button>
         </div>
         <div class="search-body" id="search-body"></div>
-        <!-- Embedded search webview -->
-        <webview id="search-webview"
-          partition="persist:search"
-          useragent="Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36"
-          allowpopups
-          src="about:blank"></webview>
+        <!-- WebContentsView injected here by main process -->
       </div>
 
     </div><!-- /main -->
