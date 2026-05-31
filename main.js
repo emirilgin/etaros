@@ -125,7 +125,13 @@ FORMAT:
 - Lead with the most useful thing immediately`;
 
 function CHAT_PROMPT() {
-  return CHAT_PROMPT_BASE + buildMemoryContext();
+  const name = String(store.get('profileName') ?? '').trim();
+  const lang = String(store.get('profileLang') ?? 'en').trim();
+  const langNote = lang && lang !== 'en'
+    ? `\n\nIMPORTANT: Always respond in the user's language (${lang}). Never switch to English unless asked.`
+    : '';
+  const nameNote = name && name !== 'You' ? `\n\nUser's name: ${name}. Use it naturally in conversation.` : '';
+  return CHAT_PROMPT_BASE + nameNote + langNote + buildMemoryContext();
 }
 
 // ─── Store (encrypted — machine-specific key prevents manual resets) ──────────
@@ -993,15 +999,19 @@ function registerIPC() {
     return { ok: true };
   });
 
-  // Profile (avatar + display name)
+  // Profile (name, email, avatar, language)
   ipcMain.handle('get-profile', () => ({
-    name:   String(store.get('profileName')   ?? ''),
-    avatar: String(store.get('profileAvatar') ?? ''), // base64 data URL or ''
+    name:     String(store.get('profileName')   ?? ''),
+    avatar:   String(store.get('profileAvatar') ?? ''),
+    email:    String(store.get('profileEmail')  ?? ''),
+    language: String(store.get('profileLang')   ?? 'en'),
   }));
-  ipcMain.handle('save-profile', (_, { name, avatar }) => {
-    if (name   != null) store.set('profileName',   name);
-    if (avatar != null) store.set('profileAvatar', avatar);
-    push('profile-updated', { name, avatar });
+  ipcMain.handle('save-profile', (_, { name, avatar, email, language }) => {
+    if (name     != null) store.set('profileName',   name);
+    if (avatar   != null) store.set('profileAvatar', avatar);
+    if (email    != null) store.set('profileEmail',  email);
+    if (language != null) store.set('profileLang',   language);
+    push('profile-updated', { name, avatar, email, language });
     return { ok: true };
   });
 
@@ -1018,6 +1028,20 @@ function registerIPC() {
   ipcMain.handle('new-chat',    () => newChat());
   ipcMain.handle('load-chat',   (_, id) => loadChat(id));
   ipcMain.handle('delete-chat', (_, id) => deleteConversation(id));
+  ipcMain.handle('rename-chat', (_, { id, title }) => {
+    const convs = getConversations();
+    const conv  = convs.find(c => c.id === id);
+    if (conv) { conv.title = String(title).slice(0, 80); saveConversations(convs); }
+    return { conversations: convs, activeChatId };
+  });
+  ipcMain.handle('pin-chat', (_, id) => {
+    const convs = getConversations();
+    const conv  = convs.find(c => c.id === id);
+    if (conv) conv.pinned = !conv.pinned;
+    convs.sort((a, b) => (b.pinned ? 1 : 0) - (a.pinned ? 1 : 0) || b.updatedAt - a.updatedAt);
+    saveConversations(convs);
+    return { conversations: convs, activeChatId };
+  });
 
   ipcMain.handle('check-ollama', () => getOllamaStatus());
 
@@ -1177,6 +1201,7 @@ function registerIPC() {
   });
   ipcMain.on('toggle-scan',    (_, on) => { store.set('autoScan', on); on ? startScanLoop() : stopScanLoop(); });
   ipcMain.on('set-collapsed',  (_, c)  => setWindowMode(c ? 'collapsed' : 'fullscreen'));
+  ipcMain.on('set-mode',       (_, m)  => setWindowMode(m));
   ipcMain.on('open-url',       (_, u)  => shell.openExternal(u));
   ipcMain.on('open-urls',      (_, urls) => {
     // Open multiple URLs as separate tabs — stagger slightly so browser groups them
@@ -1216,9 +1241,9 @@ app.whenReady().then(() => {
   registerIPC();
   setupAutoUpdater();
 
-  // Show setup screen on first run
-  if (!store.get('setupDone')) {
-    setTimeout(openSetup, 800); // slight delay so main window appears first
+  // Show setup screen on first run or if no profile name set
+  if (!store.get('setupDone') || !store.get('profileName')) {
+    setTimeout(openSetup, 800);
     store.set('setupDone', true);
   }
 

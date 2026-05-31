@@ -135,6 +135,7 @@ const convList = document.getElementById('conv-list');
 
 function renderConvList(conversations, activeChatId) {
   if (!convList) return;
+  window._lastConvData = { conversations, activeChatId };
   if (!conversations?.length) {
     convList.innerHTML = '<div class="conv-empty">No conversations yet</div>';
     return;
@@ -149,16 +150,18 @@ function renderConvList(conversations, activeChatId) {
     return d.toLocaleDateString([], { month: 'short', day: 'numeric' });
   };
   convList.innerHTML = conversations.map(c => `
-    <div class="conv-item${c.id === activeChatId ? ' active' : ''}" data-id="${esc(c.id)}">
+    <div class="conv-item${c.id === activeChatId ? ' active' : ''}" data-id="${esc(c.id)}" data-pinned="${c.pinned ? '1' : '0'}">
+      ${c.pinned ? '<span class="conv-pin-icon">📌</span>' : ''}
       <span class="conv-title">${esc(c.title || 'New chat')}</span>
       <span class="conv-date">${fmtConvDate(c.updatedAt)}</span>
-      <button class="conv-del" data-id="${esc(c.id)}" title="Delete">×</button>
+      <button class="conv-menu-btn" data-id="${esc(c.id)}" title="Options">···</button>
     </div>
   `).join('');
 
   convList.querySelectorAll('.conv-item').forEach(el => {
     el.addEventListener('click', async e => {
-      if (e.target.classList.contains('conv-del')) return;
+      if (e.target.classList.contains('conv-menu-btn')) return;
+      if (e.target.classList.contains('conv-rename-input')) return;
       const id = el.dataset.id;
       const res = await window.sk.loadChat(id);
       if (res) {
@@ -166,7 +169,7 @@ function renderConvList(conversations, activeChatId) {
         clearFeed();
         if (res.messages?.length) {
           res.messages.forEach(m => {
-            if (m.role === 'user')      appendUserBubble(m.content, null);
+            if (m.role === 'user')      appendUser(m.content);
             else if (m.role === 'assistant') appendAiGroup(m.content);
           });
         } else {
@@ -174,21 +177,96 @@ function renderConvList(conversations, activeChatId) {
         }
       }
     });
+    // Right-click → context menu
+    el.addEventListener('contextmenu', e => {
+      e.preventDefault();
+      showConvCtxMenu(el.dataset.id, e.clientX, e.clientY, el.dataset.pinned === '1');
+    });
   });
-  convList.querySelectorAll('.conv-del').forEach(btn => {
-    btn.addEventListener('click', async e => {
+
+  convList.querySelectorAll('.conv-menu-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
       e.stopPropagation();
-      const id = btn.dataset.id;
-      const res = await window.sk.deleteChat(id);
-      renderConvList(res.conversations, res.activeChatId);
-      if (res.activeChatId !== id) return;
-      clearFeed(); showEmpty();
+      const item = btn.closest('.conv-item');
+      showConvCtxMenu(btn.dataset.id, e.clientX, e.clientY, item?.dataset.pinned === '1');
     });
   });
 }
 
+// ─── Conversation context menu ────────────────────────────────────────────────
+let ctxTargetId   = null;
+let ctxTargetItem = null;
+const ctxMenu     = document.getElementById('conv-ctx-menu');
+
+function showConvCtxMenu(id, x, y, isPinned) {
+  ctxTargetId = id;
+  ctxTargetItem = convList.querySelector(`.conv-item[data-id="${id}"]`);
+  document.getElementById('ctx-pin').textContent = isPinned ? '📌 Unpin' : '📌 Pin';
+  ctxMenu.style.display = 'block';
+  // Position so it doesn't overflow viewport
+  const menuW = 160, menuH = 120;
+  const left  = Math.min(x, window.innerWidth  - menuW - 8);
+  const top   = Math.min(y, window.innerHeight - menuH - 8);
+  ctxMenu.style.left = left + 'px';
+  ctxMenu.style.top  = top  + 'px';
+}
+
+function hideConvCtxMenu() {
+  ctxMenu.style.display = 'none';
+  ctxTargetId   = null;
+  ctxTargetItem = null;
+}
+
+document.addEventListener('click', e => {
+  if (ctxMenu && !ctxMenu.contains(e.target)) hideConvCtxMenu();
+});
+
+document.getElementById('ctx-rename')?.addEventListener('click', () => {
+  const item = ctxTargetItem;
+  const id   = ctxTargetId;
+  hideConvCtxMenu();
+  if (!item) return;
+  // Show inline rename input
+  const titleEl = item.querySelector('.conv-title');
+  const current = titleEl.textContent;
+  const input   = document.createElement('input');
+  input.className = 'conv-rename-input';
+  input.value = current;
+  titleEl.replaceWith(input);
+  input.focus(); input.select();
+  async function doRename() {
+    const newTitle = input.value.trim() || current;
+    const res = await window.sk.renameChat(id, newTitle);
+    renderConvList(res.conversations, res.activeChatId);
+  }
+  input.addEventListener('keydown', e => {
+    if (e.key === 'Enter')  { e.preventDefault(); doRename(); }
+    if (e.key === 'Escape') { renderConvList(window._lastConvData?.conversations || [], window._lastConvData?.activeChatId); }
+  });
+  input.addEventListener('blur', doRename);
+});
+
+document.getElementById('ctx-pin')?.addEventListener('click', async () => {
+  const id = ctxTargetId;
+  hideConvCtxMenu();
+  if (!id) return;
+  const res = await window.sk.pinChat(id);
+  renderConvList(res.conversations, res.activeChatId);
+});
+
+document.getElementById('ctx-delete')?.addEventListener('click', async () => {
+  const id = ctxTargetId;
+  hideConvCtxMenu();
+  if (!id) return;
+  const res = await window.sk.deleteChat(id);
+  renderConvList(res.conversations, res.activeChatId);
+  if (res.activeChatId !== id) return;
+  clearFeed(); showEmpty();
+});
+
 // New chat button
 document.getElementById('new-chat-btn')?.addEventListener('click', async () => {
+  switchTab('chat');
   const res = await window.sk.newChat();
   renderConvList(res.conversations, res.id);
   clearFeed(); showEmpty();
@@ -215,9 +293,7 @@ function showEmpty() {
 // ─── Traffic lights (fullscreen macOS titlebar) ───────────────────────────────
 document.getElementById('tl-close')?.addEventListener('click', () => window.sk.hideWindow());
 document.getElementById('tl-min')  ?.addEventListener('click', () => window.sk.minimizeWindow());
-document.getElementById('tl-max')  ?.addEventListener('click', () => {
-  if (document.getElementById('tl-max')) window.sk.minimizeWindow();
-});
+document.getElementById('tl-max')  ?.addEventListener('click', () => window.sk.setMode('fullscreen'));
 
 // ─── Buttons ──────────────────────────────────────────────────────────────────
 settingsBtn.addEventListener('click',    () => window.sk.openSettings());
@@ -726,23 +802,35 @@ window.sk.on('history-cleared', () => {
 });
 
 // ─── Memory modal ─────────────────────────────────────────────────────────────
-const TYPE_LABELS = { location:'◎', preference:'◈', goal:'◇', habit:'↺', personal:'○', interest:'◎', finance:'◆', health:'◉' };
+const TYPE_COLORS = {
+  location:   '#3460A8', preference: '#C0601E', goal:    '#2A7A50',
+  habit:      '#906818', personal:   '#6A6460', interest:'#8B5CF6',
+  finance:    '#2A7A50', health:     '#B83030',
+};
 
-function renderMemory(facts, journal) {
+function renderMemory(facts) {
   if (!facts.length) {
     memBody.innerHTML = '<div class="mem-empty">Nothing remembered yet.<br>Start chatting and I\'ll learn about you automatically.</div>';
     memCount.textContent = '0 facts';
     return;
   }
   memCount.textContent = `${facts.length} fact${facts.length !== 1 ? 's' : ''}`;
-  memBody.innerHTML = facts.map(f => `
-    <div class="fact-row">
-      <span class="fact-type">${TYPE_LABELS[f.type] || '·'} ${f.type || ''}</span>
-      <span class="fact-key">${f.key.replace(/_/g,' ')}</span>
-      <span class="fact-val">${esc(f.value)}</span>
-      <button class="fact-del" data-key="${esc(f.key)}" title="Forget this">×</button>
-    </div>`).join('');
-  memBody.querySelectorAll('.fact-del').forEach(btn =>
+  memBody.style.display = 'flex';
+  memBody.style.flexDirection = 'column';
+  memBody.style.gap = '6px';
+  memBody.innerHTML = facts.map(f => {
+    const color = TYPE_COLORS[f.type] || '#A09890';
+    const keyLabel = (f.key || '').replace(/_/g, ' ');
+    return `<div class="mem-fact-card">
+      <div class="mem-fact-type-dot" style="background:${color}20;border:1.5px solid ${color}40;"></div>
+      <div class="mem-fact-content">
+        <div class="mem-fact-key">${esc(keyLabel)}</div>
+        <div class="mem-fact-val">${esc(f.value)}</div>
+      </div>
+      <button class="mem-fact-del" data-key="${esc(f.key)}" title="Forget">×</button>
+    </div>`;
+  }).join('');
+  memBody.querySelectorAll('.mem-fact-del').forEach(btn =>
     btn.addEventListener('click', async () => {
       await window.sk.deleteFact(btn.dataset.key);
       openMemory();
@@ -1612,7 +1700,7 @@ async function init() {
       ?? convData.conversations[0];
     if (lastConv?.messages?.length) {
       lastConv.messages.forEach(m => {
-        if (m.role === 'user')           appendUserBubble(m.content, null);
+        if (m.role === 'user')           appendUser(m.content);
         else if (m.role === 'assistant') appendAiGroup(m.content);
       });
     }
@@ -1639,24 +1727,8 @@ function applyProfile({ name, avatar }) {
   }
 }
 
-// Click avatar row → open hidden file picker to change pfp
-const pfpInput = document.createElement('input');
-pfpInput.type = 'file'; pfpInput.accept = 'image/*'; pfpInput.style.display = 'none';
-document.body.appendChild(pfpInput);
-
-sbUserRow?.addEventListener('click', () => pfpInput.click());
-pfpInput.addEventListener('change', async () => {
-  const file = pfpInput.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = async e => {
-    const dataUrl = e.target.result;
-    applyProfile({ avatar: dataUrl });
-    await window.sk.saveProfile({ avatar: dataUrl });
-  };
-  reader.readAsDataURL(file);
-  pfpInput.value = '';
-});
+// Click profile row → open settings sheet
+sbUserRow?.addEventListener('click', openSettingsSheet);
 
 window.sk.on('profile-updated', applyProfile);
 
@@ -1664,6 +1736,97 @@ async function loadProfile() {
   const p = await window.sk.getProfile();
   applyProfile(p);
 }
+
+// ─── Settings sheet ───────────────────────────────────────────────────────────
+const settingsOverlay = document.getElementById('settings-overlay');
+const settingsSheet   = document.getElementById('settings-sheet');
+
+function openSettingsSheet() {
+  settingsOverlay.classList.add('open');
+  // Load profile into fields
+  window.sk.getProfile().then(p => {
+    if (p.name)  document.getElementById('sheet-name').value  = p.name !== 'You' ? p.name : '';
+    if (p.email) document.getElementById('sheet-email').value = p.email;
+    if (p.language) document.getElementById('sheet-lang').value = p.language;
+    // Avatar
+    const bigAv = document.getElementById('sheet-big-avatar');
+    if (p.avatar) {
+      bigAv.innerHTML = `<img src="${p.avatar}" alt="avatar"/>`;
+    } else {
+      bigAv.innerHTML = `<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.5"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>`;
+    }
+  });
+  // Load tier
+  window.sk.checkLicense().then(lic => {
+    const badge = document.getElementById('sheet-tier-badge');
+    const desc  = document.getElementById('sheet-tier-desc');
+    const upBtn = document.getElementById('sheet-upgrade-btn');
+    if (lic.tier === 'max') {
+      badge.className = 'sheet-plan-tier max'; badge.textContent = 'Max';
+      desc.textContent = 'Unlimited messages · Claude (Anthropic)';
+      upBtn.style.display = 'none';
+    } else if (lic.tier === 'pro') {
+      badge.className = 'sheet-plan-tier pro'; badge.textContent = 'Pro';
+      desc.textContent = 'Unlimited messages · Google Gemini';
+      upBtn.style.display = 'none';
+    } else {
+      badge.className = 'sheet-plan-tier free'; badge.textContent = 'Free';
+      const rem = Math.max(0, lic.limit - lic.used);
+      desc.textContent = `${rem} of ${lic.limit} free messages remaining`;
+      upBtn.style.display = '';
+    }
+  });
+}
+
+function closeSettingsSheet() {
+  settingsOverlay.classList.remove('open');
+}
+
+document.getElementById('settings-sheet-close')?.addEventListener('click', closeSettingsSheet);
+settingsOverlay?.addEventListener('click', e => { if (e.target === settingsOverlay) closeSettingsSheet(); });
+
+// Avatar change in sheet
+const sheetPfpInput = document.getElementById('sheet-pfp-input');
+let sheetAvatarDataUrl = null;
+
+document.getElementById('sheet-big-avatar')?.addEventListener('click', () => sheetPfpInput?.click());
+document.getElementById('sheet-avatar-hint')?.addEventListener('click', () => sheetPfpInput?.click());
+
+sheetPfpInput?.addEventListener('change', async () => {
+  const file = sheetPfpInput.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    sheetAvatarDataUrl = e.target.result;
+    document.getElementById('sheet-big-avatar').innerHTML = `<img src="${sheetAvatarDataUrl}" alt="avatar"/>`;
+  };
+  reader.readAsDataURL(file);
+  sheetPfpInput.value = '';
+});
+
+document.getElementById('sheet-save-btn')?.addEventListener('click', async () => {
+  const name     = document.getElementById('sheet-name').value.trim();
+  const email    = document.getElementById('sheet-email').value.trim();
+  const language = document.getElementById('sheet-lang').value;
+  const avatar   = sheetAvatarDataUrl || undefined;
+  await window.sk.saveProfile({ name: name || 'You', email, language, ...(avatar ? { avatar } : {}) });
+  sheetAvatarDataUrl = null;
+  closeSettingsSheet();
+});
+
+document.getElementById('sheet-upgrade-btn')?.addEventListener('click', () => {
+  closeSettingsSheet();
+  window.sk.openSettings();
+});
+
+document.getElementById('sheet-settings-btn')?.addEventListener('click', () => {
+  closeSettingsSheet();
+  window.sk.openSettings();
+});
+
+document.getElementById('sheet-help-btn')?.addEventListener('click', () => {
+  window.sk.openUrl('mailto:support@emirilgin.com');
+});
 
 init();
 loadProfile();

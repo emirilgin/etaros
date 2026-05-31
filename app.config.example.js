@@ -17,4 +17,11 @@ module.exports = {
   // Optional — Claude for paid tiers (better quality)
   // Leave blank to use Gemini for all tiers
   anthropicKey: '',
+
+  // HMAC secret for license key validation — never commit the real value
+  // Generate your own: node -e "require('crypto').randomBytes(32).toString('hex')"
+  licenseSecret: 'YOUR_64_CHAR_HEX_SECRET_HERE',
+
+  // Optional — your deployed server URL
+  // serverUrl: 'https://your-app.railway.app',
 };

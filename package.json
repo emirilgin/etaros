@@ -27,7 +27,7 @@
     "electron-builder": "^25.1.8"
   },
   "build": {
-    "appId": "com.sidekick.ai",
+    "appId": "com.emirilgin.sidekick",
     "productName": "Sidekick",
     "copyright": "Copyright © 2025 Sidekick",
     "files": [
