@@ -35,17 +35,54 @@ let APP_CONFIG = { geminiKey: '', anthropicKey: '' };
 try { APP_CONFIG = require('./app.config'); } catch { /* no config yet */ }
 
 // ─── Supabase client ──────────────────────────────────────────────────────────
-const { createClient: createSupabaseClient } = require('@supabase/supabase-js');
-let _supabase = null;
-function getSupabase() {
-  if (_supabase) return _supabase;
-  const url = APP_CONFIG.supabaseUrl;
-  const key = APP_CONFIG.supabaseAnonKey;
-  if (!url || !key) return null;
-  _supabase = createSupabaseClient(url, key, {
-    auth: { persistSession: false }, // we handle session storage ourselves via electron-store
-  });
-  return _supabase;
+// ─── Supabase Auth — raw fetch (no SDK, avoids Electron main process issues) ──
+function sbUrl()  { return (APP_CONFIG.supabaseUrl  ?? '').replace(/\/$/, ''); }
+function sbKey()  { return  APP_CONFIG.supabaseAnonKey ?? ''; }
+function sbReady(){ return !!(sbUrl() && sbKey()); }
+
+async function sbFetch(path, body, token) {
+  const ctrl = new AbortController();
+  const tid  = setTimeout(() => ctrl.abort(), 8000);
+  try {
+    const headers = {
+      'Content-Type': 'application/json',
+      'apikey':        sbKey(),
+      'Authorization': `Bearer ${token || sbKey()}`,
+    };
+    const res = await fetch(`${sbUrl()}${path}`, {
+      method: 'POST',
+      headers,
+      body: JSON.stringify(body),
+      signal: ctrl.signal,
+    });
+    const data = await res.json();
+    return { ok: res.ok, data, status: res.status };
+  } catch (e) {
+    return { ok: false, data: { error_description: e.message }, status: 0 };
+  } finally {
+    clearTimeout(tid);
+  }
+}
+
+async function sbGet(path, token) {
+  const ctrl = new AbortController();
+  const tid  = setTimeout(() => ctrl.abort(), 8000);
+  try {
+    const res = await fetch(`${sbUrl()}${path}`, {
+      method: 'GET',
+      headers: {
+        'apikey':        sbKey(),
+        'Authorization': `Bearer ${token || sbKey()}`,
+      },
+      signal: ctrl.signal,
+    });
+    const data = await res.json();
+    return { ok: res.ok, data, status: res.status };
+  } catch (e) {
+    return { ok: false, data: { message: e.message }, status: 0 };
+  } finally {
+    clearTimeout(tid);
+  }
 }
 
 // ─── Constants ────────────────────────────────────────────────────────────────
@@ -432,56 +469,32 @@ function tierFromKeyOffline(key) {
 
 // Fetch tier from Supabase profile — cache 30min
 async function refreshTierFromServer() {
-  if (APP_CONFIG.ownerMode) return 'max';
-  const sb = getSupabase();
-  if (!sb) return null;
+  if (APP_CONFIG.ownerMode || !sbReady()) return null;
+  const accessToken = store.get('sbAccessToken');
+  const userId      = store.get('sbUserId');
+  if (!accessToken || !userId) return null;
 
-  const accessToken  = store.get('sbAccessToken');
-  const refreshToken = store.get('sbRefreshToken');
-  if (!accessToken) return null;
-
-  const CACHE_TTL = 30 * 60 * 1000; // 30 min
+  const CACHE_TTL = 30 * 60 * 1000;
   const cachedTs  = store.get('sbTierTs');
   if (cachedTs && Date.now() - Number(cachedTs) < CACHE_TTL) {
     return store.get('sbTier') ?? null;
   }
 
-  try {
-    // Restore session so we can make authenticated requests
-    const { data: sessionData, error: sessionErr } = await sb.auth.setSession({
-      access_token:  accessToken,
-      refresh_token: refreshToken,
-    });
-    if (sessionErr || !sessionData?.session) {
-      console.warn('[auth] session restore failed:', sessionErr?.message);
-      return null;
-    }
-
-    // Save refreshed tokens
-    store.set('sbAccessToken',  sessionData.session.access_token);
-    store.set('sbRefreshToken', sessionData.session.refresh_token);
-
-    // Fetch profile
-    const { data: profile, error: profileErr } = await sb
-      .from('profiles')
-      .select('tier')
-      .eq('id', sessionData.session.user.id)
-      .single();
-
-    if (profileErr || !profile) {
-      console.warn('[auth] profile fetch failed:', profileErr?.message);
-      return null;
-    }
-
-    store.set('sbTier',   profile.tier ?? 'free');
-    store.set('sbTierTs', Date.now());
-    console.log('[auth] tier refreshed:', profile.tier);
-    push('tier-updated', { tier: profile.tier ?? 'free' });
-    return profile.tier;
-  } catch (e) {
-    console.warn('[auth] refreshTierFromServer failed:', e.message);
+  // GET profile via PostgREST
+  const { ok, data } = await sbGet(
+    `/rest/v1/profiles?select=tier&id=eq.${userId}&limit=1`,
+    accessToken,
+  );
+  if (!ok || !Array.isArray(data) || !data[0]) {
+    console.warn('[auth] profile fetch failed', data);
     return null;
   }
+
+  const tier = data[0].tier ?? 'free';
+  store.set('sbTier',   tier);
+  store.set('sbTierTs', Date.now());
+  push('tier-updated', { tier });
+  return tier;
 }
 
 function getTierSync() {
@@ -1113,13 +1126,10 @@ function registerIPC() {
     return { ok: true };
   });
   ipcMain.handle('logout', async () => {
-    // Sign out from Supabase
-    const sb = getSupabase();
-    if (sb) {
-      const token = store.get('sbAccessToken');
-      if (token) {
-        try { await sb.auth.admin?.signOut(token); } catch {}
-      }
+    // Sign out from Supabase (fire-and-forget)
+    const token = store.get('sbAccessToken');
+    if (token && sbReady()) {
+      sbFetch('/auth/v1/logout', {}, token).catch(() => {});
     }
     store.delete('sbAccessToken');
     store.delete('sbRefreshToken');
@@ -1137,57 +1147,61 @@ function registerIPC() {
     return { ok: true };
   });
 
-  // ─── Supabase Auth IPC ────────────────────────────────────────────────────
+  // ─── Supabase Auth IPC (raw fetch — no SDK) ──────────────────────────────
 
   ipcMain.handle('auth-login', async (_, { email, password }) => {
-    const sb = getSupabase();
-    if (!sb) return { ok: false, error: 'Supabase not configured' };
-    const { data, error } = await sb.auth.signInWithPassword({ email, password });
-    if (error) return { ok: false, error: error.message };
-    // Persist session
-    store.set('sbAccessToken',  data.session.access_token);
-    store.set('sbRefreshToken', data.session.refresh_token);
+    if (!sbReady()) return { ok: false, error: 'Supabase not configured' };
+    const { ok, data } = await sbFetch('/auth/v1/token?grant_type=password', { email, password });
+    if (!ok) return { ok: false, error: data?.error_description ?? data?.msg ?? 'Login failed' };
+    store.set('sbAccessToken',  data.access_token);
+    store.set('sbRefreshToken', data.refresh_token);
     store.set('sbUserId',       data.user.id);
     store.set('profileEmail',   data.user.email);
-    // Fetch profile tier
-    await refreshTierFromServer();
+    refreshTierFromServer().catch(() => {});
     return { ok: true, user: { id: data.user.id, email: data.user.email } };
   });
 
   ipcMain.handle('auth-register', async (_, { email, password }) => {
-    const sb = getSupabase();
-    if (!sb) return { ok: false, error: 'Supabase not configured' };
-    const { data, error } = await sb.auth.signUp({ email, password });
-    if (error) return { ok: false, error: error.message };
-    if (!data.session) {
-      // Email confirmation required
-      return { ok: true, needsConfirmation: true };
-    }
-    store.set('sbAccessToken',  data.session.access_token);
-    store.set('sbRefreshToken', data.session.refresh_token);
-    store.set('sbUserId',       data.user.id);
+    if (!sbReady()) return { ok: false, error: 'Supabase not configured' };
+    const { ok, data } = await sbFetch('/auth/v1/signup', { email, password });
+    if (!ok) return { ok: false, error: data?.msg ?? data?.error_description ?? 'Registration failed' };
+    if (!data.access_token) return { ok: true, needsConfirmation: true };
+    const userId = data.user.id;
+    store.set('sbAccessToken',  data.access_token);
+    store.set('sbRefreshToken', data.refresh_token);
+    store.set('sbUserId',       userId);
     store.set('profileEmail',   data.user.email);
-    return { ok: true, user: { id: data.user.id, email: data.user.email } };
+    // Create profile row manually (no trigger)
+    try {
+      await fetch(`${sbUrl()}/rest/v1/profiles`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': sbKey(),
+          'Authorization': `Bearer ${data.access_token}`,
+          'Prefer': 'return=minimal',
+        },
+        body: JSON.stringify({ id: userId, email, tier: 'free' }),
+      });
+    } catch (e) { console.warn('[register] profile insert failed:', e.message); }
+    return { ok: true, user: { id: userId, email: data.user.email } };
   });
 
   ipcMain.handle('auth-session', async () => {
-    // ownerMode or no Supabase configured → skip auth, go straight to app
-    if (APP_CONFIG.ownerMode || !APP_CONFIG.supabaseUrl) {
+    if (APP_CONFIG.ownerMode || !sbReady()) {
       return { loggedIn: true, skipAuth: true, tier: 'max' };
     }
     const userId = store.get('sbUserId');
     const email  = store.get('profileEmail') ?? '';
     if (!userId) return { loggedIn: false };
-    // Refresh tier in background
     refreshTierFromServer().catch(() => {});
     return { loggedIn: true, user: { id: userId, email }, tier: getTierSync() };
   });
 
   ipcMain.handle('auth-reset-password', async (_, { email }) => {
-    const sb = getSupabase();
-    if (!sb) return { ok: false, error: 'Supabase not configured' };
-    const { error } = await sb.auth.resetPasswordForEmail(email);
-    if (error) return { ok: false, error: error.message };
+    if (!sbReady()) return { ok: false, error: 'Supabase not configured' };
+    const { ok, data } = await sbFetch('/auth/v1/recover', { email });
+    if (!ok) return { ok: false, error: data?.msg ?? 'Failed' };
     return { ok: true };
   });
 

@@ -1942,7 +1942,9 @@ html,body{
 <div id="auth-overlay" style="display:none">
   <div class="auth-card">
     <!-- Logo -->
-    <div class="auth-logo">
+    <div class="auth-logo-wrap" id="auth-logo-wrap">
+    <div class="auth-spinner"></div>
+    <div class="auth-logo" id="auth-logo">
       <svg viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
         <path d="M24 3C31 3 45 10 45 24C45 38 31 45 24 45C17 45 3 38 3 24C3 10 17 3 24 3Z" fill="url(#al-rad)"/>
         <path d="M24 7C28.5 7 37 11.5 39.5 18C34.8 12 29.5 10 24 10C18.5 10 13.2 12 8.5 18C11 11.5 19.5 7 24 7Z" fill="rgba(255,255,255,0.16)"/>
@@ -1957,6 +1959,7 @@ html,body{
           </radialGradient>
         </defs>
       </svg>
+    </div>
     </div>
     <h2 class="auth-title">Sidekick</h2>
     <p class="auth-sub" id="auth-subtitle">Sign in to your account</p>
@@ -2091,6 +2094,43 @@ html,body{
 }
 #auth-form-login, #auth-form-register, #auth-form-forgot {
   width: 100%;
+}
+
+/* Loading state */
+.auth-logo { transition: transform .3s ease; }
+.auth-logo.loading { animation: auth-pulse 1.4s ease-in-out infinite; }
+@keyframes auth-pulse {
+  0%, 100% { transform: scale(1);    opacity: 1;   }
+  50%       { transform: scale(1.08); opacity: 0.7; }
+}
+
+/* Spinner ring around logo when loading */
+.auth-logo-wrap {
+  position: relative; display: inline-flex;
+  align-items: center; justify-content: center;
+}
+.auth-spinner {
+  position: absolute; inset: -8px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  border-top-color: rgba(220, 100, 50, 0.6);
+  border-right-color: rgba(220, 100, 50, 0.2);
+  animation: auth-spin 1s linear infinite;
+  display: none;
+}
+.auth-logo-wrap.loading .auth-spinner { display: block; }
+.auth-logo-wrap.loading .auth-logo    { animation: auth-pulse 1.4s ease-in-out infinite; }
+@keyframes auth-spin {
+  to { transform: rotate(360deg); }
+}
+
+/* Form fade transition */
+#auth-form-login, #auth-form-register, #auth-form-forgot {
+  animation: auth-fadein .2s ease;
+}
+@keyframes auth-fadein {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0);   }
 }
 </style>
 

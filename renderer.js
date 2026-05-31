@@ -2220,7 +2220,9 @@ function setAuthSuccess(msg) { authSuccess.textContent = msg; authSuccess.style.
 
 function setAuthLoading(btn, loading) {
   btn.disabled = loading;
-  btn.textContent = loading ? '...' : btn.dataset.label ?? btn.textContent;
+  btn.textContent = loading ? '···' : btn.dataset.label ?? btn.textContent;
+  const wrap = document.getElementById('auth-logo-wrap');
+  if (wrap) wrap.classList.toggle('loading', loading);
 }
 
 // Navigation
