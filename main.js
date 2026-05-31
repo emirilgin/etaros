@@ -276,6 +276,7 @@ let searchBrowserView = null;
 let lastBitmap     = null;
 let isStreaming    = false;
 let retryTimer     = null;
+let quotaCooldownUntil = 0;   // pause auto-scans after a quota hit (avoid API hammering)
 let anthropic      = null;
 let cachedKey      = '';
 let chatHistory    = [];
@@ -482,6 +483,10 @@ async function refreshAccessToken() {
 
 async function refreshTierFromServer() {
   if (APP_CONFIG.ownerMode || !sbReady()) return null;
+  // Tester/beta override is sticky — never let a server read downgrade it.
+  // (Server-side tier PATCH needs service_role; until an Edge Function does it,
+  //  the redeemed Max tier lives client-side and must survive refreshes.)
+  if (store.get('testerTier')) return store.get('testerTier');
   let accessToken = store.get('sbAccessToken');
   const userId    = store.get('sbUserId');
   if (!accessToken || !userId) return null;
@@ -514,6 +519,9 @@ async function refreshTierFromServer() {
 
 function getTierSync() {
   if (APP_CONFIG.ownerMode) return 'max';
+  // Tester/beta override wins (sticky, survives server refresh)
+  const tester = store.get('testerTier');
+  if (tester) return tester;
   // Supabase account tier takes priority
   const userId = store.get('sbUserId');
   if (userId) {
@@ -906,6 +914,9 @@ async function proactiveScan(thumbnail, manual = false) {
   // Silently skip if free user has hit their limit (don't nag)
   if (checkLimits() === 'free') return;
 
+  // Skip auto-scans while in quota cooldown (manual scans always allowed)
+  if (!manual && Date.now() < quotaCooldownUntil) return;
+
   push('scan-status', { scanning: true });
 
   try {
@@ -915,6 +926,7 @@ async function proactiveScan(thumbnail, manual = false) {
     const scanHistory = [{ role: 'user', content: userPrompt, _b64: b64 }];
 
     const raw = await streamAI(scanPrompt, scanHistory);
+    quotaCooldownUntil = 0; // success → clear any quota pause
 
     let parsed = null;
     try { const m = raw.match(/\{[\s\S]*\}/); if (m) parsed = JSON.parse(m[0]); } catch {}
@@ -944,8 +956,14 @@ async function proactiveScan(thumbnail, manual = false) {
 
   } catch (err) {
     console.error('[scan]', err.message);
-    if (manual) push('error', { message: err.message });
-    else scheduleRetry(thumbnail);
+    const msg = String(err?.message ?? '');
+    // Quota exhausted or offline → retrying just hammers the API. Don't.
+    const isQuota   = /quota|429|RESOURCE_EXHAUSTED/i.test(msg);
+    const dontRetry = isQuota || /offline|fetch failed|ENOTFOUND|ECONNREFUSED|ETIMEDOUT/i.test(msg);
+    // Quota hit → pause auto-scans for 10 min so we stop spamming the API
+    if (isQuota) quotaCooldownUntil = Date.now() + 10 * 60 * 1000;
+    if (manual) push('error', { message: friendlyError(err) });
+    else if (!dontRetry) scheduleRetry(thumbnail);
   } finally {
     push('scan-status', { scanning: false });
   }
@@ -1057,17 +1075,13 @@ function openSetup() {
 }
 
 function openSettings() {
-  if (settingsWindow && !settingsWindow.isDestroyed()) { settingsWindow.focus(); return; }
-  settingsWindow = new BrowserWindow({
-    width: 480, height: 660, frame: false, transparent: true,
-    resizable: false, alwaysOnTop: true, center: true,
-    webPreferences: {
-      preload: path.join(__dirname, 'preload.js'),
-      contextIsolation: true, nodeIntegration: false, sandbox: false,
-    },
-  });
-  settingsWindow.loadFile('settings.html');
-  settingsWindow.on('closed', () => { settingsWindow = null; });
+  // Unified: open the in-app inline settings page (legacy settings.html window retired)
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    setWindowMode('fullscreen');
+    mainWindow.show();
+    mainWindow.focus();
+    push('open-settings-inline', {});
+  }
 }
 
 // ─── Tray ─────────────────────────────────────────────────────────────────────
@@ -1123,7 +1137,7 @@ function registerIPC() {
 
   ipcMain.handle('save-settings', (_, s) => {
     if (s.apiKey       != null) { store.set('apiKey',       s.apiKey);      anthropic = null; cachedKey = ''; }
-    if (s.geminiKey    != null) { store.set('geminiKey', s.geminiKey); push(getGeminiKey() ? 'key-ok' : 'no-key', {}); }
+    if (s.geminiKey    != null) { store.set('geminiKey', s.geminiKey); quotaCooldownUntil = 0; push(getGeminiKey() ? 'key-ok' : 'no-key', {}); }
     if (s.city         != null)   store.set('city',         s.city);
     if (s.scanInterval != null)   store.set('scanInterval', s.scanInterval);
     if (s.autoScan     != null)   store.set('autoScan',     s.autoScan);
@@ -1175,6 +1189,7 @@ function registerIPC() {
     store.delete('sbUserId');
     store.delete('sbTier');
     store.delete('sbTierTs');
+    store.delete('testerTier');   // don't let next user inherit beta Max
     store.delete('profileName');
     store.delete('profileEmail');
     store.delete('profileAvatar');
@@ -1265,8 +1280,14 @@ function registerIPC() {
     const userId      = store.get('sbUserId');
     const accessToken = store.get('sbAccessToken');
 
+    // Sticky local override — guarantees Max access even though the server-side
+    // tier PATCH below is blocked by RLS (needs service_role). Survives refreshes.
+    store.set('testerTier', 'max');
+    store.set('sbTier', 'max');
+    store.set('sbTierTs', Date.now());
+
+    // Best-effort server update (works only if an Edge Function / service-role path exists)
     if (userId && accessToken && sbReady()) {
-      // Update tier in Supabase
       try {
         await fetch(`${sbUrl()}/rest/v1/profiles?id=eq.${userId}`, {
           method: 'PATCH',
@@ -1278,18 +1299,11 @@ function registerIPC() {
           },
           body: JSON.stringify({ tier: 'max' }),
         });
-        store.set('sbTier', 'max');
-        store.set('sbTierTs', Date.now());
-        push('tier-updated', { tier: 'max' });
       } catch (e) {
-        console.warn('[redeem] DB update failed:', e.message);
+        console.warn('[redeem] DB update failed (expected if RLS blocks user writes):', e.message);
       }
-    } else {
-      // Offline fallback — store locally
-      store.set('sbTier', 'max');
-      store.set('sbTierTs', Date.now());
-      push('tier-updated', { tier: 'max' });
     }
+    push('tier-updated', { tier: 'max' });
     return { ok: true, tier: 'max' };
   });
 

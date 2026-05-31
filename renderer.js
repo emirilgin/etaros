@@ -2372,6 +2372,9 @@ window.sk.on('logged-out', () => {
   showAuthForm('login');
 });
 
+// Tray "Settings" → open inline settings page
+window.sk.on('open-settings-inline', () => openSettingsPage('profile'));
+
 // tier-updated event from main (after Stripe payment)
 window.sk.on('tier-updated', ({ tier }) => {
   window.sk.checkLicense().then(lic => setTierDisplay(lic.tier, lic.used, lic.limit));
