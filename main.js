@@ -1337,7 +1337,17 @@ function setupAutoUpdater() {
   autoUpdater.autoDownload         = false;
   autoUpdater.autoInstallOnAppQuit = false;
 
-  autoUpdater.on('update-available',     (info) => push('update-status', { status: 'available', version: info.version }));
+  autoUpdater.on('update-available', (info) => {
+    const v = info.version;
+    let url;
+    if (process.platform === 'darwin') {
+      const arch = process.arch === 'arm64' ? '-arm64' : '';
+      url = `https://github.com/emirilgin/sidekick/releases/download/v${v}/Sidekick-${v}${arch}.dmg`;
+    } else {
+      url = `https://github.com/emirilgin/sidekick/releases/download/v${v}/Sidekick.Setup.${v}.exe`;
+    }
+    push('update-status', { status: 'available', version: v, url });
+  });
   autoUpdater.on('update-not-available', ()     => {});
   autoUpdater.on('error',                (err)  => console.warn('[updater]', err.message));
 

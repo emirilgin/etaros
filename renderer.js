@@ -754,17 +754,19 @@ const updateBanner = document.getElementById('update-banner');
 const updateMsg    = document.getElementById('update-msg');
 const updateBtn    = document.getElementById('update-btn');
 
-window.sk.on('update-status', ({ status, version }) => {
+let _updateUrl = '';
+window.sk.on('update-status', ({ status, version, url }) => {
   if (!updateBanner) return;
   if (status === 'available') {
+    _updateUrl = url || 'https://github.com/emirilgin/sidekick/releases/latest';
     updateMsg.textContent = `◆ Sidekick v${version} is available`;
-    if (updateBtn) updateBtn.textContent = 'Download update';
+    if (updateBtn) updateBtn.textContent = 'Download →';
     updateBanner.style.display = 'flex';
   }
 });
 
 if (updateBtn) {
-  updateBtn.addEventListener('click', () => window.sk.installUpdate());
+  updateBtn.addEventListener('click', () => window.sk.openUrl(_updateUrl));
 }
 
 window.sk.on('error',          ({ message })       => appendError(message));
