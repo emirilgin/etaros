@@ -1918,7 +1918,7 @@ function showConfirm(message, onOk) {
   const cancelBtn = document.getElementById('confirm-cancel');
   if (!overlay) { if (window.confirm(message)) onOk(); return; }
   msg.textContent = message;
-  overlay.style.display = 'flex';
+  overlay.style.display = 'flex'; // was display:none, now show as flex
   const close = () => { overlay.style.display = 'none'; };
   const okHandler     = () => { close(); onOk(); okBtn.removeEventListener('click', okHandler); cancelBtn.removeEventListener('click', cancelHandler); };
   const cancelHandler = () => { close(); okBtn.removeEventListener('click', okHandler); cancelBtn.removeEventListener('click', cancelHandler); };
