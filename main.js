@@ -379,55 +379,101 @@ function initChat() {
 }
 const NOTIFY_COOLDOWN_MS = 5 * 60_000; // max 1 OS notification per 5 min
 
-// ─── Tier system — HMAC-signed key validation ─────────────────────────────────
-// Keys are signed at generation time using a secret in app.config.js.
-// Format: PREFIX-R1-R2-C3 where C3 = first 4 hex of HMAC-SHA256(secret, R1+R2)
-// Random guesses that match the prefix pattern will fail the checksum with >99.99% prob.
+// ─── Tier system — server validation + HMAC offline fallback ─────────────────
+// New keys (from Supabase): PREFIX-XXXX-XXXX (3 segments, server validates)
+// Old keys (HMAC-signed):   PREFIX-XXXX-XXXX-XXXX (4 segments, offline HMAC)
+// Server validation result cached 24h in store.
 const { createHmac } = require('crypto');
 
+// Machine ID for device tracking (reuse machineKey output as stable device ID)
+function getMachineId() {
+  let mid = store.get('machineId');
+  if (!mid) { mid = `${machineKey()}-${Date.now().toString(36)}`; store.set('machineId', mid); }
+  return mid;
+}
+
+// HMAC check for legacy 4-segment keys
 function verifyKeyHmac(key) {
   const secret = APP_CONFIG.licenseSecret;
-  if (!secret || secret === 'YOUR_64_CHAR_HEX_SECRET_HERE') {
-    // No secret configured — fall through to pattern-only (dev/test mode)
-    return true;
-  }
-  // Parse: PREFIX-R1-R2-C3
+  if (!secret || secret === 'YOUR_64_CHAR_HEX_SECRET_HERE') return true;
   const m = key.match(/^(SMAX|SIDE|STEST)-([A-F0-9]{4})-([A-F0-9]{4})-([A-F0-9]{4})$/);
   if (!m) return false;
   const [, , r1, r2, given] = m;
-  const expected = createHmac('sha256', secret)
-    .update(r1 + r2)
-    .digest('hex')
-    .slice(0, 4)
-    .toUpperCase();
+  const expected = createHmac('sha256', secret).update(r1 + r2).digest('hex').slice(0, 4).toUpperCase();
   return given === expected;
 }
 
-function getTier() {
-  if (APP_CONFIG.ownerMode) return 'max';  // dev/owner build — local only, never commit
+// Offline tier from key format (used when server unreachable)
+function tierFromKeyOffline(key) {
+  // New 3-segment server keys — accept format, trust cache or retry later
+  if (/^SMAX-[A-F0-9]{4}-[A-F0-9]{4}$/.test(key))  return 'max';
+  if (/^SIDE-[A-F0-9]{4}-[A-F0-9]{4}$/.test(key))  return 'pro';
+  if (/^STEST-[A-F0-9]{4}-[A-F0-9]{4}$/.test(key)) return 'max';
+  // Legacy 4-segment HMAC keys
+  if (/^SMAX-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}$/.test(key)  && verifyKeyHmac(key)) return 'max';
+  if (/^SIDE-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}$/.test(key)  && verifyKeyHmac(key)) return 'pro';
+  if (/^STEST-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}$/.test(key) && verifyKeyHmac(key)) return 'max';
+  return null;
+}
+
+// Validate key against Supabase server, cache result 24h
+async function validateKeyWithServer(key) {
+  const serverUrl = APP_CONFIG.serverUrl;
+  if (!serverUrl) return null; // no server configured yet
+
+  const cacheKey = `serverTier_${key}`;
+  const cacheTime = store.get(`${cacheKey}_ts`);
+  const CACHE_TTL = 24 * 60 * 60 * 1000;
+
+  if (cacheTime && Date.now() - Number(cacheTime) < CACHE_TTL) {
+    return store.get(cacheKey) ?? null;
+  }
+
+  try {
+    const res = await fetch(`${serverUrl}/functions/v1/validate-key`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ key, machineId: getMachineId() }),
+      signal: AbortSignal.timeout(5000),
+    });
+    const data = await res.json();
+    if (data.ok && data.tier) {
+      store.set(cacheKey, data.tier);
+      store.set(`${cacheKey}_ts`, Date.now());
+      return data.tier;
+    } else {
+      // Key invalid/revoked on server — clear cache, downgrade
+      store.delete(cacheKey);
+      store.delete(`${cacheKey}_ts`);
+      if (data.error === 'revoked' || data.error === 'not_found') return 'free';
+    }
+  } catch (e) {
+    console.warn('[license] server unreachable, using offline fallback:', e.message);
+  }
+  return null; // null = server failed, caller falls back to offline
+}
+
+function getTierSync() {
+  if (APP_CONFIG.ownerMode) return 'max';
   const key = String(store.get('licenseKey') ?? '').trim().toUpperCase();
   if (!key) return 'free';
-
-  // Verify HMAC signature before accepting tier
-  if (!verifyKeyHmac(key)) return 'free'; // failed signature = not a valid key
-
-  if (/^SMAX-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}$/.test(key))  return 'max';
-  if (/^SIDE-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}$/.test(key))  return 'pro';
-  if (/^STEST-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}$/.test(key)) return 'max'; // beta tester
-  return 'free';
+  // Check server cache first
+  const cached = store.get(`serverTier_${key}`);
+  if (cached) return cached;
+  // Fall back to offline
+  return tierFromKeyOffline(key) ?? 'free';
 }
 
 function getFreeUsed()  { return Number(store.get('freeUsed') ?? 0); }
 function bumpFreeUsed() { const n = getFreeUsed() + 1; store.set('freeUsed', n); return n; }
 
-// Pro is now unlimited — no daily counter needed, but we track for display
 function getProUsed() { return Number(store.get('proUsed') ?? 0); }
 function bumpProUsed() { const n = getProUsed() + 1; store.set('proUsed', n); return n; }
 
 function getLicenseInfo() {
-  const tier = getTier();
+  const tier = getTierSync();
   if (tier === 'max') return { tier, used: 0,            limit: 0          };
-  if (tier === 'pro') return { tier, used: getProUsed(), limit: 0          }; // 0 limit = unlimited
+  if (tier === 'pro') return { tier, used: getProUsed(), limit: 0          };
   return                     { tier, used: getFreeUsed(), limit: FREE_TOTAL };
 }
 
@@ -653,7 +699,7 @@ async function streamAI(systemPrompt, history) {
 
   // For Pro/Max: use Claude if an Anthropic key is available (better quality)
   // Fall back to Gemini if no Anthropic key is set
-  const tier = getTier();
+  const tier = getTierSync();
   if ((tier === 'pro' || tier === 'max') && getAnthropicClient()) {
     return streamClaude(systemPrompt, history);
   }
@@ -704,7 +750,7 @@ async function streamOllama(systemPrompt, history) {
 
 // ─── Core: check limits before sending ───────────────────────────────────────
 function checkLimits() {
-  const tier = getTier();
+  const tier = getTierSync();
   if (tier === 'max') return null; // unlimited
   if (tier === 'pro') return null; // unlimited
   if (tier === 'free' && getFreeUsed() >= FREE_TOTAL) return 'free';
@@ -712,7 +758,7 @@ function checkLimits() {
 }
 
 function bumpUsage() {
-  const tier = getTier();
+  const tier = getTierSync();
   if (tier === 'pro')  return { tier, used: bumpProUsed(), limit: 0 };         // 0 = unlimited
   if (tier === 'free') return { tier, used: bumpFreeUsed(), limit: FREE_TOTAL };
   return                      { tier: 'max', used: 0, limit: 0 };
@@ -998,7 +1044,15 @@ function registerIPC() {
     if (s.city         != null)   store.set('city',         s.city);
     if (s.scanInterval != null)   store.set('scanInterval', s.scanInterval);
     if (s.autoScan     != null)   store.set('autoScan',     s.autoScan);
-    if (s.licenseKey   != null)   store.set('licenseKey',   s.licenseKey);
+    if (s.licenseKey   != null) {
+      store.set('licenseKey', s.licenseKey);
+      // Clear cached server validation so new key gets re-verified
+      const oldKey = String(s.licenseKey ?? '').trim().toUpperCase();
+      store.delete(`serverTier_${oldKey}`);
+      store.delete(`serverTier_${oldKey}_ts`);
+      // Validate new key against server immediately (async)
+      if (s.licenseKey) validateKeyWithServer(s.licenseKey.trim().toUpperCase()).catch(() => {});
+    }
     if (s.provider     != null)   store.set('provider',     s.provider);
     if (s.ollamaModel  != null)   store.set('ollamaModel',  s.ollamaModel);
     if (s.startOnLogin != null)   app.setLoginItemSettings({ openAtLogin: Boolean(s.startOnLogin) });
@@ -1035,7 +1089,14 @@ function registerIPC() {
   });
 
   // Returns { tier, used, limit } — no server call needed
-  ipcMain.handle('check-license', () => getLicenseInfo());
+  ipcMain.handle('check-license', async () => {
+    // Trigger async server validation (updates cache); return current sync state immediately
+    const key = String(store.get('licenseKey') ?? '').trim().toUpperCase();
+    if (key && !APP_CONFIG.ownerMode) {
+      validateKeyWithServer(key).catch(() => {}); // fire-and-forget
+    }
+    return getLicenseInfo();
+  });
 
   ipcMain.handle('get-stats', () => getStats());
 
