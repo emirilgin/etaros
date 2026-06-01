@@ -359,11 +359,13 @@
       <h2>Be first in line.</h2>
       <p>Etaros is in beta. Join the waitlist for early access, launch discounts, and updates from the founder.</p>
 
-      <form class="waitlist-form" id="wl-form">
-        <input type="email" id="wl-email" placeholder="your@email.com" required autocomplete="email"/>
-        <button type="submit">Join waitlist →</button>
-      </form>
-      <div class="waitlist-success" id="wl-success">✓ You're on the list! We'll be in touch.</div>
+      <iframe
+        data-tally-src="https://tally.so/embed/XxzgYO?alignLeft=0&hideTitle=1&transparentBackground=1&dynamicHeight=1"
+        loading="lazy" width="100%" height="120" frameborder="0"
+        marginheight="0" marginwidth="0" title="Etaros waitlist"
+        style="border-radius:12px;margin:0 auto;display:block;max-width:420px">
+      </iframe>
+      <script>var d=document,w="https://tally.so/widgets/embed.js",v=function(){"undefined"!=typeof Tally?Tally.loadEmbeds():d.querySelectorAll("iframe[data-tally-src]:not([src])").forEach((function(e){e.src=e.dataset.tallySrc}))};if("undefined"!=typeof Tally)v();else if(d.querySelector('script[src="'+w+'"]')==null){var s=d.createElement("script");s.src=w,s.onload=v,s.onerror=v,d.body.appendChild(s)}</script>
       <p style="margin-top: 16px; font-size: 13px; color: var(--muted);">No spam. Unsubscribe anytime.</p>
     </div>
   </div>
