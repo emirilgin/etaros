@@ -1,0 +1,186 @@
+build-mac	UNKNOWN STEP	﻿2026-05-31T23:12:00.6884880Z Current runner version: '2.334.0'
+build-mac	UNKNOWN STEP	2026-05-31T23:12:00.6897720Z ##[group]Runner Image Provisioner
+build-mac	UNKNOWN STEP	2026-05-31T23:12:00.6898180Z Hosted Compute Agent
+build-mac	UNKNOWN STEP	2026-05-31T23:12:00.6898520Z Version: 20260520.533
+build-mac	UNKNOWN STEP	2026-05-31T23:12:00.6898890Z Commit: 189110e25284a9812c124fd27b339e2fb4f2f9db
+build-mac	UNKNOWN STEP	2026-05-31T23:12:00.6899310Z Build Date: 2026-05-20T17:44:04Z
+build-mac	UNKNOWN STEP	2026-05-31T23:12:00.6899710Z Worker ID: {9f25d244-5def-4f53-9d9d-6d4ec4994b7f}
+build-mac	UNKNOWN STEP	2026-05-31T23:12:00.6900130Z Azure Region: westus
+build-mac	UNKNOWN STEP	2026-05-31T23:12:00.6900460Z ##[endgroup]
+build-mac	UNKNOWN STEP	2026-05-31T23:12:00.6901190Z ##[group]Operating System
+build-mac	UNKNOWN STEP	2026-05-31T23:12:00.6901540Z macOS
+build-mac	UNKNOWN STEP	2026-05-31T23:12:00.6901840Z 15.7.7
+build-mac	UNKNOWN STEP	2026-05-31T23:12:00.6902130Z 24G720
+build-mac	UNKNOWN STEP	2026-05-31T23:12:00.6902430Z ##[endgroup]
+build-mac	UNKNOWN STEP	2026-05-31T23:12:00.6902750Z ##[group]Runner Image
+build-mac	UNKNOWN STEP	2026-05-31T23:12:00.6903100Z Image: macos-15-arm64
+build-mac	UNKNOWN STEP	2026-05-31T23:12:00.6903430Z Version: 20260527.0100.1
+build-mac	UNKNOWN STEP	2026-05-31T23:12:00.6904160Z Included Software: https://github.com/actions/runner-images/blob/macos-15-arm64/20260527.0100/images/macos/macos-15-arm64-Readme.md
+build-mac	UNKNOWN STEP	2026-05-31T23:12:00.6905100Z Image Release: https://github.com/actions/runner-images/releases/tag/macos-15-arm64%2F20260527.0100
+build-mac	UNKNOWN STEP	2026-05-31T23:12:00.6905710Z ##[endgroup]
+build-mac	UNKNOWN STEP	2026-05-31T23:12:00.6906360Z ##[group]GITHUB_TOKEN Permissions
+build-mac	UNKNOWN STEP	2026-05-31T23:12:00.6907220Z Contents: write
+build-mac	UNKNOWN STEP	2026-05-31T23:12:00.6907550Z Metadata: read
+build-mac	UNKNOWN STEP	2026-05-31T23:12:00.6907870Z ##[endgroup]
+build-mac	UNKNOWN STEP	2026-05-31T23:12:00.6909630Z Secret source: Actions
+build-mac	UNKNOWN STEP	2026-05-31T23:12:00.6910200Z Prepare workflow directory
+build-mac	UNKNOWN STEP	2026-05-31T23:12:00.7105150Z Prepare all required actions
+build-mac	UNKNOWN STEP	2026-05-31T23:12:00.7129010Z Getting action download info
+build-mac	UNKNOWN STEP	2026-05-31T23:12:01.2804050Z Download action repository 'actions/checkout@v4' (SHA:34e114876b0b11c390a56381ad16ebd13914f8d5)
+build-mac	UNKNOWN STEP	2026-05-31T23:12:01.7137390Z Download action repository 'actions/setup-node@v4' (SHA:49933ea5288caeca8642d1e84afbd3f7d6820020)
+build-mac	UNKNOWN STEP	2026-05-31T23:12:01.9247340Z Download action repository 'actions/upload-artifact@v4' (SHA:ea165f8d65b6e75b540449e92b4886f43607fa02)
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.1201500Z Complete job name: build-mac
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.1662730Z ##[group]Run actions/checkout@v4
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.1663380Z with:
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.1663770Z   repository: emirilgin/sidekick
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.1666900Z   token: ***
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.1667240Z   ssh-strict: true
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.1667600Z   ssh-user: git
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.1667970Z   persist-credentials: true
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.1668360Z   clean: true
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.1668730Z   sparse-checkout-cone-mode: true
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.1669150Z   fetch-depth: 1
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.1669510Z   fetch-tags: false
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.1669880Z   show-progress: true
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.1670250Z   lfs: false
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.1670590Z   submodules: false
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.1670970Z   set-safe-directory: true
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.1671480Z ##[endgroup]
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.4774520Z Syncing repository: emirilgin/sidekick
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.4784250Z ##[group]Getting Git version info
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.4792820Z Working directory is '/Users/runner/work/sidekick/sidekick'
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.4794710Z [command]/opt/homebrew/bin/git version
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.5074740Z git version 2.54.0
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.5779610Z ##[endgroup]
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.5803170Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/2e2e32bf-a6cc-4aba-8d5f-3a67ebfef6fb/.gitconfig'
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.5805560Z Temporarily overriding HOME='/Users/runner/work/_temp/2e2e32bf-a6cc-4aba-8d5f-3a67ebfef6fb' before making global git config changes
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.5808010Z Adding repository directory to the temporary git global config as a safe directory
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.5810860Z [command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/sidekick/sidekick
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.5817230Z Deleting the contents of '/Users/runner/work/sidekick/sidekick'
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.5820560Z ##[group]Initializing the repository
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.5822400Z [command]/opt/homebrew/bin/git init /Users/runner/work/sidekick/sidekick
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.5922100Z hint: Using 'master' as the name for the initial branch. This default branch name
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.5930560Z hint: will change to "main" in Git 3.0. To configure the initial branch name
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.5937760Z hint: to use in all of your new repositories, which will suppress this warning,
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.5971410Z hint: call:
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.5972520Z hint:
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.5973930Z hint: 	git config --global init.defaultBranch <name>
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.5975390Z hint:
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.5976560Z hint: Names commonly chosen instead of 'master' are 'main', 'trunk' and
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.5978750Z hint: 'development'. The just-created branch can be renamed via this command:
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.5982090Z hint:
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.5983010Z hint: 	git branch -m <name>
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.5983950Z hint:
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.5985240Z hint: Disable this message with "git config set advice.defaultBranchName false"
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.5987250Z Initialized empty Git repository in /Users/runner/work/sidekick/sidekick/.git/
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.5990990Z [command]/opt/homebrew/bin/git remote add origin https://github.com/emirilgin/sidekick
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.6012930Z ##[endgroup]
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.6015560Z ##[group]Disabling automatic garbage collection
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.6017190Z [command]/opt/homebrew/bin/git config --local gc.auto 0
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.6076710Z ##[endgroup]
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.6078290Z ##[group]Setting up auth
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.6084910Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.6149630Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.7220250Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.7305060Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.8065270Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.8120680Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.8889860Z [command]/opt/homebrew/bin/git config --local http.https://github.com/.extraheader AUTHORIZATION: basic ***
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.8938970Z ##[endgroup]
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.8940290Z ##[group]Fetching the repository
+build-mac	UNKNOWN STEP	2026-05-31T23:12:02.8968420Z [command]/opt/homebrew/bin/git -c protocol.version=2 fetch --no-tags --prune --no-recurse-submodules --depth=1 origin +26ab1a5c16a6c52d8dabafbb1a6ae0f21a6a8d9d:refs/tags/v1.2.0-beta.1
+build-mac	UNKNOWN STEP	2026-05-31T23:12:03.5628670Z From https://github.com/emirilgin/sidekick
+build-mac	UNKNOWN STEP	2026-05-31T23:12:03.5630170Z  * [new ref]         26ab1a5c16a6c52d8dabafbb1a6ae0f21a6a8d9d -> v1.2.0-beta.1
+build-mac	UNKNOWN STEP	2026-05-31T23:12:03.5714590Z ##[endgroup]
+build-mac	UNKNOWN STEP	2026-05-31T23:12:03.5715890Z ##[group]Determining the checkout info
+build-mac	UNKNOWN STEP	2026-05-31T23:12:03.5717300Z ##[endgroup]
+build-mac	UNKNOWN STEP	2026-05-31T23:12:03.5718180Z [command]/opt/homebrew/bin/git sparse-checkout disable
+build-mac	UNKNOWN STEP	2026-05-31T23:12:03.5812720Z [command]/opt/homebrew/bin/git config --local --unset-all extensions.worktreeConfig
+build-mac	UNKNOWN STEP	2026-05-31T23:12:03.5866960Z ##[group]Checking out the ref
+build-mac	UNKNOWN STEP	2026-05-31T23:12:03.5868320Z [command]/opt/homebrew/bin/git checkout --progress --force refs/tags/v1.2.0-beta.1
+build-mac	UNKNOWN STEP	2026-05-31T23:12:03.6110890Z HEAD is now at 26ab1a5 chore: bump to v1.2.0 + add CHANGELOG
+build-mac	UNKNOWN STEP	2026-05-31T23:12:03.6121180Z ##[endgroup]
+build-mac	UNKNOWN STEP	2026-05-31T23:12:03.6197370Z [command]/opt/homebrew/bin/git log -1 --format=%H
+build-mac	UNKNOWN STEP	2026-05-31T23:12:03.6267770Z 26ab1a5c16a6c52d8dabafbb1a6ae0f21a6a8d9d
+build-mac	UNKNOWN STEP	2026-05-31T23:12:03.6527080Z ##[group]Run actions/setup-node@v4
+build-mac	UNKNOWN STEP	2026-05-31T23:12:03.6527880Z with:
+build-mac	UNKNOWN STEP	2026-05-31T23:12:03.6528620Z   node-version: 20
+build-mac	UNKNOWN STEP	2026-05-31T23:12:03.6529290Z   cache: npm
+build-mac	UNKNOWN STEP	2026-05-31T23:12:03.6530120Z   always-auth: false
+build-mac	UNKNOWN STEP	2026-05-31T23:12:03.6530800Z   check-latest: false
+build-mac	UNKNOWN STEP	2026-05-31T23:12:03.6537490Z   token: ***
+build-mac	UNKNOWN STEP	2026-05-31T23:12:03.6538060Z ##[endgroup]
+build-mac	UNKNOWN STEP	2026-05-31T23:12:03.8178610Z Attempting to download 20...
+build-mac	UNKNOWN STEP	2026-05-31T23:12:04.6039060Z Acquiring 20.20.2 - arm64 from https://github.com/actions/node-versions/releases/download/20.20.2-23521894959/node-20.20.2-darwin-arm64.tar.gz
+build-mac	UNKNOWN STEP	2026-05-31T23:12:05.0862530Z Extracting ...
+build-mac	UNKNOWN STEP	2026-05-31T23:12:05.1013280Z [command]/usr/bin/tar xz --strip 1 -C /Users/runner/work/_temp/ed773ef3-520a-4f4d-adc1-51fb1f1a1585 -f /Users/runner/work/_temp/81d34db1-c861-4848-a160-45b48866683f
+build-mac	UNKNOWN STEP	2026-05-31T23:12:06.2068010Z Adding to the cache ...
+build-mac	UNKNOWN STEP	2026-05-31T23:12:08.0352330Z ##[group]Environment details
+build-mac	UNKNOWN STEP	2026-05-31T23:12:08.4232560Z node: v20.20.2
+build-mac	UNKNOWN STEP	2026-05-31T23:12:08.4333130Z npm: 10.8.2
+build-mac	UNKNOWN STEP	2026-05-31T23:12:08.4434100Z yarn: 1.22.22
+build-mac	UNKNOWN STEP	2026-05-31T23:12:08.4534800Z ##[endgroup]
+build-mac	UNKNOWN STEP	2026-05-31T23:12:08.4635350Z [command]/Users/runner/hostedtoolcache/node/20.20.2/arm64/bin/npm config get cache
+build-mac	UNKNOWN STEP	2026-05-31T23:12:08.6038070Z /Users/runner/.npm
+build-mac	UNKNOWN STEP	2026-05-31T23:12:08.8877520Z npm cache is not found
+build-mac	UNKNOWN STEP	2026-05-31T23:12:08.8988110Z ##[group]Run npm ci
+build-mac	UNKNOWN STEP	2026-05-31T23:12:08.8988390Z ^[[36;1mnpm ci^[[0m
+build-mac	UNKNOWN STEP	2026-05-31T23:12:08.9131030Z shell: /bin/bash -e {0}
+build-mac	UNKNOWN STEP	2026-05-31T23:12:08.9131790Z ##[endgroup]
+build-mac	UNKNOWN STEP	2026-05-31T23:12:10.3242660Z npm warn deprecated rimraf@3.0.2: Rimraf versions prior to v4 are no longer supported
+build-mac	UNKNOWN STEP	2026-05-31T23:12:10.4134050Z npm warn deprecated prebuild-install@7.1.3: No longer maintained. Please contact the author of the relevant native addon; alternatives are available.
+build-mac	UNKNOWN STEP	2026-05-31T23:12:10.4614680Z npm warn deprecated npmlog@6.0.2: This package is no longer supported.
+build-mac	UNKNOWN STEP	2026-05-31T23:12:10.5882040Z npm warn deprecated lodash.isequal@4.5.0: This package is deprecated. Use require('node:util').isDeepStrictEqual instead.
+build-mac	UNKNOWN STEP	2026-05-31T23:12:10.6843890Z npm warn deprecated inflight@1.0.6: This module is not supported, and leaks memory. Do not use it. Check out lru-cache if you want a good and tested way to coalesce async requests by a key value, which is much more comprehensive and powerful.
+build-mac	UNKNOWN STEP	2026-05-31T23:12:10.7977980Z npm warn deprecated glob@7.2.3: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+build-mac	UNKNOWN STEP	2026-05-31T23:12:11.0555710Z npm warn deprecated gauge@4.0.4: This package is no longer supported.
+build-mac	UNKNOWN STEP	2026-05-31T23:12:11.1887090Z npm warn deprecated node-domexception@1.0.0: Use your platform's native DOMException instead
+build-mac	UNKNOWN STEP	2026-05-31T23:12:11.2028080Z npm warn deprecated are-we-there-yet@3.0.1: This package is no longer supported.
+build-mac	UNKNOWN STEP	2026-05-31T23:12:11.4955200Z npm warn deprecated boolean@3.2.0: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
+build-mac	UNKNOWN STEP	2026-05-31T23:12:11.8084830Z npm warn deprecated tar@6.2.1: Old versions of tar are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+build-mac	UNKNOWN STEP	2026-05-31T23:12:11.8595080Z npm warn deprecated @npmcli/move-file@2.0.1: This functionality has been moved to @npmcli/fs
+build-mac	UNKNOWN STEP	2026-05-31T23:12:12.3166890Z npm warn deprecated glob@8.1.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+build-mac	UNKNOWN STEP	2026-05-31T23:12:13.0305480Z npm warn deprecated glob@10.5.0: Old versions of glob are not supported, and contain widely publicized security vulnerabilities, which have been fixed in the current version. Please update. Support for old versions may be purchased (at exorbitant rates) by contacting i@izs.me
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.3774880Z npm error code 1
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.3879340Z npm error path /Users/runner/work/sidekick/sidekick/node_modules/canvas
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.3997860Z npm error command failed
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.4058970Z npm error command sh -c prebuild-install -r napi || node-gyp rebuild
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.4077800Z npm error prebuild-install warn install getaddrinfo ENOTFOUND github.com
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.4087270Z npm error gyp info it worked if it ends with ok
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.4128950Z npm error gyp info using node-gyp@9.4.1
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.4165710Z npm error gyp info using node@20.20.2 | darwin | arm64
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.4182280Z npm error gyp info find Python using Python version 3.14.5 found at "/opt/homebrew/opt/python@3.14/bin/python3.14"
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.4199700Z npm error gyp http GET https://nodejs.org/download/release/v20.20.2/node-v20.20.2-headers.tar.gz
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.4233660Z npm error gyp WARN install got an error, rolling back install
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.4238940Z npm error gyp ERR! configure error 
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.4260740Z npm error gyp ERR! stack Error: This is most likely not a problem with node-gyp or the package itself and
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.4276680Z npm error gyp ERR! stack is related to network connectivity. In most cases you are behind a proxy or have bad 
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.4289410Z npm error gyp ERR! stack network settings.
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.4298890Z npm error gyp ERR! stack     at go (/Users/runner/work/sidekick/sidekick/node_modules/node-gyp/lib/install.js:249:21)
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.4309790Z npm error gyp ERR! stack     at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.4312340Z npm error gyp ERR! stack     at async install (/Users/runner/work/sidekick/sidekick/node_modules/node-gyp/lib/install.js:68:18)
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.4313980Z npm error gyp ERR! System Darwin 24.6.0
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.4318840Z npm error gyp ERR! command "/Users/runner/hostedtoolcache/node/20.20.2/arm64/bin/node" "/Users/runner/work/sidekick/sidekick/node_modules/.bin/node-gyp" "rebuild"
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.4321640Z npm error gyp ERR! cwd /Users/runner/work/sidekick/sidekick/node_modules/canvas
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.4332700Z npm error gyp ERR! node -v v20.20.2
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.4335040Z npm error gyp ERR! node-gyp -v v9.4.1
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.4335560Z npm error gyp ERR! not ok
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.4336480Z npm error A complete log of this run can be found in: /Users/runner/.npm/_logs/2026-05-31T23_12_09_017Z-debug-0.log
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.4383270Z ##[error]Process completed with exit code 1.
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.4537650Z Post job cleanup.
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.5897090Z [command]/opt/homebrew/bin/git version
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.5976300Z git version 2.54.0
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.6297600Z Copying '/Users/runner/.gitconfig' to '/Users/runner/work/_temp/776f82ca-d468-4ab7-a7d2-45e41a8c9022/.gitconfig'
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.6299720Z Temporarily overriding HOME='/Users/runner/work/_temp/776f82ca-d468-4ab7-a7d2-45e41a8c9022' before making global git config changes
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.6302240Z Adding repository directory to the temporary git global config as a safe directory
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.6303610Z [command]/opt/homebrew/bin/git config --global --add safe.directory /Users/runner/work/sidekick/sidekick
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.6308670Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp core\.sshCommand
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.6311620Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'core\.sshCommand' && git config --local --unset-all 'core.sshCommand' || :"
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.7454940Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp http\.https\:\/\/github\.com\/\.extraheader
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.7531090Z http.https://github.com/.extraheader
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.7546430Z [command]/opt/homebrew/bin/git config --local --unset-all http.https://github.com/.extraheader
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.7632340Z [command]/opt/homebrew/bin/git submodule foreach --recursive sh -c "git config --local --name-only --get-regexp 'http\.https\:\/\/github\.com\/\.extraheader' && git config --local --unset-all 'http.https://github.com/.extraheader' || :"
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.8886860Z [command]/opt/homebrew/bin/git config --local --name-only --get-regexp ^includeIf\.gitdir:
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.8958570Z [command]/opt/homebrew/bin/git submodule foreach --recursive git config --local --show-origin --name-only --get-regexp remote.origin.url
+build-mac	UNKNOWN STEP	2026-05-31T23:12:19.9990240Z Cleaning up orphan processes
+build-mac	UNKNOWN STEP	2026-05-31T23:12:20.4737590Z ##[warning]Node.js 20 actions are deprecated. The following actions are running on Node.js 20 and may not work as expected: actions/checkout@v4, actions/setup-node@v4. Actions will be forced to run with Node.js 24 by default starting June 16th, 2026. Node.js 20 will be removed from the runner on September 16th, 2026. Please check if updated versions of these actions are available that support Node.js 24. To opt into Node.js 24 now, set the FORCE_JAVASCRIPT_ACTIONS_TO_NODE24=true environment variable on the runner or in your workflow file. Once Node.js 24 becomes the default, you can temporarily opt out by setting ACTIONS_ALLOW_USE_UNSECURE_NODE_VERSION=true. For more information see: https://github.blog/changelog/2025-09-19-deprecation-of-node-20-on-github-actions-runners/

@@ -5,9 +5,9 @@
 
 ## VIDEO PITCH SCRIPT (film this, max 2 min)
 
-"Hi, I'm Emir, I'm 15 years old and I built Sidekick — an AI that watches your screen and catches online threats before they cost you.
+"Hi, I'm Emir, I'm 15 years old and I built Etaros — an AI that watches your screen and catches online threats before they cost you.
 
-Every day, Dutch internet users lose money to phishing pages, fake subscriptions, and online scams. Most people don't notice until it's too late. Sidekick runs quietly in the background, scans your screen in real time, and alerts you the moment something dangerous or suspicious appears.
+Every day, Dutch internet users lose money to phishing pages, fake subscriptions, and online scams. Most people don't notice until it's too late. Etaros runs quietly in the background, scans your screen in real time, and alerts you the moment something dangerous or suspicious appears.
 
 It's already working. It catches phishing URLs, fake login pages, hidden subscription traps, and financial scams — in real time, on any website or app you use.
 
@@ -22,21 +22,21 @@ Thank you."
 ## QUESTIONNAIRE ANSWERS
 
 ### What is your project about?
-Sidekick is a desktop application for Mac and Windows that uses AI to monitor a user's screen in real time and detect online threats — including phishing pages, fake login screens, subscription traps, hidden fees, and financial scams — before the user becomes a victim.
+Etaros is a desktop application for Mac and Windows that uses AI to monitor a user's screen in real time and detect online threats — including phishing pages, fake login screens, subscription traps, hidden fees, and financial scams — before the user becomes a victim.
 
-The application runs silently in the background and surfaces short, specific warnings when something dangerous or suspicious appears on screen. Unlike traditional antivirus software that blocks known threats, Sidekick understands context: it can detect a convincing fake PayPal page, a dark-pattern subscription flow, or a romance scam in progress.
+The application runs silently in the background and surfaces short, specific warnings when something dangerous or suspicious appears on screen. Unlike traditional antivirus software that blocks known threats, Etaros understands context: it can detect a convincing fake PayPal page, a dark-pattern subscription flow, or a romance scam in progress.
 
 A free tier is available to all users, ensuring that basic online protection is accessible regardless of income.
 
 ### What problem does it solve?
 Online scams, phishing attacks, and deceptive digital practices cause billions of euros in damage each year to Dutch consumers. The Dutch government's own Fraudehelpdesk reports tens of thousands of reports annually, with the actual number far higher.
 
-Existing solutions are reactive: they block known malicious URLs after the fact. Sidekick is proactive: it watches what the user is actually seeing and warns them in real time, in plain language, with specific actionable advice.
+Existing solutions are reactive: they block known malicious URLs after the fact. Etaros is proactive: it watches what the user is actually seeing and warns them in real time, in plain language, with specific actionable advice.
 
 Most vulnerable are elderly users, people unfamiliar with tech, and young people encountering their first financial decisions online. These groups currently have no accessible, real-time protection.
 
 ### What is your solution?
-Sidekick uses AI vision models to analyze screenshots of the user's screen at regular intervals. When it detects something suspicious, it surfaces a notification with:
+Etaros uses AI vision models to analyze screenshots of the user's screen at regular intervals. When it detects something suspicious, it surfaces a notification with:
 - What the threat is (specific, not vague)
 - Why it's dangerous
 - What the user should do
@@ -46,7 +46,7 @@ The application is available free for basic protection. A paid tier exists for a
 ### What makes it innovative?
 Current security tools operate at the network or browser level — they block URLs, scan downloads, or check email attachments. No existing tool watches the screen itself and understands what the user is actually looking at in real time.
 
-Sidekick is the first consumer application to combine:
+Etaros is the first consumer application to combine:
 1. Real-time screen analysis using vision AI
 2. Plain-language, contextual warnings (not just "threat detected")
 3. Cross-application protection (works on any app, browser, or window)
@@ -56,9 +56,9 @@ Sidekick is the first consumer application to combine:
 Every Dutch internet user is a potential beneficiary. The most direct impact:
 - Reduction in successful phishing attacks
 - Prevention of financial loss from scam subscriptions and fake payment pages
-- Increased digital literacy through in-context education (Sidekick explains *why* something is dangerous)
+- Increased digital literacy through in-context education (Etaros explains *why* something is dangerous)
 
-By making real-time AI protection free and accessible, Sidekick democratizes a type of security that currently only exists in expensive enterprise solutions.
+By making real-time AI protection free and accessible, Etaros democratizes a type of security that currently only exists in expensive enterprise solutions.
 
 ### How will you share results and knowledge?
 - Monthly public blog posts on detection accuracy, new threat patterns discovered, and product development
@@ -67,7 +67,7 @@ By making real-time AI protection free and accessible, Sidekick democratizes a t
 - Free tier remains free permanently for Dutch users
 
 ### What is your background / why you?
-I am a 15-year-old developer from the Netherlands. I built Sidekick independently — including the AI integration, Electron desktop application, account system, and cross-platform installers for Mac and Windows.
+I am a 15-year-old developer from the Netherlands. I built Etaros independently — including the AI integration, Electron desktop application, account system, and cross-platform installers for Mac and Windows.
 
 The application is already functional and available for download. I have direct experience with the problem: as a young person growing up online, I have encountered phishing attempts, fake subscription pages, and deceptive dark patterns regularly.
 

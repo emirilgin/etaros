@@ -1,4 +1,4 @@
-# Sidekick — Grant Plan (Geld ophalen)
+# Etaros — Grant Plan (Geld ophalen)
 *Jij doet het minimum. Ik schrijf de rest.*
 
 ---
@@ -77,7 +77,7 @@
 ## WBSO Aanvraag Tekst (copy-paste in rvo.nl)
 
 ### Projectnaam
-Sidekick — Real-time AI schermbewaking voor online veiligheid
+Etaros — Real-time AI schermbewaking voor online veiligheid
 
 ### Projectomschrijving (technisch)
 Ontwikkeling van een desktop-applicatie (macOS en Windows) die via computer vision en large language models in real-time de inhoud van het scherm analyseert om online dreigingen, phishing-aanvallen, verborgen abonnementskosten en financiële oplichting te detecteren en de gebruiker direct te waarschuwen.

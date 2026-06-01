@@ -572,7 +572,7 @@ function makeGroup(label) {
 // Render a complete AI message (for history restore)
 function appendAiGroup(text) {
   showFeed();
-  const el = makeGroup('Sidekick');
+  const el = makeGroup('Etaros');
   const msgDiv = document.createElement('div');
   msgDiv.className = 'chat-msg';
   msgDiv.innerHTML = md(text);
@@ -583,7 +583,7 @@ function appendAiGroup(text) {
 // ─── Render: streaming ────────────────────────────────────────────────────────
 function createStreamEl() {
   showFeed();
-  const el = makeGroup('Sidekick');
+  const el = makeGroup('Etaros');
   const msgDiv = document.createElement('div');
   msgDiv.className = 'chat-msg';
   msgDiv.innerHTML = '<div class="chat-body"></div><span class="stream-cursor"></span>';
@@ -614,7 +614,7 @@ function renderAnalysis(data) {
   showFeed();
   maybeTimeDivider();
   const items = Array.isArray(data.items) ? data.items : [];
-  const group = makeGroup('Sidekick noticed');
+  const group = makeGroup('Etaros noticed');
   const wrap  = document.createElement('div');
   wrap.className = 'cards-wrap';
 
@@ -742,7 +742,7 @@ window.sk.on('update-status', ({ status, version, url }) => {
   if (!updateBanner) return;
   if (status === 'available') {
     _updateUrl = url || 'https://github.com/emirilgin/sidekick/releases/latest';
-    updateMsg.textContent = `◆ Sidekick v${version} is available`;
+    updateMsg.textContent = `◆ Etaros v${version} is available`;
     if (updateBtn) updateBtn.textContent = 'Download →';
     updateBanner.style.display = 'flex';
   }
@@ -832,7 +832,7 @@ memNoteInput?.addEventListener('keydown', e => {
 });
 
 memClearBtn?.addEventListener('click', () => {
-  showConfirm('Clear all memory? Sidekick will forget everything it knows about you.', async () => {
+  showConfirm('Clear all memory? Etaros will forget everything it knows about you.', async () => {
     await window.sk.clearMemory();
     openMemory();
     showToast('Memory cleared', 'ok');
@@ -1240,7 +1240,7 @@ function renderSearch() {
     }).join('')}` : `
     <div class="srch-empty">
       Search restaurants, deals, flights, health — anything.<br>
-      <span style="font-size:11.5px">Pick a category or just type — Sidekick routes<br>your query to the best sites automatically.</span>
+      <span style="font-size:11.5px">Pick a category or just type — Etaros routes<br>your query to the best sites automatically.</span>
     </div>`;
 
   body.innerHTML = `
@@ -1450,7 +1450,7 @@ document.getElementById('pm-help-btn')?.addEventListener('click', () => {
 });
 document.getElementById('pm-logout-btn')?.addEventListener('click', () => {
   document.getElementById('profile-menu').classList.remove('open');
-  showConfirm('Log out of Sidekick?', async () => {
+  showConfirm('Log out of Etaros?', async () => {
     showToast('Logged out', 'info');
     await window.sk.logout();
   });
@@ -1638,7 +1638,7 @@ document.getElementById('plan-max-action')?.addEventListener('click', () => open
 // sp-advanced-btn removed (advanced settings now inline in settings scroll)
 document.getElementById('sp-help-btn2')?.addEventListener('click', () => window.sk.openUrl('mailto:sidekickhelp@gmail.com'));
 document.getElementById('sp-logout-btn')?.addEventListener('click', () => {
-  showConfirm('Log out of Sidekick?', async () => {
+  showConfirm('Log out of Etaros?', async () => {
     showToast('Logged out', 'info');
     await window.sk.logout();
     settingsPage?.classList.remove('open');
@@ -1867,7 +1867,7 @@ function showOnboarding() {
       setTimeout(() => {
         const m = document.getElementById('msg');
         if (m && !m.value) {
-          appendAiGroup(`Hey ${name}! I'm Sidekick — your second pair of eyes. I'm watching your screen and I'll flag anything worth knowing: scams, bad deals, subscriptions you didn't notice. Just ask me anything or let me work quietly in the background. What are you up to today?`);
+          appendAiGroup(`Hey ${name}! I'm Etaros — your second pair of eyes. I'm watching your screen and I'll flag anything worth knowing: scams, bad deals, subscriptions you didn't notice. Just ask me anything or let me work quietly in the background. What are you up to today?`);
         }
       }, 600);
     }

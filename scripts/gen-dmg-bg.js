@@ -120,13 +120,13 @@ g.font = '500 26px -apple-system,"SF Pro Text",Helvetica,sans-serif';
 g.fillStyle    = 'rgba(255,255,255,0.32)';
 g.textAlign    = 'center';
 g.textBaseline = 'middle';
-g.fillText('Sidekick',     APP_X, APP_Y + R + 36);
+g.fillText('Etaros',     APP_X, APP_Y + R + 36);
 g.fillText('Applications', APL_X, APL_Y + R + 36);
 
 // ── Bottom hint ───────────────────────────────────────────────────────────
 g.font = '300 22px -apple-system,Helvetica,sans-serif';
 g.fillStyle = 'rgba(255,255,255,0.16)';
-g.fillText('Drag Sidekick to Applications to install', W/2, H - 44);
+g.fillText('Drag Etaros to Applications to install', W/2, H - 44);
 
 document.title = 'DONE';
 })();

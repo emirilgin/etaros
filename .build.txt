@@ -1,0 +1,16 @@
+
+> sidekick@1.2.0 build:mac:arm
+> electron-builder --mac dmg --arm64 --publish never
+
+  • electron-builder  version=25.1.8 os=24.6.0
+  • loaded configuration  file=package.json ("build" field)
+  • author is missed in the package.json  appPackageFile=/Users/emiirrr/sidekick/package.json
+  • executing @electron/rebuild  electronVersion=33.4.11 arch=arm64 buildFromSource=false appDir=./
+  • installing native dependencies  arch=arm64
+  • preparing       moduleName=canvas arch=arm64
+  • finished        moduleName=canvas arch=arm64
+  • completed installing native dependencies
+  • packaging       platform=darwin arch=arm64 electron=33.4.11 appOutDir=dist/mac-arm64
+  • skipped macOS code signing  reason=identity explicitly is set to null
+  • building        target=DMG arch=arm64 file=dist/Sidekick-1.2.0-arm64.dmg
+  • building block map  blockMapFile=dist/Sidekick-1.2.0-arm64.dmg.blockmap

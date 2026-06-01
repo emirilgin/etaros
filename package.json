@@ -31,8 +31,8 @@
   },
   "build": {
     "appId": "com.emirilgin.sidekick",
-    "productName": "Sidekick",
-    "copyright": "Copyright © 2025 Sidekick",
+    "productName": "Etaros",
+    "copyright": "Copyright © 2025 Etaros",
     "files": [
       "main.js",
       "preload.js",
@@ -64,9 +64,9 @@
       "category": "public.app-category.productivity",
       "identity": null,
       "darkModeSupport": true,
-      "protocols": [{ "name": "Sidekick", "schemes": ["sidekick"] }],
+      "protocols": [{ "name": "Etaros", "schemes": ["sidekick"] }],
       "extendInfo": {
-        "NSScreenCaptureUsageDescription": "Sidekick needs screen access to give you real-time AI advice."
+        "NSScreenCaptureUsageDescription": "Etaros needs screen access to give you real-time AI advice."
       }
     },
     "win": {
@@ -81,7 +81,7 @@
       ]
     },
     "dmg": {
-      "title": "Sidekick",
+      "title": "Etaros",
       "background": "build/dmg-bg.png",
       "window": {
         "width": 540,

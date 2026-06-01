@@ -1,4 +1,4 @@
-// ─── Sidekick built-in API config ─────────────────────────────────────────────
+// ─── Etaros built-in API config ─────────────────────────────────────────────
 // Copy this file to app.config.js and fill in your key.
 // app.config.js is gitignored — it never gets committed to GitHub.
 // electron-builder bundles it into the app so users never need to

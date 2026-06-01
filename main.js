@@ -97,8 +97,8 @@ const FREE_TOTAL = 5;   // 5 free messages, then upgrade required
 // Pro = unlimited daily — no cap. Max = unlimited + better model.
 
 // ─── System prompts ───────────────────────────────────────────────────────────
-// ─── Scan prompt — single unified Sidekick mode ──────────────────────────────
-const SCAN_PROMPT_BASE = `You are Sidekick — an elite AI analyst with the combined expertise of a cybersecurity engineer, financial advisor, and personal coach. You see what's on the user's screen and give them information they couldn't easily get themselves.
+// ─── Scan prompt — single unified Etaros mode ──────────────────────────────
+const SCAN_PROMPT_BASE = `You are Etaros — an elite AI analyst with the combined expertise of a cybersecurity engineer, financial advisor, and personal coach. You see what's on the user's screen and give them information they couldn't easily get themselves.
 
 Your job is to be the smartest person in the room about whatever is on screen. Be specific, be useful, be real.
 
@@ -139,14 +139,14 @@ Respond ONLY as valid JSON:
 
 notify:true ONLY for active phishing/credential theft/financial scam. Return {"items":[],"summary":"","context":"general"} when nothing notable.
 
-NEVER flag Sidekick itself, its own UI, or its own privacy/screen-monitoring features. That is expected and consented behavior.`;
+NEVER flag Etaros itself, its own UI, or its own privacy/screen-monitoring features. That is expected and consented behavior.`;
 
 function getScanPrompt() {
   const city = String(store.get('city') ?? '').trim();
   return SCAN_PROMPT_BASE + (city ? `\n\nUser location: ${city}.` : '');
 }
 
-const CHAT_PROMPT_BASE = `You are Sidekick — the AI that sees what you see and knows what you need before you ask. You combine the knowledge of a cybersecurity expert, financial analyst, personal shopper, and life coach. You speak like a brilliant, trusted friend — direct, specific, occasionally witty, never vague or corporate.
+const CHAT_PROMPT_BASE = `You are Etaros — the AI that sees what you see and knows what you need before you ask. You combine the knowledge of a cybersecurity expert, financial analyst, personal shopper, and life coach. You speak like a brilliant, trusted friend — direct, specific, occasionally witty, never vague or corporate.
 
 WHAT MAKES YOU DIFFERENT:
 - You see the user's screen in real time. Use this. "I can see you're looking at X" beats generic advice.
@@ -564,7 +564,7 @@ function fireNotification(title, body) {
   lastNotifyTime = now;
   try {
     const n = new Notification({
-      title:    'Sidekick',
+      title:    'Etaros',
       subtitle: title,             // macOS: shows under title
       body:     String(body || '').slice(0, 160),
       silent:   false,             // plays system notification sound
@@ -634,7 +634,7 @@ async function captureScreen() {
       types: ['screen'], thumbnailSize: { width: 1920, height: 1080 },
     });
     if (!sources?.length) {
-      push('error', { message: 'Screen access denied. Go to System Settings → Privacy & Security → Screen Recording → enable Sidekick.' });
+      push('error', { message: 'Screen access denied. Go to System Settings → Privacy & Security → Screen Recording → enable Etaros.' });
       return null;
     }
     return sources[0].thumbnail;
@@ -1128,14 +1128,14 @@ function createTray() {
   }
 
   tray = new Tray(trayIcon);
-  tray.setToolTip('Sidekick');
+  tray.setToolTip('Etaros');
   tray.setContextMenu(Menu.buildFromTemplate([
-    { label: 'Show Sidekick',  click: () => { mainWindow?.show(); mainWindow?.focus(); } },
-    { label: 'Hide Sidekick',  click: () => mainWindow?.hide() },
+    { label: 'Show Etaros',  click: () => { mainWindow?.show(); mainWindow?.focus(); } },
+    { label: 'Hide Etaros',  click: () => mainWindow?.hide() },
     { type: 'separator' },
     { label: 'Settings',       click: openSettings },
     { type: 'separator' },
-    { label: 'Quit Sidekick',  click: () => { app.isQuitting = true; app.quit(); } },
+    { label: 'Quit Etaros',  click: () => { app.isQuitting = true; app.quit(); } },
   ]));
   tray.on('click', () => {
     if (!mainWindow) return;
@@ -1538,9 +1538,9 @@ function setupAutoUpdater() {
     let url;
     if (process.platform === 'darwin') {
       const arch = process.arch === 'arm64' ? '-arm64' : '';
-      url = `https://github.com/emirilgin/sidekick/releases/download/v${v}/Sidekick-${v}${arch}.dmg`;
+      url = `https://github.com/emirilgin/sidekick/releases/download/v${v}/Etaros-${v}${arch}.dmg`;
     } else {
-      url = `https://github.com/emirilgin/sidekick/releases/download/v${v}/Sidekick.Setup.${v}.exe`;
+      url = `https://github.com/emirilgin/sidekick/releases/download/v${v}/Etaros.Setup.${v}.exe`;
     }
     push('update-status', { status: 'available', version: v, url });
   });

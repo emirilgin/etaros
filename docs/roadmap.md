@@ -1,4 +1,4 @@
-# Sidekick — Roadmap to Rich
+# Etaros — Roadmap to Rich
 
 ## Month 1 — Ship & Validate
 **Do:**

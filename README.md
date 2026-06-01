@@ -1,8 +1,8 @@
 <div align="center">
 
-<img src="build/icon.png" width="90" height="90" alt="Sidekick" />
+<img src="build/icon.png" width="90" height="90" alt="Etaros" />
 
-# Sidekick
+# Etaros
 ### Your second pair of eyes.
 
 A desktop AI that watches your screen and flags scams, bad deals, phishing,
@@ -14,7 +14,7 @@ and subscription traps in real time — before they cost you.
 
 | Mac — Apple Silicon (M1/M2/M3/M4) | Mac — Intel (pre-2020) | Windows 10/11 |
 |:---:|:---:|:---:|
-| `Sidekick-*-arm64.dmg` | `Sidekick-*.dmg` | `Sidekick.Setup.*.exe` |
+| `Etaros-*-arm64.dmg` | `Etaros-*.dmg` | `Etaros.Setup.*.exe` |
 
 [![Version](https://img.shields.io/github/v/release/emirilgin/sidekick?style=flat-square&color=cf6e3c&label=latest)](https://github.com/emirilgin/sidekick/releases/latest)
 [![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows-lightgray?style=flat-square)](https://github.com/emirilgin/sidekick/releases/latest)
@@ -32,7 +32,7 @@ and subscription traps in real time — before they cost you.
 
 ## What it does
 
-Sidekick quietly scans your screen on an interval and surfaces short, specific
+Etaros quietly scans your screen on an interval and surfaces short, specific
 insights when something matters. One AI, five things it looks for:
 
 | | Looks for |

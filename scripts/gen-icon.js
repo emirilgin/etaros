@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Sidekick icon generator
+ * Etaros icon generator
  * Renders the app icon using Electron's offscreen canvas,
  * then creates .icns (macOS) from it using sips + iconutil.
  * Run once: npm run gen-icon
@@ -16,7 +16,7 @@ const ROOT  = path.join(__dirname, '..');
 const BUILD = path.join(ROOT, 'build');
 
 // ─── Icon HTML/Canvas ─────────────────────────────────────────────────────────
-// Renders a 1024×1024 Sidekick icon
+// Renders a 1024×1024 Etaros icon
 // Concept: geometric eye — "your second pair of eyes"
 // Structure: lens outline + iris ring + pupil, orange gradient on dark bg
 // Same design philosophy as Claude's logo: abstract, geometric, minimal

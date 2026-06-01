@@ -1,6 +1,6 @@
 # Changelog
 
-All notable changes to Sidekick are documented here.
+All notable changes to Etaros are documented here.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
 ## [1.2.0] — 2026-06-01

@@ -1,4 +1,4 @@
-# Sidekick — Full Financial Roadmap (Month 1-36)
+# Etaros — Full Financial Roadmap (Month 1-36)
 
 ---
 

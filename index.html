@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Sidekick</title>
+<title>Etaros</title>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
@@ -1355,7 +1355,7 @@ html,body{
     <svg viewBox="0 0 48 48" fill="none"><rect x="5" y="9" width="38" height="30" rx="3" stroke="currentColor" stroke-width="1.5"/><circle cx="16" cy="19" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M5 30l10-9 8 7 9-11 11 13" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg>
   </div>
   <div class="dz-text">Drop to analyze</div>
-  <div class="dz-sub">PNG, JPG, screenshot — Sidekick will scan it</div>
+  <div class="dz-sub">PNG, JPG, screenshot — Etaros will scan it</div>
 </div>
 
 <div id="shell">
@@ -1367,12 +1367,12 @@ html,body{
       <div class="tl-btn tl-min"   id="tl-min"   title="Minimize"></div>
       <div class="tl-btn tl-max"   id="tl-max"   title="Maximize"></div>
     </div>
-    <span id="tl-title">Sidekick</span>
+    <span id="tl-title">Etaros</span>
     <div class="tl-actions">
       <div id="hdr-dot"></div>
       <button class="tl-btn-action" id="scan-btn" title="Scan screen now">⟳ Scan</button>
       <button class="tl-btn-action" id="clear-btn" title="Clear chat">⌫ Clear</button>
-      <button class="tl-btn-action close" id="hide-btn" title="Hide Sidekick">
+      <button class="tl-btn-action close" id="hide-btn" title="Hide Etaros">
         <svg viewBox="0 0 10 10" fill="none" style="width:9px;height:9px"><path d="M1 1l8 8M9 1L1 9" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg>
       </button>
     </div>
@@ -1407,7 +1407,7 @@ html,body{
             </defs>
           </svg>
         </div>
-        <span class="sb-name">Sidekick</span><span id="app-version" style="font-size:9px;color:var(--t4);margin-left:2px;font-weight:400;align-self:flex-end;padding-bottom:1px"></span>
+        <span class="sb-name">Etaros</span><span id="app-version" style="font-size:9px;color:var(--t4);margin-left:2px;font-weight:400;align-self:flex-end;padding-bottom:1px"></span>
         <span id="tier-badge"></span>
         <button class="sb-icon-btn" id="new-chat-btn" title="New conversation">
           <svg viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
@@ -1515,7 +1515,7 @@ html,body{
           <!-- Thinking indicator -->
           <div id="thinking">
             <div class="t-wrap">
-              <div class="t-label">Sidekick <span id="think-time" style="font-weight:400;color:var(--t4);font-size:11px;margin-left:3px"></span></div>
+              <div class="t-label">Etaros <span id="think-time" style="font-weight:400;color:var(--t4);font-size:11px;margin-left:3px"></span></div>
               <div class="t-dots"><span></span><span></span><span></span></div>
             </div>
           </div>
@@ -1537,10 +1537,10 @@ html,body{
             </div>
           </div>
           <div class="input-shell">
-            <textarea id="msg" rows="1" placeholder="Ask anything — Sidekick sees what you see…"></textarea>
+            <textarea id="msg" rows="1" placeholder="Ask anything — Etaros sees what you see…"></textarea>
             <div class="input-actions">
               <div class="input-actions-left">
-                <button id="attach-btn" title="Share an image with Sidekick to analyze" class="input-action-labeled">
+                <button id="attach-btn" title="Share an image with Etaros to analyze" class="input-action-labeled">
                   <svg viewBox="0 0 16 16" fill="none"><path d="M13.5 7.5L7 14C5.6 15.4 3.4 15.4 2 14C0.6 12.6 0.6 10.4 2 9L9.5 1.5C10.5 0.5 12 0.5 13 1.5C14 2.5 14 4 13 5L5.5 12.5C5 13 4.2 13 3.8 12.5C3.3 12 3.3 11.2 3.8 10.7L10 4.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
                   <span class="action-label">Attach</span>
                 </button>
@@ -1591,7 +1591,7 @@ html,body{
           </div>
         </div>
         <div class="links-list" id="links-list">
-          <div class="links-empty">Paste any product, subscription, or service URL.<br>Sidekick finds cheaper or better alternatives.</div>
+          <div class="links-empty">Paste any product, subscription, or service URL.<br>Etaros finds cheaper or better alternatives.</div>
         </div>
       </div>
 
@@ -1605,7 +1605,7 @@ html,body{
               autocomplete="off" spellcheck="false">
             <button id="search-go-btn" title="Search (Enter)">↗</button>
           </div>
-          <button id="search-ai-btn">◆ Ask Sidekick AI &nbsp;<span style="opacity:.45;font-size:10px">Shift+Enter</span></button>
+          <button id="search-ai-btn">◆ Ask Etaros AI &nbsp;<span style="opacity:.45;font-size:10px">Shift+Enter</span></button>
         </div>
         <!-- Webview toolbar (shown when search result is open) -->
         <div id="search-webview-bar">
@@ -1632,7 +1632,7 @@ html,body{
   <div class="mem-panel">
     <div class="mem-hdr">
       <span style="font-size:16px;color:var(--orange-t)">◉</span>
-      <h2>What Sidekick knows about you</h2>
+      <h2>What Etaros knows about you</h2>
       <button class="mem-close" id="mem-close-btn">
         <svg viewBox="0 0 12 12" fill="none" style="width:11px;height:11px"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
       </button>
@@ -1666,7 +1666,7 @@ html,body{
           <button class="mem-game-skip" id="mem-game-skip">Skip →</button>
           <button class="mem-game-save" id="mem-game-save">Save &amp; next →</button>
         </div>
-        <div class="mem-game-hint">Every answer helps Sidekick know you better.</div>
+        <div class="mem-game-hint">Every answer helps Etaros know you better.</div>
       </div>
     </div>
   </div>
@@ -1676,7 +1676,7 @@ html,body{
 <div id="onboarding-overlay" style="display:none;position:fixed;inset:0;z-index:8000;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;padding:32px 20px">
   <div id="onboarding-inner" style="width:100%;max-width:340px;display:flex;flex-direction:column;gap:0">
     <div style="font-size:28px;text-align:center;margin-bottom:8px">⚡</div>
-    <h2 style="text-align:center;font-size:18px;font-weight:700;color:var(--t1);margin-bottom:4px" id="onb-title">Hey, I'm Sidekick.</h2>
+    <h2 style="text-align:center;font-size:18px;font-weight:700;color:var(--t1);margin-bottom:4px" id="onb-title">Hey, I'm Etaros.</h2>
     <p style="text-align:center;font-size:13px;color:var(--t3);margin-bottom:28px;line-height:1.6" id="onb-sub">Your second pair of eyes. Before we start — what should I call you?</p>
     <input id="onb-name" type="text" placeholder="Your name…" autocomplete="given-name" style="width:100%;padding:13px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-s);color:var(--t1);font-family:inherit;font-size:15px;outline:none;margin-bottom:12px;transition:border-color .15s;-webkit-app-region:no-drag"/>
     <button id="onb-btn" style="width:100%;padding:13px;background:var(--orange);border:none;border-radius:var(--r-s);color:#fff;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;transition:opacity .15s;-webkit-app-region:no-drag">Let's go →</button>
@@ -1860,7 +1860,7 @@ html,body{
         <div class="adv-toggle-row">
           <div class="adv-toggle-info">
             <span class="adv-toggle-label">Launch at login</span>
-            <span class="adv-toggle-sub">Start Sidekick on system login</span>
+            <span class="adv-toggle-sub">Start Etaros on system login</span>
           </div>
           <label class="adv-sw"><input type="checkbox" id="adv-login"/><span class="adv-sw-t"></span></label>
         </div>
@@ -1882,7 +1882,7 @@ html,body{
         <div class="adv-prov-grid" id="adv-prov-grid">
           <div class="adv-pcard active" data-prov="builtin">
             <span class="adv-pcard-icon">◉</span>
-            <span class="adv-pcard-name">Sidekick</span>
+            <span class="adv-pcard-name">Etaros</span>
             <span class="adv-pcard-sub">Default</span>
           </div>
           <div class="adv-pcard" data-prov="ollama">
@@ -1974,7 +1974,7 @@ html,body{
       </svg>
     </div>
     </div>
-    <h2 class="auth-title">Sidekick</h2>
+    <h2 class="auth-title">Etaros</h2>
     <p class="auth-sub" id="auth-subtitle">Sign in to your account</p>
 
     <div id="auth-error" class="auth-error" style="display:none"></div>
