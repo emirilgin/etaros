@@ -23,9 +23,11 @@
     "electron-updater": "^6.8.3"
   },
   "devDependencies": {
-    "canvas": "^3.2.3",
     "electron": "^33.4.0",
     "electron-builder": "^25.1.8"
+  },
+  "optionalDependencies": {
+    "canvas": "^3.2.3"
   },
   "build": {
     "appId": "com.emirilgin.sidekick",
