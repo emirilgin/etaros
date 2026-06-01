@@ -28,9 +28,18 @@ jobs:
         run: |
           cat > app.config.js << 'CONF'
           module.exports = {
-            geminiKey:    '${{ secrets.GEMINI_KEY }}',
-            anthropicKey: '${{ secrets.ANTHROPIC_KEY }}',
+            geminiKey:       '${{ secrets.GEMINI_KEY }}',
+            anthropicKey:    '${{ secrets.ANTHROPIC_KEY }}',
             ownerMode: false,
+            sentryDsn:       '${{ secrets.SENTRY_DSN }}',
+            supabaseUrl:     '${{ secrets.SUPABASE_URL }}',
+            supabaseAnonKey: '${{ secrets.SUPABASE_ANON_KEY }}',
+            licenseSecret:   '${{ secrets.LICENSE_SECRET }}',
+            testerCodes:     ${{ secrets.TESTER_CODES_JSON || '[]' }},
+            stripePlanLinks: {
+              pro: '${{ secrets.STRIPE_PRO_LINK }}',
+              max: '${{ secrets.STRIPE_MAX_LINK }}',
+            },
           };
           CONF
 
@@ -74,9 +83,18 @@ jobs:
         run: |
           cat > app.config.js << 'CONF'
           module.exports = {
-            geminiKey:    '${{ secrets.GEMINI_KEY }}',
-            anthropicKey: '${{ secrets.ANTHROPIC_KEY }}',
+            geminiKey:       '${{ secrets.GEMINI_KEY }}',
+            anthropicKey:    '${{ secrets.ANTHROPIC_KEY }}',
             ownerMode: false,
+            sentryDsn:       '${{ secrets.SENTRY_DSN }}',
+            supabaseUrl:     '${{ secrets.SUPABASE_URL }}',
+            supabaseAnonKey: '${{ secrets.SUPABASE_ANON_KEY }}',
+            licenseSecret:   '${{ secrets.LICENSE_SECRET }}',
+            testerCodes:     ${{ secrets.TESTER_CODES_JSON || '[]' }},
+            stripePlanLinks: {
+              pro: '${{ secrets.STRIPE_PRO_LINK }}',
+              max: '${{ secrets.STRIPE_MAX_LINK }}',
+            },
           };
           CONF
 
