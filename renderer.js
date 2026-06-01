@@ -700,6 +700,7 @@ window.sk.on('stream-start', () => {
   streamBuffer = '';
   streamEl = createStreamEl();
   hdrDot.classList.add('on');
+  document.getElementById('sb-mark')?.classList.add('spinning');
   thinking.style.display = 'none';
   thinkTime.textContent  = '';
 });
@@ -708,11 +709,13 @@ window.sk.on('stream-chunk', ({ content }) => appendChunk(content));
 
 window.sk.on('stream-done', (data) => {
   hdrDot.classList.remove('on');
+  document.getElementById('sb-mark')?.classList.remove('spinning');
   finalizeStream(data);
 });
 
 window.sk.on('stream-error', ({ message }) => {
   hdrDot.classList.remove('on');
+  document.getElementById('sb-mark')?.classList.remove('spinning');
   if (streamEl) { streamEl.remove(); streamEl = null; streamBuffer = ''; }
   appendError(message);
   showToast('Something went wrong', 'err', 3500);
@@ -756,6 +759,19 @@ window.sk.on('error',          ({ message })       => appendError(message));
 window.sk.on('upgrade-prompt', ({ tier, used, limit }) => {
   setTierDisplay(tier || 'free', used, limit);
   upgrade.style.display = 'block';
+  // Clear limit-reached message in the feed
+  showFeed();
+  const m = document.createElement('div');
+  m.className = 'limit-msg';
+  m.innerHTML = `
+    <div class="limit-msg-icon">⚡</div>
+    <div class="limit-msg-title">You've used all ${limit || 5} free messages this month</div>
+    <div class="limit-msg-sub">Upgrade to Pro for unlimited messages, AI Compare, and priority scanning.</div>
+    <button class="limit-msg-btn" id="limit-upgrade-btn">Upgrade to Pro — €9/mo</button>`;
+  feed.insertBefore(m, thinking);
+  m.querySelector('#limit-upgrade-btn')?.addEventListener('click', () => openSettingsPage('plan'));
+  scrollBottom(true);
+  showToast('Free limit reached', 'err', 3500);
 });
 window.sk.on('mode-changed',   ({ mode })           => applyMode(mode));
 window.sk.on('settings-updated', ()                  => init());
@@ -1172,10 +1188,11 @@ document.getElementById('search-web-browser')?.addEventListener('click', async (
   if (url) window.sk.openUrl(url);
 });
 document.getElementById('search-web-ai')?.addEventListener('click', async () => {
-  // Pro/Max only feature
+  // Pro/Max only feature — free users get redirected to the upgrade page
   const lic = await window.sk.checkLicense();
   if (lic.tier === 'free') {
-    showToast('AI Compare is Pro & Max only — upgrade in Settings', 'info');
+    showToast('AI Compare is a Pro feature', 'info', 2200);
+    openSettingsPage('plan');
     return;
   }
   const url = await window.sk.getSearchUrl() || _lastSearchUrl;
@@ -1356,6 +1373,20 @@ async function init() {
     if (el && v) el.textContent = `v${v}`;
   }).catch(() => {});
 }
+
+// ─── Theme ────────────────────────────────────────────────────────────────────
+function applyTheme(theme) {
+  const t = theme || 'light';
+  if (t === 'light') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('etaros_theme', t);
+  document.querySelectorAll('.theme-opt').forEach(b =>
+    b.classList.toggle('active', b.dataset.theme === t));
+}
+// Apply saved theme immediately on load
+applyTheme(localStorage.getItem('etaros_theme') || 'light');
+document.querySelectorAll('.theme-opt').forEach(btn =>
+  btn.addEventListener('click', () => applyTheme(btn.dataset.theme)));
 
 // ─── Custom confirm dialog ────────────────────────────────────────────────────
 function showConfirm(message, onOk) {
