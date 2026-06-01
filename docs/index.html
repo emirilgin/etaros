@@ -3,11 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Sidekick — Your Digital Bodyguard</title>
-  <meta name="description" content="Sidekick watches your screen silently and catches scams, subscription traps, and bad deals before they cost you. AI-powered privacy guard for Mac & Windows." />
-  <meta property="og:title" content="Sidekick — Your Digital Bodyguard" />
-  <meta property="og:description" content="Catches scams, phishing, and subscription traps before they cost you. Always watching. Never uploading." />
-  <meta property="og:image" content="https://emirilgin.github.io/sidekick/og.png" />
+  <title>Etaros — Your AI companion that watches your screen</title>
+  <meta name="description" content="Etaros catches scams, phishing pages, and hidden subscription traps in real time — before they cost you. AI that watches your screen silently." />
+  <meta property="og:title" content="Etaros — Your AI companion" />
+  <meta property="og:description" content="Real-time AI that catches scams, phishing, and bad deals before they cost you." />
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
@@ -15,333 +14,167 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg:       #0c0c0e;
-      --surface:  #141418;
-      --border:   #222228;
-      --text:     #f0f0f2;
-      --muted:    #888;
-      --accent:   #8b7fd4;
-      --accent2:  #5ab47a;
-      --danger:   #e05c5c;
-      --glow:     rgba(139,127,212,0.18);
+      --bg:      #f8f9fb;
+      --surface: #ffffff;
+      --border:  #e8eaed;
+      --text:    #1a1a2e;
+      --muted:   #6b7280;
+      --accent:  #3a8ab4;
+      --accent2: #1a5a7a;
+      --green:   #2d8a5a;
     }
 
     html { scroll-behavior: smooth; }
+    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); }
 
-    body {
-      font-family: 'Inter', system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.6;
-      overflow-x: hidden;
-    }
-
-    /* ── NAV ── */
+    /* NAV */
     nav {
-      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
-      display: flex; align-items: center; justify-content: space-between;
-      padding: 0 32px;
-      height: 60px;
-      background: rgba(12,12,14,0.85);
-      backdrop-filter: blur(12px);
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(248,249,251,0.92); backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 0 32px; height: 60px;
     }
-    .nav-logo { font-weight: 800; font-size: 18px; letter-spacing: -0.5px; }
+    .nav-logo { font-size: 18px; font-weight: 800; color: var(--text); }
     .nav-logo span { color: var(--accent); }
-    .nav-links { display: flex; gap: 24px; align-items: center; }
-    .nav-links a { color: var(--muted); text-decoration: none; font-size: 14px; font-weight: 500; transition: color .2s; }
+    .nav-links { display: flex; align-items: center; gap: 24px; }
+    .nav-links a { font-size: 14px; color: var(--muted); text-decoration: none; }
     .nav-links a:hover { color: var(--text); }
     .btn-nav {
-      background: var(--accent); color: #fff; border: none; border-radius: 8px;
-      padding: 8px 18px; font-size: 13px; font-weight: 600; cursor: pointer;
-      text-decoration: none; transition: opacity .2s;
-    }
-    .btn-nav:hover { opacity: 0.85; }
-
-    /* ── HERO ── */
-    .hero {
-      min-height: 100vh;
-      display: flex; flex-direction: column; align-items: center; justify-content: center;
-      text-align: center;
-      padding: 100px 24px 80px;
-      position: relative;
-    }
-    .hero::before {
-      content: '';
-      position: absolute; top: 0; left: 50%; transform: translateX(-50%);
-      width: 800px; height: 500px;
-      background: radial-gradient(ellipse at center, rgba(139,127,212,0.12) 0%, transparent 70%);
-      pointer-events: none;
+      padding: 8px 18px; border-radius: 20px;
+      background: var(--accent); color: #fff;
+      font-size: 14px; font-weight: 600; text-decoration: none;
     }
 
+    /* SECTIONS */
+    section { padding: 80px 24px; }
+    .container { max-width: 960px; margin: 0 auto; }
+    .section-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--accent); margin-bottom: 12px; }
+    h2 { font-size: clamp(28px,4vw,40px); font-weight: 800; letter-spacing: -.02em; line-height: 1.15; margin-bottom: 16px; }
+    .section-sub { font-size: 17px; color: var(--muted); max-width: 560px; line-height: 1.65; }
+
+    /* HERO */
+    .hero { text-align: center; padding-top: 96px; padding-bottom: 80px; }
     .hero-badge {
       display: inline-flex; align-items: center; gap: 8px;
-      background: rgba(139,127,212,0.12); border: 1px solid rgba(139,127,212,0.3);
-      border-radius: 100px; padding: 6px 16px;
-      font-size: 13px; font-weight: 600; color: var(--accent);
-      margin-bottom: 28px;
+      padding: 6px 14px; border-radius: 20px;
+      background: rgba(58,138,180,0.1); border: 1px solid rgba(58,138,180,0.2);
+      font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 28px;
     }
-    .hero-badge .dot { width: 6px; height: 6px; background: var(--accent2); border-radius: 50%; animation: pulse 2s infinite; }
-    @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
-
-    h1 {
-      font-size: clamp(42px, 7vw, 80px);
-      font-weight: 900;
-      letter-spacing: -2px;
-      line-height: 1.05;
-      margin-bottom: 24px;
-      max-width: 800px;
-    }
+    .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
+    @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.4} }
+    h1 { font-size: clamp(36px,6vw,64px); font-weight: 900; letter-spacing: -.03em; line-height: 1.05; margin-bottom: 20px; }
     h1 em { font-style: normal; color: var(--accent); }
-
-    .hero-sub {
-      font-size: clamp(16px, 2.5vw, 20px);
-      color: var(--muted);
-      max-width: 560px;
-      margin-bottom: 44px;
-      line-height: 1.7;
-    }
-
-    .hero-cta { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; margin-bottom: 60px; }
-
+    .hero-sub { font-size: clamp(16px,2vw,20px); color: var(--muted); max-width: 600px; margin: 0 auto 36px; line-height: 1.6; }
+    .hero-cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
     .btn-primary {
-      display: inline-flex; align-items: center; gap: 8px;
+      padding: 14px 28px; border-radius: 12px;
       background: var(--accent); color: #fff;
-      border: none; border-radius: 12px;
-      padding: 16px 32px; font-size: 16px; font-weight: 700;
-      text-decoration: none; cursor: pointer;
-      transition: transform .15s, box-shadow .15s;
-      box-shadow: 0 0 32px rgba(139,127,212,0.35);
+      font-size: 16px; font-weight: 700; text-decoration: none;
+      transition: opacity .2s, transform .15s;
     }
-    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 4px 48px rgba(139,127,212,0.5); }
-
+    .btn-primary:hover { opacity: .88; transform: translateY(-1px); }
     .btn-secondary {
-      display: inline-flex; align-items: center; gap: 8px;
-      background: transparent; color: var(--text);
-      border: 1px solid var(--border); border-radius: 12px;
-      padding: 16px 32px; font-size: 16px; font-weight: 600;
-      text-decoration: none; cursor: pointer;
-      transition: border-color .2s, background .2s;
-    }
-    .btn-secondary:hover { border-color: var(--accent); background: rgba(139,127,212,0.06); }
-
-    .hero-note { font-size: 13px; color: var(--muted); }
-    .hero-note strong { color: var(--text); }
-
-    /* ── MOCKUP ── */
-    .mockup-wrap {
-      width: 100%; max-width: 420px;
-      margin: 0 auto;
-      position: relative;
-    }
-    .mockup {
-      background: var(--surface);
-      border: 1px solid var(--border);
-      border-radius: 16px;
-      overflow: hidden;
-      box-shadow: 0 24px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.04);
-    }
-    .mockup-bar {
-      display: flex; align-items: center; gap: 8px;
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--border);
-      background: rgba(255,255,255,0.02);
-    }
-    .dot-r { width:10px;height:10px;border-radius:50%;background:#e05c5c; }
-    .dot-y { width:10px;height:10px;border-radius:50%;background:#e0b45c; }
-    .dot-g { width:10px;height:10px;border-radius:50%;background:var(--accent2); }
-    .mockup-title { font-size: 12px; color: var(--muted); margin-left: 8px; font-weight: 500; }
-    .mockup-body { padding: 20px 16px; }
-
-    .mode-strip {
-      display: flex; gap: 6px; margin-bottom: 16px;
-    }
-    .mode-pill {
-      flex: 1; text-align: center; padding: 7px 4px;
-      border-radius: 8px; font-size: 11px; font-weight: 600;
-      border: 1px solid var(--border); color: var(--muted);
-      cursor: default;
-    }
-    .mode-pill.active {
-      background: rgba(139,127,212,0.15);
-      border-color: rgba(139,127,212,0.4);
-      color: var(--accent);
-    }
-
-    .scan-result {
-      border-radius: 10px; padding: 14px;
-      margin-bottom: 10px;
-      font-size: 13px; line-height: 1.5;
-    }
-    .scan-result.risk {
-      background: rgba(224,92,92,0.08);
-      border: 1px solid rgba(224,92,92,0.25);
-    }
-    .scan-result.ok {
-      background: rgba(90,180,122,0.08);
-      border: 1px solid rgba(90,180,122,0.25);
-    }
-    .scan-result .tag {
-      display: inline-block; font-size: 10px; font-weight: 700;
-      padding: 2px 8px; border-radius: 4px; margin-bottom: 6px;
-      text-transform: uppercase; letter-spacing: 0.5px;
-    }
-    .scan-result.risk .tag { background: rgba(224,92,92,0.2); color: #e05c5c; }
-    .scan-result.ok  .tag { background: rgba(90,180,122,0.2); color: var(--accent2); }
-
-    .stats-strip {
-      display: flex; gap: 8px; margin-top: 14px;
-    }
-    .stat-chip {
-      flex: 1; background: rgba(255,255,255,0.03); border: 1px solid var(--border);
-      border-radius: 8px; padding: 8px; text-align: center;
-    }
-    .stat-chip .n { font-size: 18px; font-weight: 800; color: var(--text); }
-    .stat-chip .l { font-size: 10px; color: var(--muted); }
-
-    /* ── SECTIONS ── */
-    section { padding: 96px 24px; }
-
-    .container { max-width: 1080px; margin: 0 auto; }
-
-    .section-label {
-      display: inline-block;
-      font-size: 12px; font-weight: 700; letter-spacing: 1.5px;
-      text-transform: uppercase; color: var(--accent);
-      margin-bottom: 16px;
-    }
-
-    h2 {
-      font-size: clamp(28px, 4vw, 48px);
-      font-weight: 800; letter-spacing: -1px; line-height: 1.15;
-      margin-bottom: 16px;
-    }
-
-    .section-sub { font-size: 18px; color: var(--muted); max-width: 560px; margin-bottom: 56px; }
-
-    /* ── HOW IT WORKS ── */
-    .steps {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 24px;
-    }
-    .step {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 16px; padding: 28px;
+      padding: 14px 28px; border-radius: 12px;
+      background: transparent; border: 1px solid var(--border); color: var(--text);
+      font-size: 16px; font-weight: 600; text-decoration: none;
       transition: border-color .2s;
     }
-    .step:hover { border-color: rgba(139,127,212,0.4); }
-    .step-num {
-      width: 36px; height: 36px; border-radius: 10px;
-      background: rgba(139,127,212,0.15); border: 1px solid rgba(139,127,212,0.3);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 14px; font-weight: 800; color: var(--accent);
-      margin-bottom: 16px;
+    .btn-secondary:hover { border-color: var(--accent); }
+    .hero-note { font-size: 13px; color: var(--muted); }
+
+    /* MOCKUP */
+    .mockup-wrap { max-width: 480px; margin: 48px auto 0; }
+    .mockup {
+      background: #1a1a2a; border-radius: 16px;
+      border: 1px solid rgba(255,255,255,0.08);
+      box-shadow: 0 24px 64px rgba(0,0,0,0.18);
+      overflow: hidden;
     }
-    .step h3 { font-size: 16px; font-weight: 700; margin-bottom: 8px; }
+    .mockup-bar {
+      display: flex; align-items: center; gap: 6px;
+      padding: 12px 16px; background: rgba(255,255,255,0.04);
+      border-bottom: 1px solid rgba(255,255,255,0.06);
+    }
+    .dot-r { width:10px;height:10px;border-radius:50%;background:#ff5f57; }
+    .dot-y { width:10px;height:10px;border-radius:50%;background:#ffbd2e; }
+    .dot-g { width:10px;height:10px;border-radius:50%;background:#28ca41; }
+    .mockup-title { margin-left: 8px; font-size: 12px; color: rgba(255,255,255,0.4); }
+    .mockup-body { padding: 20px; display: flex; flex-direction: column; gap: 12px; }
+    .scan-result {
+      padding: 14px 16px; border-radius: 10px; font-size: 13px; line-height: 1.5;
+    }
+    .scan-result.risk { background: rgba(224,92,92,0.12); border: 1px solid rgba(224,92,92,0.2); color: #f5c0c0; }
+    .scan-result.ok   { background: rgba(45,138,90,0.12); border: 1px solid rgba(45,138,90,0.2);  color: #a0e4b8; }
+    .scan-result .tag { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; opacity: .7; }
+
+    /* HOW IT WORKS */
+    .steps { display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap: 32px; margin-top: 48px; }
+    .step { padding: 28px; background: var(--surface); border-radius: 16px; border: 1px solid var(--border); }
+    .step-num { width: 36px; height: 36px; border-radius: 10px; background: rgba(58,138,180,0.12); color: var(--accent); font-size: 16px; font-weight: 800; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; }
+    .step h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
     .step p { font-size: 14px; color: var(--muted); line-height: 1.6; }
 
-    /* ── MODES ── */
-    .modes-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-    }
-    .mode-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 16px; padding: 24px;
-      transition: transform .2s, border-color .2s;
-    }
-    .mode-card:hover { transform: translateY(-3px); }
-    .mode-icon { font-size: 28px; margin-bottom: 12px; }
-    .mode-card h3 { font-size: 15px; font-weight: 700; margin-bottom: 4px; }
-    .mode-card p { font-size: 13px; color: var(--muted); line-height: 1.5; }
-    .mode-badge {
-      display: inline-block; font-size: 10px; font-weight: 700;
-      padding: 2px 8px; border-radius: 4px; margin-top: 10px;
-      text-transform: uppercase; letter-spacing: 0.5px;
-    }
-    .badge-free { background: rgba(90,180,122,0.15); color: var(--accent2); }
-    .badge-pro  { background: rgba(139,127,212,0.15); color: var(--accent); }
+    /* FEATURES */
+    .features { display: grid; grid-template-columns: repeat(auto-fit,minmax(260px,1fr)); gap: 24px; margin-top: 48px; }
+    .feature { padding: 28px; background: var(--surface); border-radius: 16px; border: 1px solid var(--border); }
+    .feature-icon { font-size: 28px; margin-bottom: 16px; }
+    .feature h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
+    .feature p { font-size: 14px; color: var(--muted); line-height: 1.6; }
 
-    /* ── FEATURES ── */
-    .features-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 16px;
-    }
-    .feat {
-      display: flex; gap: 16px; align-items: flex-start;
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 14px; padding: 20px;
-    }
-    .feat-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
-    .feat h3 { font-size: 14px; font-weight: 700; margin-bottom: 4px; }
-    .feat p { font-size: 13px; color: var(--muted); line-height: 1.5; }
-
-    /* ── PRICING ── */
-    .pricing-grid {
-      display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 24px; max-width: 860px; margin: 0 auto;
-    }
-    .price-card {
-      background: var(--surface); border: 1px solid var(--border);
-      border-radius: 20px; padding: 32px;
-      position: relative; transition: transform .2s;
-    }
-    .price-card:hover { transform: translateY(-4px); }
-    .price-card.featured {
-      border-color: rgba(139,127,212,0.5);
-      box-shadow: 0 0 48px rgba(139,127,212,0.12);
-    }
-    .price-tag {
-      position: absolute; top: -12px; left: 50%; transform: translateX(-50%);
-      background: var(--accent); color: #fff;
-      font-size: 11px; font-weight: 700; letter-spacing: 1px;
-      padding: 4px 14px; border-radius: 100px; text-transform: uppercase;
-      white-space: nowrap;
-    }
+    /* PRICING */
+    .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); gap: 20px; margin-top: 48px; }
+    .price-card { padding: 28px; background: var(--surface); border-radius: 16px; border: 1px solid var(--border); position: relative; display: flex; flex-direction: column; }
+    .price-card.featured { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
+    .price-tag { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #fff; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: .05em; white-space: nowrap; }
     .price-name { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
     .price-amount { font-size: 48px; font-weight: 900; letter-spacing: -2px; line-height: 1; }
     .price-amount sup { font-size: 22px; vertical-align: super; letter-spacing: 0; }
     .price-period { font-size: 14px; color: var(--muted); margin: 4px 0 24px; }
-    .price-features { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; }
+    .price-features { list-style: none; display: flex; flex-direction: column; gap: 10px; margin-bottom: 28px; flex: 1; }
     .price-features li { font-size: 14px; display: flex; gap: 10px; align-items: flex-start; }
-    .price-features li::before { content: '✓'; color: var(--accent2); font-weight: 700; flex-shrink: 0; }
+    .price-features li::before { content: '✓'; color: var(--green); font-weight: 700; flex-shrink: 0; }
     .price-features li.muted::before { content: '–'; color: var(--muted); }
     .price-features li.muted { color: var(--muted); }
-    .btn-price {
-      display: block; width: 100%; text-align: center;
-      padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 700;
-      text-decoration: none; transition: opacity .2s, transform .15s;
-    }
+    .btn-price { display: block; width: 100%; text-align: center; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 700; text-decoration: none; transition: opacity .2s, transform .15s; }
     .btn-price:hover { opacity: 0.85; transform: translateY(-1px); }
     .btn-price.filled { background: var(--accent); color: #fff; }
     .btn-price.outline { background: transparent; border: 1px solid var(--border); color: var(--text); }
     .btn-price.outline:hover { border-color: var(--accent); }
 
-    /* ── WAITLIST ── */
-    .waitlist-section {
-      background: linear-gradient(135deg, rgba(139,127,212,0.08) 0%, rgba(90,180,122,0.05) 100%);
-      border-top: 1px solid var(--border);
-    }
-    .waitlist-inner { max-width: 560px; margin: 0 auto; text-align: center; }
+    /* WAITLIST */
+    .waitlist-section { background: linear-gradient(135deg, rgba(58,138,180,0.06) 0%, rgba(26,90,122,0.04) 100%); border-top: 1px solid var(--border); }
+    .waitlist-inner { max-width: 520px; margin: 0 auto; text-align: center; }
     .waitlist-inner h2 { margin-bottom: 12px; }
-    .waitlist-inner p { color: var(--muted); margin-bottom: 36px; }
-
-    /* ── FOOTER ── */
-    footer {
-      border-top: 1px solid var(--border);
-      padding: 40px 24px;
-      text-align: center;
-      color: var(--muted); font-size: 13px;
+    .waitlist-inner p { color: var(--muted); margin-bottom: 32px; font-size: 16px; line-height: 1.6; }
+    .waitlist-form { display: flex; gap: 10px; max-width: 420px; margin: 0 auto; }
+    .waitlist-form input {
+      flex: 1; padding: 14px 16px; border-radius: 12px;
+      border: 1px solid var(--border); background: var(--surface);
+      font-size: 15px; font-family: inherit; outline: none; color: var(--text);
+      transition: border-color .15s;
     }
+    .waitlist-form input:focus { border-color: var(--accent); }
+    .waitlist-form button {
+      padding: 14px 20px; border-radius: 12px; border: none;
+      background: var(--accent); color: #fff;
+      font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer;
+      white-space: nowrap; transition: opacity .2s;
+    }
+    .waitlist-form button:hover { opacity: .88; }
+    .waitlist-success { display: none; color: var(--green); font-weight: 600; font-size: 15px; margin-top: 12px; }
+
+    /* FOOTER */
+    footer { border-top: 1px solid var(--border); padding: 40px 24px; text-align: center; color: var(--muted); font-size: 13px; }
     footer a { color: var(--muted); text-decoration: none; }
     footer a:hover { color: var(--text); }
 
-    /* ── RESPONSIVE ── */
     @media (max-width: 640px) {
       nav { padding: 0 16px; }
       .nav-links { gap: 12px; }
       section { padding: 64px 16px; }
       .hero-cta { flex-direction: column; align-items: center; }
+      .waitlist-form { flex-direction: column; }
     }
   </style>
 </head>
@@ -349,12 +182,11 @@
 
 <!-- NAV -->
 <nav>
-  <div class="nav-logo">Side<span>kick</span></div>
+  <div class="nav-logo">Eta<span>ros.</span></div>
   <div class="nav-links">
     <a href="#how">How it works</a>
-    <a href="#modes">Modes</a>
     <a href="#pricing">Pricing</a>
-    <a class="btn-nav" href="#pricing">Get Sidekick</a>
+    <a class="btn-nav" href="#waitlist">Get early access</a>
   </div>
 </nav>
 
@@ -365,54 +197,38 @@
     Beta — Mac &amp; Windows
   </div>
 
-  <h1>Your <em>digital<br>bodyguard.</em></h1>
+  <h1>Your AI companion.<br><em>Always watching.</em></h1>
 
   <p class="hero-sub">
-    Sidekick watches your screen silently and catches scams, subscription traps,
-    and bad deals — before they cost you money.
+    Etaros runs silently in the background and catches scams, phishing pages,
+    and hidden subscription traps — in real time, before they cost you.
   </p>
 
   <div class="hero-cta">
-    <a href="#pricing" class="btn-primary">
-      ⬇ Download for free
+    <a href="#waitlist" class="btn-primary">
+      Get early access →
     </a>
     <a href="#how" class="btn-secondary">
       See how it works
     </a>
   </div>
 
-  <p class="hero-note"><strong>100% private.</strong> Nothing leaves your device. No account required.</p>
+  <p class="hero-note">From the Netherlands 🇳🇱 · Built by a 15-year-old founder</p>
 
-  <!-- MOCKUP -->
-  <div class="mockup-wrap" style="margin-top:56px;">
+  <div class="mockup-wrap">
     <div class="mockup">
       <div class="mockup-bar">
         <div class="dot-r"></div><div class="dot-y"></div><div class="dot-g"></div>
-        <span class="mockup-title">Sidekick — Ghost Mode</span>
+        <span class="mockup-title">Etaros — watching your screen</span>
       </div>
       <div class="mockup-body">
-        <div class="mode-strip">
-          <div class="mode-pill active">👻 Ghost</div>
-          <div class="mode-pill">🔐 Vault</div>
-          <div class="mode-pill">🌿 Bloom</div>
-          <div class="mode-pill">⚡ Flow</div>
-          <div class="mode-pill">🦅 Hawk</div>
-        </div>
-
         <div class="scan-result risk">
           <div class="tag">⚠ Risk detected</div>
-          <div>This "free trial" auto-charges €49/mo after 7 days. Cancel window: 24 hours. Buried in Terms §14.</div>
+          This "free trial" auto-charges €49/mo after 7 days. Cancel window: 24 hours. Buried in Terms §14.
         </div>
-
         <div class="scan-result ok">
           <div class="tag">✓ All clear</div>
-          <div>No hidden charges, no dark patterns detected. Safe to proceed.</div>
-        </div>
-
-        <div class="stats-strip">
-          <div class="stat-chip"><div class="n">47</div><div class="l">threats caught</div></div>
-          <div class="stat-chip"><div class="n" style="color:#5ab47a">€312</div><div class="l">saved</div></div>
-          <div class="stat-chip"><div class="n">203</div><div class="l">scans</div></div>
+          No hidden charges or dark patterns detected. Safe to proceed.
         </div>
       </div>
     </div>
@@ -423,151 +239,85 @@
 <section id="how" style="background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
   <div class="container">
     <div class="section-label">How it works</div>
-    <h2>Always watching.<br>Never uploading.</h2>
-    <p class="section-sub">Three steps. Zero effort from you.</p>
+    <h2>Three steps.<br>Zero effort.</h2>
+    <p class="section-sub">Install once. Etaros does the rest.</p>
 
     <div class="steps">
       <div class="step">
         <div class="step-num">1</div>
-        <h3>Install &amp; forget</h3>
-        <p>Sidekick lives in your menu bar. No setup, no accounts, no config. Opens when you open your Mac or PC.</p>
+        <h3>Install &amp; sign in</h3>
+        <p>Etaros lives in your menu bar. Create a free account, open the app, and you're protected.</p>
       </div>
       <div class="step">
         <div class="step-num">2</div>
         <h3>It scans silently</h3>
-        <p>Every 90 seconds, Sidekick analyzes what's on your screen using local AI. No screenshots ever leave your device.</p>
+        <p>Every 30 seconds, Etaros analyzes what's on your screen using AI. Screenshots are processed and discarded — never stored.</p>
       </div>
       <div class="step">
         <div class="step-num">3</div>
-        <h3>Alerts when it matters</h3>
-        <p>You get a clear warning with context: what the threat is, how much it could cost, and what to do.</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- MODES -->
-<section id="modes">
-  <div class="container">
-    <div class="section-label">Focus Modes</div>
-    <h2>One app.<br>Five bodyguards.</h2>
-    <p class="section-sub">Switch modes based on what you're doing. Each one is tuned to catch different threats.</p>
-
-    <div class="modes-grid">
-      <div class="mode-card" style="border-color: rgba(139,127,212,0.3);">
-        <div class="mode-icon">👻</div>
-        <h3>Ghost</h3>
-        <p>Privacy &amp; security. Catches phishing, tracking, dark patterns, and data harvesting.</p>
-        <span class="mode-badge badge-free">Free</span>
-      </div>
-      <div class="mode-card">
-        <div class="mode-icon">🔐</div>
-        <h3>Vault</h3>
-        <p>Wealth guard. Spots hidden fees, auto-renewals, and bad financial decisions before you click.</p>
-        <span class="mode-badge badge-pro">Pro</span>
-      </div>
-      <div class="mode-card">
-        <div class="mode-icon">🌿</div>
-        <h3>Bloom</h3>
-        <p>Health coach. Flags misinformation, dangerous advice, and manipulative wellness content.</p>
-        <span class="mode-badge badge-pro">Pro</span>
-      </div>
-      <div class="mode-card">
-        <div class="mode-icon">⚡</div>
-        <h3>Flow</h3>
-        <p>Focus guard. Detects distracting patterns and addictive design keeping you off-track.</p>
-        <span class="mode-badge badge-pro">Pro</span>
-      </div>
-      <div class="mode-card">
-        <div class="mode-icon">🦅</div>
-        <h3>Hawk</h3>
-        <p>Deal hunter. Finds better prices, catches FOMO tactics, and spots inflated "sale" prices.</p>
-        <span class="mode-badge badge-pro">Pro</span>
+        <h3>You get warned</h3>
+        <p>When something suspicious appears — a phishing page, a hidden fee, a scam — Etaros tells you exactly what it is and what to do.</p>
       </div>
     </div>
   </div>
 </section>
 
 <!-- FEATURES -->
-<section style="background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
+<section id="features">
   <div class="container">
-    <div class="section-label">Why Sidekick</div>
-    <h2>Built different.</h2>
-    <p class="section-sub">Not another browser extension. Not a VPN. A real-time AI layer on everything you see.</p>
+    <div class="section-label">What it catches</div>
+    <h2>Everything designed<br>to cost you money.</h2>
+    <p class="section-sub">Etaros spots the threats that feel normal until they don't.</p>
 
-    <div class="features-grid">
-      <div class="feat">
-        <div class="feat-icon">🔒</div>
-        <div>
-          <h3>100% on-device</h3>
-          <p>Your screen never leaves your machine. AI runs locally or through your own API key.</p>
-        </div>
+    <div class="features">
+      <div class="feature">
+        <div class="feature-icon">🎣</div>
+        <h3>Phishing pages</h3>
+        <p>Fake PayPal, fake bank logins, lookalike domains. Etaros names the threat specifically — not just "this might be dangerous."</p>
       </div>
-      <div class="feat">
-        <div class="feat-icon">⚡</div>
-        <div>
-          <h3>Works everywhere</h3>
-          <p>Sees every app, every browser, every PDF. No extension needed. If you can see it, Sidekick can scan it.</p>
-        </div>
+      <div class="feature">
+        <div class="feature-icon">💳</div>
+        <h3>Hidden subscriptions</h3>
+        <p>Free trials that auto-charge. Pre-ticked boxes. Cancellation windows buried in Terms §14. Caught before you click confirm.</p>
       </div>
-      <div class="feat">
-        <div class="feat-icon">🧠</div>
-        <div>
-          <h3>Powered by Gemini AI</h3>
-          <p>Uses Google's latest models. Understands context, not just keywords. Catches what rule-based tools miss.</p>
-        </div>
+      <div class="feature">
+        <div class="feature-icon">💸</div>
+        <h3>Bad deals</h3>
+        <p>Inflated "original" prices, fake discounts, overpriced alternatives. Etaros finds the real price so you don't overpay.</p>
       </div>
-      <div class="feat">
-        <div class="feat-icon">💸</div>
-        <div>
-          <h3>Pays for itself</h3>
-          <p>One caught subscription trap covers a year of Pro. Most users save €200+ in the first month.</p>
-        </div>
-      </div>
-      <div class="feat">
-        <div class="feat-icon">🪶</div>
-        <div>
-          <h3>Featherweight</h3>
-          <p>Uses under 80MB RAM. Battery impact is negligible. You won't notice it's running — until it saves you.</p>
-        </div>
-      </div>
-      <div class="feat">
-        <div class="feat-icon">🌍</div>
-        <div>
-          <h3>Mac &amp; Windows</h3>
-          <p>Native app. Built with Electron. Runs on Apple Silicon, Intel, and all Windows 10/11 machines.</p>
-        </div>
+      <div class="feature">
+        <div class="feature-icon">🛡️</div>
+        <h3>Financial scams</h3>
+        <p>Investment fraud, romance scams, fake tech support. Real-time detection before any money moves.</p>
       </div>
     </div>
   </div>
 </section>
 
 <!-- PRICING -->
-<section id="pricing">
+<section id="pricing" style="background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
   <div class="container" style="text-align:center;">
     <div class="section-label">Pricing</div>
-    <h2>Start free.<br>Upgrade when it pays off.</h2>
-    <p class="section-sub" style="margin: 0 auto 56px;">One caught scam covers a year of Pro. No risk.</p>
+    <h2>Simple, honest pricing.</h2>
+    <p class="section-sub" style="margin: 0 auto 48px;">One caught scam covers months of Pro. No risk.</p>
 
     <div class="pricing-grid">
 
-      <!-- FREE -->
       <div class="price-card">
         <div class="price-name">Free</div>
         <div class="price-amount">€0</div>
         <div class="price-period">forever</div>
         <ul class="price-features">
-          <li>Ghost mode (privacy &amp; scam guard)</li>
-          <li>15 AI scans per day</li>
+          <li>Real-time screen scanning</li>
+          <li>5 AI messages / month</li>
           <li>Threat alerts</li>
-          <li class="muted">Vault, Bloom, Flow, Hawk modes</li>
-          <li class="muted">Unlimited scans</li>
-          <li class="muted">Priority AI model</li>
+          <li class="muted">Unlimited messages</li>
+          <li class="muted">AI Compare (find alternatives)</li>
+          <li class="muted">Claude AI model</li>
         </ul>
         <a href="https://github.com/emirilgin/sidekick/releases/latest" class="btn-price outline">Download free</a>
       </div>
 
-      <!-- PRO -->
       <div class="price-card featured">
         <div class="price-tag">Most popular</div>
         <div class="price-name">Pro</div>
@@ -575,61 +325,46 @@
         <div class="price-period">per month · cancel anytime</div>
         <ul class="price-features">
           <li>Everything in Free</li>
-          <li>All 5 focus modes</li>
-          <li>Unlimited scans</li>
-          <li>Vault wealth guard</li>
-          <li>Bloom health coach</li>
-          <li>Flow &amp; Hawk modes</li>
+          <li>Unlimited messages</li>
+          <li>AI Compare — find better deals</li>
+          <li>Priority scanning</li>
+          <li>Email support</li>
         </ul>
-        <a href="https://buy.stripe.com/fZu5kEgrI7766ct9cE14405" class="btn-price filled">Get Pro — €9/mo</a>
+        <a href="#waitlist" class="btn-price filled">Join waitlist → Pro</a>
       </div>
 
-      <!-- MAX -->
       <div class="price-card">
         <div class="price-name">Max</div>
-        <div class="price-amount"><sup>€</sup>39</div>
+        <div class="price-amount"><sup>€</sup>19</div>
         <div class="price-period">per month</div>
         <ul class="price-features">
           <li>Everything in Pro</li>
-          <li>Claude Sonnet AI (smarter)</li>
-          <li>Priority response speed</li>
-          <li>Early access to new modes</li>
-          <li>Direct support</li>
+          <li>Claude AI — best model</li>
+          <li>Faster responses</li>
+          <li>Early access to new features</li>
+          <li>Priority support</li>
         </ul>
-        <a href="https://buy.stripe.com/eVqaEY1wOajicAR88A14402" class="btn-price outline">Get Max — €39/mo</a>
+        <a href="#waitlist" class="btn-price outline">Join waitlist → Max</a>
       </div>
 
     </div>
-
-    <p style="margin-top: 32px; font-size: 13px; color: var(--muted);">
-      Yearly plans available — save 2 months. <a href="https://buy.stripe.com/cNi9AUcbsdvugR7agI14401" style="color: var(--accent); text-decoration: none;">Pro yearly €96 →</a>
-    </p>
   </div>
 </section>
 
-<!-- WAITLIST / CTA -->
-<section class="waitlist-section">
+<!-- WAITLIST -->
+<section id="waitlist" class="waitlist-section">
   <div class="container">
     <div class="waitlist-inner">
-      <div class="section-label">Stay in the loop</div>
-      <h2>Early access &amp; updates</h2>
-      <p>Join the list. Get notified on new modes, features, and launch discounts.</p>
+      <div class="section-label">Early access</div>
+      <h2>Be first in line.</h2>
+      <p>Etaros is in beta. Join the waitlist for early access, launch discounts, and updates from the founder.</p>
 
-      <!-- Tally embed — replace YOUR_TALLY_ID with real form ID -->
-      <iframe
-        data-tally-src="https://tally.so/embed/YOUR_TALLY_ID?alignLeft=0&hideTitle=1&transparentBackground=1&dynamicHeight=1"
-        loading="lazy"
-        width="100%"
-        height="120"
-        frameborder="0"
-        marginheight="0"
-        marginwidth="0"
-        title="Waitlist"
-        style="border-radius: 12px;"
-      ></iframe>
-      <script>var d=document,w="https://tally.so/widgets/embed.js",v=function(){"undefined"!=typeof Tally?Tally.loadEmbeds():d.querySelectorAll("iframe[data-tally-src]:not([src])").forEach((function(e){e.src=e.dataset.tallySrc}))};if("undefined"!=typeof Tally)v();else if(d.querySelector('script[src="'+w+'"]')==null){var s=d.createElement("script");s.src=w,s.onload=v,s.onerror=v,d.body.appendChild(s)}</script>
-
-      <p style="margin-top: 20px; font-size: 13px; color: var(--muted);">No spam. Unsubscribe anytime.</p>
+      <form class="waitlist-form" id="wl-form">
+        <input type="email" id="wl-email" placeholder="your@email.com" required autocomplete="email"/>
+        <button type="submit">Join waitlist →</button>
+      </form>
+      <div class="waitlist-success" id="wl-success">✓ You're on the list! We'll be in touch.</div>
+      <p style="margin-top: 16px; font-size: 13px; color: var(--muted);">No spam. Unsubscribe anytime.</p>
     </div>
   </div>
 </section>
@@ -639,10 +374,26 @@
   <p style="margin-bottom: 12px;">
     <a href="https://github.com/emirilgin/sidekick/releases/latest">Download</a> ·
     <a href="https://github.com/emirilgin/sidekick">GitHub</a> ·
-    <a href="mailto:hi@getsidekick.app">Contact</a>
+    <a href="mailto:sidekickhelp@gmail.com">Contact</a>
   </p>
-  <p>© 2026 Sidekick. Made in the Netherlands. 🇳🇱</p>
+  <p>© 2026 Etaros · Sidekick AI · Made in the Netherlands 🇳🇱</p>
 </footer>
+
+<script>
+// Waitlist form — saves to localStorage + shows success
+// Replace with Tally/Mailchimp when you have a real backend
+document.getElementById('wl-form').addEventListener('submit', function(e) {
+  e.preventDefault();
+  const email = document.getElementById('wl-email').value.trim();
+  if (!email) return;
+  // Store locally (replace with real API call)
+  const existing = JSON.parse(localStorage.getItem('etaros_waitlist') || '[]');
+  if (!existing.includes(email)) existing.push(email);
+  localStorage.setItem('etaros_waitlist', JSON.stringify(existing));
+  document.getElementById('wl-form').style.display = 'none';
+  document.getElementById('wl-success').style.display = 'block';
+});
+</script>
 
 </body>
 </html>
