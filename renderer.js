@@ -1258,7 +1258,7 @@ document.getElementById('pm-advanced-btn')?.addEventListener('click', () => {
 });
 document.getElementById('pm-help-btn')?.addEventListener('click', () => {
   document.getElementById('profile-menu').classList.remove('open');
-  // help link removed until support@emirilgin.com is active (post-KVK)
+  window.sk.openUrl('mailto:sidekickhelp@gmail.com');
 });
 document.getElementById('pm-logout-btn')?.addEventListener('click', () => {
   document.getElementById('profile-menu').classList.remove('open');
@@ -1448,7 +1448,7 @@ async function openUpgrade(planTier) {
 document.getElementById('plan-pro-action')?.addEventListener('click', () => openUpgrade('pro'));
 document.getElementById('plan-max-action')?.addEventListener('click', () => openUpgrade('max'));
 // sp-advanced-btn removed (advanced settings now inline in settings scroll)
-// sp-help-btn2 removed until support@emirilgin.com is active (post-KVK)
+document.getElementById('sp-help-btn2')?.addEventListener('click', () => window.sk.openUrl('mailto:sidekickhelp@gmail.com'));
 document.getElementById('sp-logout-btn')?.addEventListener('click', () => {
   showConfirm('Log out of Sidekick?', async () => {
     showToast('Logged out', 'info');
