@@ -30,99 +30,72 @@ html,body{width:1024px;height:1024px;overflow:hidden;background:transparent}</st
 (function () {
   const cv = document.getElementById('c');
   const g  = cv.getContext('2d');
-  const S  = 1024, cx = 512, cy = 512, R = 224;
+  const S  = 1024, cx = 512, cy = 512;
 
   // ── Clip to rounded square ──────────────────────────────────────────────────
   g.beginPath();
   g.roundRect(0, 0, S, S, 220);
   g.clip();
 
-  // ── Background: deep warm-dark gradient (top-left lighter, bottom-right darker) ──
+  // ── Background: light cream-white ──────────────────────────────────────────
   const bg = g.createLinearGradient(0, 0, S, S);
-  bg.addColorStop(0,   '#1c1410');
-  bg.addColorStop(0.5, '#120d09');
-  bg.addColorStop(1,   '#0a0705');
+  bg.addColorStop(0, '#f0f8ff');
+  bg.addColorStop(1, '#e4f0ff');
   g.fillStyle = bg;
   g.fillRect(0, 0, S, S);
 
-  // ── Soft radial warmth behind the symbol ────────────────────────────────────
-  const warmGlow = g.createRadialGradient(cx, cy + 20, 0, cx, cy + 20, 480);
-  warmGlow.addColorStop(0,   'rgba(210, 100, 45, 0.18)');
-  warmGlow.addColorStop(0.4, 'rgba(170,  70, 25, 0.07)');
-  warmGlow.addColorStop(1,   'rgba(0,     0,  0, 0)');
-  g.fillStyle = warmGlow;
+  // ── Subtle radial glow behind symbol ───────────────────────────────────────
+  const glow = g.createRadialGradient(cx, cy, 0, cx, cy, 420);
+  glow.addColorStop(0,   'rgba(58, 138, 180, 0.08)');
+  glow.addColorStop(1,   'rgba(58, 138, 180, 0)');
+  g.fillStyle = glow;
   g.fillRect(0, 0, S, S);
 
-  // ── Symbol: small elegant eye, lots of breathing room ──────────────────────
-  // Claude/Anthropic style: symbol occupies ~40% of icon, centered, clean
-  const EW = 185; // half-width of eye (eye spans 370px of 1024)
-  const EH = EW * 0.48;
+  // ── Color gradient: oceaan blauw ────────────────────────────────────────────
+  const gr = g.createLinearGradient(cx - 250, cy - 250, cx + 250, cy + 250);
+  gr.addColorStop(0, '#3a8ab4');
+  gr.addColorStop(1, '#1a5a7a');
 
-  function eyePath() {
+  const LW = 28; // line width — ultra thin relative to 1024px canvas
+
+  g.strokeStyle = gr;
+  g.lineWidth   = LW;
+  g.lineCap     = 'round';
+  g.shadowColor = 'rgba(26, 90, 122, 0.35)';
+  g.shadowBlur  = 24;
+
+  // ── Outer circle ────────────────────────────────────────────────────────────
+  const R = 310;
+  g.beginPath();
+  g.arc(cx, cy, R, 0, Math.PI * 2);
+  g.stroke();
+
+  // ── Wavy explosion rays inside circle ──────────────────────────────────────
+  const RAYS   = 12;
+  const INNER  = 80;
+
+  for (let i = 0; i < RAYS; i++) {
+    const a     = i * Math.PI * 2 / RAYS;
+    const outer = i % 2 === 0 ? 220 : 150;
+    const aMid  = a + 0.28;
+    const rMid  = 130;
+
     g.beginPath();
-    g.moveTo(cx - EW, cy);
-    g.bezierCurveTo(cx - EW * 0.5, cy - EH * 1.5,  cx + EW * 0.5, cy - EH * 1.5,  cx + EW, cy);
-    g.bezierCurveTo(cx + EW * 0.5, cy + EH * 1.5,  cx - EW * 0.5, cy + EH * 1.5,  cx - EW, cy);
-    g.closePath();
+    g.moveTo(cx + Math.cos(a) * INNER,  cy + Math.sin(a) * INNER);
+    g.quadraticCurveTo(
+      cx + Math.cos(aMid) * rMid, cy + Math.sin(aMid) * rMid,
+      cx + Math.cos(a)    * outer, cy + Math.sin(a)    * outer
+    );
+    g.stroke();
   }
 
-  // Color: clean warm gradient, single direction
-  const eyeGrad = g.createLinearGradient(cx - EW, cy - EH, cx + EW, cy + EH);
-  eyeGrad.addColorStop(0,   '#f5ae80');
-  eyeGrad.addColorStop(1,   '#c85020');
-
-  // Soft outer glow
-  eyePath();
-  g.strokeStyle = 'rgba(210, 95, 38, 0.14)';
-  g.lineWidth   = 54;
-  g.lineJoin    = 'round';
-  g.lineCap     = 'round';
-  g.stroke();
-
-  // Crisp main outline
-  eyePath();
-  g.strokeStyle = eyeGrad;
-  g.lineWidth   = 26;
-  g.lineJoin    = 'round';
-  g.lineCap     = 'round';
-  g.shadowColor = 'rgba(210, 90, 35, 0.5)';
-  g.shadowBlur  = 20;
-  g.stroke();
-  g.shadowBlur  = 0;
-
-  // ── Iris ring — proportional and airy ────────────────────────────────────────
-  const irisR = 68;
+  // ── Center dot ──────────────────────────────────────────────────────────────
   g.beginPath();
-  g.arc(cx, cy, irisR, 0, Math.PI * 2);
-  g.strokeStyle = eyeGrad;
-  g.lineWidth   = 18;
-  g.shadowColor = 'rgba(210, 90, 35, 0.4)';
-  g.shadowBlur  = 14;
-  g.stroke();
-  g.shadowBlur  = 0;
-
-  // ── Pupil — small, clean, glowing ────────────────────────────────────────────
-  const pupilR = 26;
-  const pupilGrad = g.createRadialGradient(cx - 7, cy - 8, 0, cx, cy, pupilR);
-  pupilGrad.addColorStop(0,   '#ffc898');
-  pupilGrad.addColorStop(0.5, '#de7030');
-  pupilGrad.addColorStop(1,   '#a83010');
-  g.beginPath();
-  g.arc(cx, cy, pupilR, 0, Math.PI * 2);
-  g.fillStyle   = pupilGrad;
-  g.shadowColor = 'rgba(220, 100, 40, 0.9)';
-  g.shadowBlur  = 18;
+  g.arc(cx, cy, 44, 0, Math.PI * 2);
+  g.fillStyle   = gr;
+  g.shadowBlur  = 40;
   g.fill();
   g.shadowBlur  = 0;
-
-  // ── Specular dot ─────────────────────────────────────────────────────────────
-  const spec = g.createRadialGradient(cx - 8, cy - 10, 0, cx - 8, cy - 10, 12);
-  spec.addColorStop(0,   'rgba(255,240,220,0.65)');
-  spec.addColorStop(1,   'rgba(255,240,220,0)');
-  g.beginPath();
-  g.arc(cx - 8, cy - 10, 12, 0, Math.PI * 2);
-  g.fillStyle = spec;
-  g.fill();
 
   document.title = 'ICON_DONE';
 })();
