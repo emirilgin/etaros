@@ -53,82 +53,74 @@ html,body{width:1024px;height:1024px;overflow:hidden;background:transparent}</st
   g.fillStyle = warmGlow;
   g.fillRect(0, 0, S, S);
 
-  // ── Helper: draw eye path ────────────────────────────────────────────────────
-  // Elegant almond eye, slightly taller than before, well-centered
-  function eyePath(scale, offY) {
-    const w = scale;        // half-width
-    const h = scale * 0.52; // half-height
-    const ey = cy + (offY || 0);
+  // ── Symbol: small elegant eye, lots of breathing room ──────────────────────
+  // Claude/Anthropic style: symbol occupies ~40% of icon, centered, clean
+  const EW = 185; // half-width of eye (eye spans 370px of 1024)
+  const EH = EW * 0.48;
+
+  function eyePath() {
     g.beginPath();
-    // left tip → top arc → right tip
-    g.moveTo(cx - w, ey);
-    g.bezierCurveTo(cx - w * 0.5, ey - h * 1.4,  cx + w * 0.5, ey - h * 1.4,  cx + w, ey);
-    // right tip → bottom arc → left tip
-    g.bezierCurveTo(cx + w * 0.5, ey + h * 1.4,  cx - w * 0.5, ey + h * 1.4,  cx - w, ey);
+    g.moveTo(cx - EW, cy);
+    g.bezierCurveTo(cx - EW * 0.5, cy - EH * 1.5,  cx + EW * 0.5, cy - EH * 1.5,  cx + EW, cy);
+    g.bezierCurveTo(cx + EW * 0.5, cy + EH * 1.5,  cx - EW * 0.5, cy + EH * 1.5,  cx - EW, cy);
     g.closePath();
   }
 
-  // ── Eye outline stroke — crisp with soft halo ───────────────────────────────
-  const eyeGrad = g.createLinearGradient(cx - 300, cy - 180, cx + 300, cy + 180);
-  eyeGrad.addColorStop(0,   '#f4a875');
-  eyeGrad.addColorStop(0.45,'#e07840');
-  eyeGrad.addColorStop(1,   '#c05020');
+  // Color: clean warm gradient, single direction
+  const eyeGrad = g.createLinearGradient(cx - EW, cy - EH, cx + EW, cy + EH);
+  eyeGrad.addColorStop(0,   '#f5ae80');
+  eyeGrad.addColorStop(1,   '#c85020');
 
-  // Outer soft halo pass
-  eyePath(295, 0);
-  g.strokeStyle = 'rgba(220, 100, 40, 0.18)';
-  g.lineWidth   = 72;
+  // Soft outer glow
+  eyePath();
+  g.strokeStyle = 'rgba(210, 95, 38, 0.14)';
+  g.lineWidth   = 54;
   g.lineJoin    = 'round';
   g.lineCap     = 'round';
   g.stroke();
 
-  // Main stroke
-  eyePath(295, 0);
+  // Crisp main outline
+  eyePath();
   g.strokeStyle = eyeGrad;
-  g.lineWidth   = 34;
+  g.lineWidth   = 26;
   g.lineJoin    = 'round';
   g.lineCap     = 'round';
-  g.shadowColor = 'rgba(220, 110, 50, 0.6)';
-  g.shadowBlur  = 28;
+  g.shadowColor = 'rgba(210, 90, 35, 0.5)';
+  g.shadowBlur  = 20;
   g.stroke();
   g.shadowBlur  = 0;
 
-  // ── Iris ring ────────────────────────────────────────────────────────────────
-  const irisR = 112;
-
-  const irisGrad = g.createLinearGradient(cx - irisR, cy - irisR, cx + irisR, cy + irisR);
-  irisGrad.addColorStop(0,   '#f2a868');
-  irisGrad.addColorStop(1,   '#c04818');
+  // ── Iris ring — proportional and airy ────────────────────────────────────────
+  const irisR = 68;
   g.beginPath();
   g.arc(cx, cy, irisR, 0, Math.PI * 2);
-  g.strokeStyle = irisGrad;
-  g.lineWidth   = 22;
-  g.shadowColor = 'rgba(210, 90, 30, 0.45)';
-  g.shadowBlur  = 18;
+  g.strokeStyle = eyeGrad;
+  g.lineWidth   = 18;
+  g.shadowColor = 'rgba(210, 90, 35, 0.4)';
+  g.shadowBlur  = 14;
   g.stroke();
   g.shadowBlur  = 0;
 
-  // ── Pupil — solid filled circle ──────────────────────────────────────────────
-  const pupilR = 46;
-  const pupilGrad = g.createRadialGradient(cx - 12, cy - 14, 0, cx, cy, pupilR);
-  pupilGrad.addColorStop(0,   '#fcc090');
-  pupilGrad.addColorStop(0.6, '#d86830');
-  pupilGrad.addColorStop(1,   '#a83208');
-
+  // ── Pupil — small, clean, glowing ────────────────────────────────────────────
+  const pupilR = 26;
+  const pupilGrad = g.createRadialGradient(cx - 7, cy - 8, 0, cx, cy, pupilR);
+  pupilGrad.addColorStop(0,   '#ffc898');
+  pupilGrad.addColorStop(0.5, '#de7030');
+  pupilGrad.addColorStop(1,   '#a83010');
   g.beginPath();
   g.arc(cx, cy, pupilR, 0, Math.PI * 2);
   g.fillStyle   = pupilGrad;
-  g.shadowColor = 'rgba(220, 100, 40, 0.8)';
-  g.shadowBlur  = 22;
+  g.shadowColor = 'rgba(220, 100, 40, 0.9)';
+  g.shadowBlur  = 18;
   g.fill();
   g.shadowBlur  = 0;
 
-  // ── Specular highlight ───────────────────────────────────────────────────────
-  const spec = g.createRadialGradient(cx - 14, cy - 16, 0, cx - 14, cy - 16, 22);
-  spec.addColorStop(0,   'rgba(255,235,210,0.6)');
-  spec.addColorStop(1,   'rgba(255,235,210,0)');
+  // ── Specular dot ─────────────────────────────────────────────────────────────
+  const spec = g.createRadialGradient(cx - 8, cy - 10, 0, cx - 8, cy - 10, 12);
+  spec.addColorStop(0,   'rgba(255,240,220,0.65)');
+  spec.addColorStop(1,   'rgba(255,240,220,0)');
   g.beginPath();
-  g.arc(cx - 14, cy - 16, 22, 0, Math.PI * 2);
+  g.arc(cx - 8, cy - 10, 12, 0, Math.PI * 2);
   g.fillStyle = spec;
   g.fill();
 
