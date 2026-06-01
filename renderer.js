@@ -1258,7 +1258,7 @@ document.getElementById('pm-advanced-btn')?.addEventListener('click', () => {
 });
 document.getElementById('pm-help-btn')?.addEventListener('click', () => {
   document.getElementById('profile-menu').classList.remove('open');
-  window.sk.openUrl('mailto:support@emirilgin.com');
+  // help link removed until support@emirilgin.com is active (post-KVK)
 });
 document.getElementById('pm-logout-btn')?.addEventListener('click', () => {
   document.getElementById('profile-menu').classList.remove('open');
@@ -1448,7 +1448,7 @@ async function openUpgrade(planTier) {
 document.getElementById('plan-pro-action')?.addEventListener('click', () => openUpgrade('pro'));
 document.getElementById('plan-max-action')?.addEventListener('click', () => openUpgrade('max'));
 // sp-advanced-btn removed (advanced settings now inline in settings scroll)
-document.getElementById('sp-help-btn2')?.addEventListener('click',    () => window.sk.openUrl('mailto:support@emirilgin.com'));
+// sp-help-btn2 removed until support@emirilgin.com is active (post-KVK)
 document.getElementById('sp-logout-btn')?.addEventListener('click', () => {
   showConfirm('Log out of Sidekick?', async () => {
     showToast('Logged out', 'info');
@@ -1610,6 +1610,15 @@ window.sk.on('logged-out', () => {
 
 // Tray "Settings" → open inline settings page
 window.sk.on('open-settings-inline', () => openSettingsPage('profile'));
+
+// Deep-link from browser (e.g. after password reset on the web page)
+window.sk.on('deep-link', ({ url }) => {
+  if (url?.includes('reset-done')) {
+    showToast('Password updated — log in with your new password', 'ok', 4000);
+    showAuthOverlay();
+    showAuthForm('login');
+  }
+});
 
 // tier-updated event from main (after Stripe payment)
 window.sk.on('tier-updated', ({ tier }) => {

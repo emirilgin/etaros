@@ -1239,7 +1239,8 @@ function registerIPC() {
 
   ipcMain.handle('auth-reset-password', async (_, { email }) => {
     if (!sbReady()) return { ok: false, error: 'Supabase not configured' };
-    const { ok, data } = await sbFetch('/auth/v1/recover', { email });
+    const resetPage = 'https://emirilgin.github.io/sidekick/reset-password.html';
+    const { ok, data } = await sbFetch('/auth/v1/recover', { email, redirectTo: resetPage });
     if (!ok) return { ok: false, error: data?.msg ?? 'Failed' };
     return { ok: true };
   });
@@ -1540,6 +1541,31 @@ app.whenReady().then(() => {
   });
   // Auto-scan off by default — user can enable in Settings
   if (store.get('autoScan') === true) startScanLoop();
+});
+
+// ─── Deep-link protocol: sidekick:// ──────────────────────────────────────────
+// Used by the password-reset page to bring the app forward after a reset.
+app.setAsDefaultProtocolClient('sidekick');
+
+app.on('open-url', (event, url) => {
+  event.preventDefault();
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  setWindowMode('fullscreen');
+  mainWindow.show();
+  mainWindow.focus();
+  // Tell renderer what deep-link fired (e.g. sidekick://reset-done)
+  push('deep-link', { url });
+});
+
+// Windows: second-instance deep-link
+app.on('second-instance', (_event, argv) => {
+  const url = argv.find(a => a.startsWith('sidekick://'));
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    setWindowMode('fullscreen');
+    mainWindow.show();
+    mainWindow.focus();
+    if (url) push('deep-link', { url });
+  }
 });
 
 app.on('window-all-closed', () => { /* stay alive in tray */ });

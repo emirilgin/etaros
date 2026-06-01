@@ -64,6 +64,7 @@
       "category": "public.app-category.productivity",
       "identity": null,
       "darkModeSupport": true,
+      "protocols": [{ "name": "Sidekick", "schemes": ["sidekick"] }],
       "extendInfo": {
         "NSScreenCaptureUsageDescription": "Sidekick needs screen access to give you real-time AI advice."
       }
