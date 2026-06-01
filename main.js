@@ -686,7 +686,7 @@ function historyForOllama(history) {
 // Uses Google's free API — no credit card needed, generous free daily quota.
 // This is what powers the app out of the box.
 // Fallback chain: on a 429/quota error we try the next model in order.
-const GEMINI_MODELS      = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-flash-lite-latest'];
+const GEMINI_MODELS      = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-2.5-flash-lite'];
 const GEMINI_CHEAP_MODEL = 'gemini-2.0-flash-lite'; // background tasks (fact extraction)
 
 async function streamGeminiWithModel(modelName, key, systemPrompt, history) {
