@@ -30,82 +30,107 @@ html,body{width:1024px;height:1024px;overflow:hidden;background:transparent}</st
 (function () {
   const cv = document.getElementById('c');
   const g  = cv.getContext('2d');
-  const S  = 1024, cx = 512, cy = 512;
+  const S  = 1024, cx = 512, cy = 512, R = 224;
 
-  /* ── Background: deep cool-dark rounded square ── */
-  const bgGrad = g.createLinearGradient(0, 0, S, S);
-  bgGrad.addColorStop(0, '#16151a');
-  bgGrad.addColorStop(1, '#0b0a0d');
+  // ── Clip to rounded square ──────────────────────────────────────────────────
   g.beginPath();
   g.roundRect(0, 0, S, S, 220);
-  g.fillStyle = bgGrad;
-  g.fill();
+  g.clip();
 
-  /* ── Subtle radial glow behind eye ── */
-  const glow = g.createRadialGradient(cx, cy, 60, cx, cy, 500);
-  glow.addColorStop(0,   'rgba(208,112,64,0.12)');
-  glow.addColorStop(0.5, 'rgba(208,112,64,0.04)');
-  glow.addColorStop(1,   'rgba(0,0,0,0)');
-  g.beginPath();
-  g.roundRect(0, 0, S, S, 220);
-  g.fillStyle = glow;
-  g.fill();
+  // ── Background: deep warm-dark gradient (top-left lighter, bottom-right darker) ──
+  const bg = g.createLinearGradient(0, 0, S, S);
+  bg.addColorStop(0,   '#1c1410');
+  bg.addColorStop(0.5, '#120d09');
+  bg.addColorStop(1,   '#0a0705');
+  g.fillStyle = bg;
+  g.fillRect(0, 0, S, S);
 
-  /* ── Orange gradient (used for all eye elements) ── */
-  const eyeGrad = g.createLinearGradient(100, 200, 924, 824);
-  eyeGrad.addColorStop(0, '#f0a070');
-  eyeGrad.addColorStop(1, '#c85828');
+  // ── Soft radial warmth behind the symbol ────────────────────────────────────
+  const warmGlow = g.createRadialGradient(cx, cy + 20, 0, cx, cy + 20, 480);
+  warmGlow.addColorStop(0,   'rgba(210, 100, 45, 0.18)');
+  warmGlow.addColorStop(0.4, 'rgba(170,  70, 25, 0.07)');
+  warmGlow.addColorStop(1,   'rgba(0,     0,  0, 0)');
+  g.fillStyle = warmGlow;
+  g.fillRect(0, 0, S, S);
 
-  /* ── Eye lens — almond/vesica shape ──
-     The eye curves from left-tip to right-tip via top-arc and bottom-arc.
-     Original SVG viewBox 32×32, scaled 32× and centred in 1024×1024.
-     SVG: M3 16 C3 16 8.5 7 16 7 C23.5 7 29 16 29 16
-             C29 16 23.5 25 16 25 C8.5 25 3 16 3 16
-     Scale=32, offset=(64,64):  every coord: canvas = svg*32 + 64
-  */
-  const sc = 32, ox = 64, oy = 64;
-  // helper: svg → canvas
-  const tx = v => v * sc + ox;
-  const ty = v => v * sc + oy;
+  // ── Helper: draw eye path ────────────────────────────────────────────────────
+  // Elegant almond eye, slightly taller than before, well-centered
+  function eyePath(scale, offY) {
+    const w = scale;        // half-width
+    const h = scale * 0.52; // half-height
+    const ey = cy + (offY || 0);
+    g.beginPath();
+    // left tip → top arc → right tip
+    g.moveTo(cx - w, ey);
+    g.bezierCurveTo(cx - w * 0.5, ey - h * 1.4,  cx + w * 0.5, ey - h * 1.4,  cx + w, ey);
+    // right tip → bottom arc → left tip
+    g.bezierCurveTo(cx + w * 0.5, ey + h * 1.4,  cx - w * 0.5, ey + h * 1.4,  cx - w, ey);
+    g.closePath();
+  }
 
-  g.beginPath();
-  g.moveTo(tx(3), ty(16));
-  g.bezierCurveTo(tx(3),   ty(16), tx(8.5), ty(7),  tx(16), ty(7));
-  g.bezierCurveTo(tx(23.5),ty(7),  tx(29),  ty(16), tx(29), ty(16));
-  g.bezierCurveTo(tx(29),  ty(16), tx(23.5),ty(25), tx(16), ty(25));
-  g.bezierCurveTo(tx(8.5), ty(25), tx(3),   ty(16), tx(3),  ty(16));
-  g.closePath();
-  g.strokeStyle = eyeGrad;
-  g.lineWidth   = 38;
+  // ── Eye outline stroke — crisp with soft halo ───────────────────────────────
+  const eyeGrad = g.createLinearGradient(cx - 300, cy - 180, cx + 300, cy + 180);
+  eyeGrad.addColorStop(0,   '#f4a875');
+  eyeGrad.addColorStop(0.45,'#e07840');
+  eyeGrad.addColorStop(1,   '#c05020');
+
+  // Outer soft halo pass
+  eyePath(295, 0);
+  g.strokeStyle = 'rgba(220, 100, 40, 0.18)';
+  g.lineWidth   = 72;
   g.lineJoin    = 'round';
   g.lineCap     = 'round';
-  g.shadowColor = 'rgba(200,88,40,0.55)';
-  g.shadowBlur  = 60;
   g.stroke();
-  g.shadowBlur  = 0;
 
-  /* ── Iris ring ── */
-  // SVG: circle cx=16 cy=16 r=5  → canvas: center=(tx(16),ty(16)), r=5*32=160
-  const icx = tx(16), icy = ty(16), ir = 5 * sc;
-  g.beginPath();
-  g.arc(icx, icy, ir, 0, Math.PI * 2);
+  // Main stroke
+  eyePath(295, 0);
   g.strokeStyle = eyeGrad;
-  g.lineWidth   = 32;
-  g.shadowColor = 'rgba(200,88,40,0.4)';
-  g.shadowBlur  = 40;
+  g.lineWidth   = 34;
+  g.lineJoin    = 'round';
+  g.lineCap     = 'round';
+  g.shadowColor = 'rgba(220, 110, 50, 0.6)';
+  g.shadowBlur  = 28;
   g.stroke();
   g.shadowBlur  = 0;
 
-  /* ── Pupil — filled circle ── */
-  // SVG: circle cx=16 cy=16 r=2.3 → canvas: r=2.3*32=73.6
-  const pr = 2.3 * sc;
+  // ── Iris ring ────────────────────────────────────────────────────────────────
+  const irisR = 112;
+
+  const irisGrad = g.createLinearGradient(cx - irisR, cy - irisR, cx + irisR, cy + irisR);
+  irisGrad.addColorStop(0,   '#f2a868');
+  irisGrad.addColorStop(1,   '#c04818');
   g.beginPath();
-  g.arc(icx, icy, pr, 0, Math.PI * 2);
-  g.fillStyle   = eyeGrad;
-  g.shadowColor = 'rgba(200,88,40,0.8)';
-  g.shadowBlur  = 50;
+  g.arc(cx, cy, irisR, 0, Math.PI * 2);
+  g.strokeStyle = irisGrad;
+  g.lineWidth   = 22;
+  g.shadowColor = 'rgba(210, 90, 30, 0.45)';
+  g.shadowBlur  = 18;
+  g.stroke();
+  g.shadowBlur  = 0;
+
+  // ── Pupil — solid filled circle ──────────────────────────────────────────────
+  const pupilR = 46;
+  const pupilGrad = g.createRadialGradient(cx - 12, cy - 14, 0, cx, cy, pupilR);
+  pupilGrad.addColorStop(0,   '#fcc090');
+  pupilGrad.addColorStop(0.6, '#d86830');
+  pupilGrad.addColorStop(1,   '#a83208');
+
+  g.beginPath();
+  g.arc(cx, cy, pupilR, 0, Math.PI * 2);
+  g.fillStyle   = pupilGrad;
+  g.shadowColor = 'rgba(220, 100, 40, 0.8)';
+  g.shadowBlur  = 22;
   g.fill();
   g.shadowBlur  = 0;
+
+  // ── Specular highlight ───────────────────────────────────────────────────────
+  const spec = g.createRadialGradient(cx - 14, cy - 16, 0, cx - 14, cy - 16, 22);
+  spec.addColorStop(0,   'rgba(255,235,210,0.6)');
+  spec.addColorStop(1,   'rgba(255,235,210,0)');
+  g.beginPath();
+  g.arc(cx - 14, cy - 16, 22, 0, Math.PI * 2);
+  g.fillStyle = spec;
+  g.fill();
 
   document.title = 'ICON_DONE';
 })();

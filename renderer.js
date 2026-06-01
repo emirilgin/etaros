@@ -831,11 +831,199 @@ memNoteInput?.addEventListener('keydown', e => {
   if (e.key === 'Enter') memNoteBtn.click();
 });
 
-memClearBtn?.addEventListener('click', async () => {
-  if (!confirm('Clear all memory? Sidekick will forget everything it knows about you.')) return;
-  await window.sk.clearMemory();
-  openMemory();
-  showToast('Memory cleared', 'ok');
+memClearBtn?.addEventListener('click', () => {
+  showConfirm('Clear all memory? Sidekick will forget everything it knows about you.', async () => {
+    await window.sk.clearMemory();
+    openMemory();
+    showToast('Memory cleared', 'ok');
+  });
+});
+
+// ─── Memory tabs ──────────────────────────────────────────────────────────────
+document.getElementById('mem-tab-facts')?.addEventListener('click', () => {
+  document.getElementById('mem-tab-facts').classList.add('active');
+  document.getElementById('mem-tab-game').classList.remove('active');
+  document.getElementById('mem-pane-facts').style.display = '';
+  document.getElementById('mem-pane-game').style.display  = 'none';
+});
+document.getElementById('mem-tab-game')?.addEventListener('click', () => {
+  document.getElementById('mem-tab-game').classList.add('active');
+  document.getElementById('mem-tab-facts').classList.remove('active');
+  document.getElementById('mem-pane-game').style.display  = '';
+  document.getElementById('mem-pane-facts').style.display = 'none';
+  loadNextQuestion();
+});
+
+// ─── Question game ────────────────────────────────────────────────────────────
+// 200 questions across life, personality, preferences, habits, goals
+const QUESTIONS = [
+  // Identity
+  "What do people usually come to you for advice about?",
+  "What's something you're better at than most people you know?",
+  "What's a skill you're secretly proud of?",
+  "How would your closest friend describe you in 3 words?",
+  "What's the last thing that made you genuinely laugh?",
+  // Food & lifestyle
+  "What's your go-to comfort food?",
+  "Do you cook? What's your best dish?",
+  "Are you a morning person or night owl?",
+  "What does your ideal Sunday look like?",
+  "Coffee, tea, or neither?",
+  "What cuisine could you eat every day?",
+  "Do you follow any diet (vegetarian, keto, etc.)?",
+  "What food do you absolutely refuse to eat?",
+  "Favorite drink on a night out?",
+  "Do you prefer eating in or going out?",
+  // Work & ambition
+  "What are you working on that excites you most right now?",
+  "What would you do if money wasn't a factor?",
+  "What's your biggest professional goal this year?",
+  "What skill do you most want to develop?",
+  "What's your biggest distraction when you're trying to work?",
+  "Are you more creative in the morning or evening?",
+  "What kind of work environment do you thrive in?",
+  "What's the hardest part of your job/school?",
+  "What would make your work life 10x better?",
+  "What's a project you abandoned that you wish you'd finished?",
+  // Finance & spending
+  "What's something you spend money on that others might find surprising?",
+  "Are you a saver or a spender by nature?",
+  "What's the last big purchase you regret?",
+  "What's the last big purchase you're proud of?",
+  "Do you track your expenses? If not, do you want to?",
+  "What subscription do you pay for but rarely use?",
+  "What would you do with an extra €1000 right now?",
+  "What's your biggest recurring expense besides rent/food?",
+  // Health
+  "Do you exercise? What do you do?",
+  "How many hours of sleep do you get on average?",
+  "What's your energy like at 3pm?",
+  "Do you take any supplements or vitamins?",
+  "What's one health habit you want to build?",
+  "How much water do you drink per day?",
+  "What's your stress level like this week?",
+  "Do you meditate or have a mindfulness practice?",
+  // Tech & digital
+  "What apps do you use every single day?",
+  "What's your most-used website?",
+  "iOS or Android?",
+  "What gadget would you buy if money was no object?",
+  "How many hours a day do you spend on your phone?",
+  "What's a tech product you recommended to someone recently?",
+  "Do you use any productivity tools? Which ones?",
+  // Travel & places
+  "Where do you want to travel most in the next year?",
+  "What's the best place you've ever visited?",
+  "City or nature when you travel?",
+  "What's your hometown like?",
+  "Do you prefer planning trips or going spontaneous?",
+  "Beach or mountains?",
+  "What's a place you'd love to live someday?",
+  // Entertainment
+  "What are you currently watching?",
+  "What genre of music puts you in the best mood?",
+  "What's a book that changed how you think?",
+  "What's a podcast you'd recommend?",
+  "What video game have you spent the most hours on?",
+  "What's your go-to movie genre?",
+  "What artist/musician do you love that most people haven't heard of?",
+  "Last concert or live event you went to?",
+  // Relationships & social
+  "Are you more introverted or extroverted?",
+  "What kind of people do you click with most?",
+  "What's something people misunderstand about you?",
+  "What's the best piece of advice someone gave you?",
+  "Who do you admire most and why?",
+  "What do you value most in a friend?",
+  "What's a conversation topic you can talk about forever?",
+  // Goals & values
+  "What do you want your life to look like in 5 years?",
+  "What's something you want to learn in the next 6 months?",
+  "What does success mean to you?",
+  "What fear is holding you back from something?",
+  "What's the most important thing in your life right now?",
+  "What's a belief you hold that most people disagree with?",
+  "What's something you want to change about yourself?",
+  "What legacy do you want to leave?",
+  // Random / fun
+  "What's your most used emoji?",
+  "What's a useless talent you have?",
+  "What's the weirdest thing you've ever eaten?",
+  "What's a hobby you want to pick up someday?",
+  "What's your most controversial food opinion?",
+  "What's something you do that other people think is weird?",
+  "What's a word or phrase you say too much?",
+  "If you could have dinner with anyone (alive or dead), who?",
+  "What's your guilty pleasure?",
+  "What's one thing you'd do differently if you could start over?",
+  // Shopping & deals
+  "Do you prefer buying new or second-hand?",
+  "What brand do you stay loyal to no matter what?",
+  "What's your approach to shopping — research everything or impulse?",
+  "What's something you always buy the expensive version of?",
+  "What's something you always buy cheap?",
+  "Do you use discount codes when shopping online?",
+  "What's the best deal you've ever found?",
+  // Online safety (relevant to the app)
+  "Have you ever been scammed or almost scammed online?",
+  "Do you reuse passwords across sites?",
+  "Have you ever clicked a link you immediately regretted?",
+  "Do you use a password manager?",
+  "How careful are you about what you share online?",
+  "Have you ever had an account hacked?",
+  // Environment & home
+  "Do you care about sustainability? How does it show?",
+  "What's your living situation like?",
+  "Do you have pets?",
+  "What's your home workspace like?",
+  "Are you a minimalist or do you like having stuff around?",
+  // Learning
+  "What's the last thing you learned that genuinely surprised you?",
+  "How do you prefer to learn new things — videos, books, doing?",
+  "What subject do you wish you studied more?",
+  "What language do you want to learn?",
+  "What's a topic you've been meaning to research?",
+].sort(() => Math.random() - 0.5); // shuffle on load
+
+let _qIndex = 0;
+const _seenQ = new Set();
+
+function loadNextQuestion() {
+  // Pick a question not seen recently
+  let attempts = 0;
+  let q;
+  do {
+    _qIndex = Math.floor(Math.random() * QUESTIONS.length);
+    q = QUESTIONS[_qIndex];
+    attempts++;
+  } while (_seenQ.has(q) && attempts < QUESTIONS.length);
+  _seenQ.add(q);
+  if (_seenQ.size > 50) _seenQ.clear(); // reset after 50 to allow repeats
+
+  const el = document.getElementById('mem-game-q');
+  const inp = document.getElementById('mem-game-input');
+  const prog = document.getElementById('mem-game-progress');
+  if (el) el.textContent = q;
+  if (inp) { inp.value = ''; inp.focus(); }
+  if (prog) prog.textContent = `Question · ${QUESTIONS.length.toLocaleString()} in the bank`;
+}
+
+document.getElementById('mem-game-skip')?.addEventListener('click', loadNextQuestion);
+
+document.getElementById('mem-game-save')?.addEventListener('click', async () => {
+  const q   = document.getElementById('mem-game-q')?.textContent;
+  const ans = document.getElementById('mem-game-input')?.value.trim();
+  if (!ans) { loadNextQuestion(); return; }
+  const btn = document.getElementById('mem-game-save');
+  btn.textContent = '…'; btn.disabled = true;
+  await window.sk.addNote(`${q} → ${ans}`);
+  btn.textContent = 'Save & next →'; btn.disabled = false;
+  showToast('Remembered ✓', 'ok', 1600);
+  loadNextQuestion();
+});
+
+document.getElementById('mem-game-input')?.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); document.getElementById('mem-game-save').click(); }
 });
 
 // ─── Search engine ───────────────────────────────────────────────────────────
@@ -1644,10 +1832,53 @@ function showAuthOverlay() {
 }
 
 // After successful auth — hide overlay, boot app
-function bootApp() {
+async function bootApp() {
   hideAuthOverlay();
-  init();
-  loadProfile();
+  // Show onboarding on first run (no profile name set yet)
+  const profile = await window.sk.getProfile();
+  const isNewUser = !profile?.name || profile.name === 'You' || profile.name === '';
+  if (isNewUser) {
+    showOnboarding();
+  } else {
+    init();
+    loadProfile();
+  }
+}
+
+function showOnboarding() {
+  const overlay = document.getElementById('onboarding-overlay');
+  const nameInput = document.getElementById('onb-name');
+  const btn = document.getElementById('onb-btn');
+  const skip = document.getElementById('onb-skip');
+  if (!overlay) { init(); loadProfile(); return; }
+
+  overlay.style.display = 'flex';
+  setTimeout(() => nameInput?.focus(), 300);
+
+  const finish = async (name) => {
+    overlay.style.display = 'none';
+    if (name && name !== 'You') {
+      await window.sk.saveProfile({ name });
+    }
+    init();
+    loadProfile();
+    // After a short delay, greet the user in chat
+    if (name && name !== 'You') {
+      setTimeout(() => {
+        const m = document.getElementById('msg');
+        if (m && !m.value) {
+          appendAiGroup(`Hey ${name}! I'm Sidekick — your second pair of eyes. I'm watching your screen and I'll flag anything worth knowing: scams, bad deals, subscriptions you didn't notice. Just ask me anything or let me work quietly in the background. What are you up to today?`);
+        }
+      }, 600);
+    }
+  };
+
+  btn?.addEventListener('click', () => {
+    const name = nameInput?.value.trim() || 'You';
+    finish(name);
+  });
+  skip?.addEventListener('click', () => finish(''));
+  nameInput?.addEventListener('keydown', e => { if (e.key === 'Enter') btn.click(); });
 }
 
 // ─── Startup: check session ────────────────────────────────────────────────────

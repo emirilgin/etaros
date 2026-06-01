@@ -1027,6 +1027,23 @@ html,body{
 }
 .mem-clear:hover{ color:var(--red); }
 
+/* Memory tabs */
+.mem-tabs{ display:flex; border-bottom:1px solid var(--border); flex-shrink:0; }
+.mem-tab{ flex:1; padding:9px; background:none; border:none; font-family:inherit; font-size:12.5px; font-weight:500; color:var(--t3); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; transition:color .12s,border-color .12s; }
+.mem-tab.active{ color:var(--orange-t); border-bottom-color:var(--orange); }
+
+/* Memory question game */
+.mem-game{ padding:20px 18px 18px; display:flex; flex-direction:column; gap:14px; }
+.mem-game-progress{ font-size:11px; color:var(--t4); text-transform:uppercase; letter-spacing:.08em; }
+.mem-game-q{ font-size:15px; font-weight:600; color:var(--t1); line-height:1.5; min-height:44px; }
+.mem-game-input{ width:100%; padding:10px 12px; background:var(--surface); border:1px solid var(--border); border-radius:var(--r-s); color:var(--t1); font-family:inherit; font-size:13.5px; outline:none; resize:none; transition:border-color .15s; line-height:1.5; }
+.mem-game-input:focus{ border-color:rgba(200,98,46,.45); }
+.mem-game-actions{ display:flex; gap:8px; }
+.mem-game-skip{ flex:0; padding:8px 14px; background:none; border:1px solid var(--border); border-radius:var(--r-s); color:var(--t3); font-family:inherit; font-size:13px; cursor:pointer; }
+.mem-game-save{ flex:1; padding:8px 14px; background:var(--orange); border:none; border-radius:var(--r-s); color:#fff; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; transition:opacity .15s; }
+.mem-game-save:hover{ opacity:.88; }
+.mem-game-hint{ font-size:11.5px; color:var(--t4); text-align:center; }
+
 /* Toast notifications */
 #toast-container {
   position:fixed; bottom:20px; left:50%; transform:translateX(-50%);
@@ -1620,17 +1637,50 @@ html,body{
         <svg viewBox="0 0 12 12" fill="none" style="width:11px;height:11px"><path d="M1 1l10 10M11 1L1 11" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
       </button>
     </div>
-    <div class="mem-note-row">
-      <input id="mem-note-input" type="text" placeholder="Tell me something about yourself… (e.g. 'I'm vegetarian')"/>
-      <button id="mem-note-btn">Remember →</button>
+    <!-- Tabs -->
+    <div class="mem-tabs">
+      <button class="mem-tab active" id="mem-tab-facts">Memory</button>
+      <button class="mem-tab" id="mem-tab-game">◈ Teach me</button>
     </div>
-    <div class="mem-body" id="mem-body">
-      <div class="mem-empty">Nothing remembered yet.<br>Start chatting and I'll learn about you.</div>
+    <!-- Facts tab -->
+    <div id="mem-pane-facts">
+      <div class="mem-note-row">
+        <input id="mem-note-input" type="text" placeholder="Tell me something about yourself… (e.g. 'I'm vegetarian')"/>
+        <button id="mem-note-btn">Remember →</button>
+      </div>
+      <div class="mem-body" id="mem-body">
+        <div class="mem-empty">Nothing remembered yet.<br>Start chatting and I'll learn about you.</div>
+      </div>
+      <div class="mem-footer">
+        <span class="mem-count" id="mem-count">0 facts</span>
+        <button class="mem-clear" id="mem-clear-btn">Clear all memory</button>
+      </div>
     </div>
-    <div class="mem-footer">
-      <span class="mem-count" id="mem-count">0 facts</span>
-      <button class="mem-clear" id="mem-clear-btn">Clear all memory</button>
+    <!-- Question game tab -->
+    <div id="mem-pane-game" style="display:none">
+      <div class="mem-game">
+        <div class="mem-game-progress" id="mem-game-progress">Question 1 of ∞</div>
+        <div class="mem-game-q" id="mem-game-q">Loading…</div>
+        <textarea class="mem-game-input" id="mem-game-input" placeholder="Type your answer…" rows="3"></textarea>
+        <div class="mem-game-actions">
+          <button class="mem-game-skip" id="mem-game-skip">Skip →</button>
+          <button class="mem-game-save" id="mem-game-save">Save &amp; next →</button>
+        </div>
+        <div class="mem-game-hint">Every answer helps Sidekick know you better.</div>
+      </div>
     </div>
+  </div>
+</div>
+
+<!-- First-run onboarding overlay -->
+<div id="onboarding-overlay" style="display:none;position:fixed;inset:0;z-index:8000;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;padding:32px 20px">
+  <div id="onboarding-inner" style="width:100%;max-width:340px;display:flex;flex-direction:column;gap:0">
+    <div style="font-size:28px;text-align:center;margin-bottom:8px">⚡</div>
+    <h2 style="text-align:center;font-size:18px;font-weight:700;color:var(--t1);margin-bottom:4px" id="onb-title">Hey, I'm Sidekick.</h2>
+    <p style="text-align:center;font-size:13px;color:var(--t3);margin-bottom:28px;line-height:1.6" id="onb-sub">Your second pair of eyes. Before we start — what should I call you?</p>
+    <input id="onb-name" type="text" placeholder="Your name…" autocomplete="given-name" style="width:100%;padding:13px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-s);color:var(--t1);font-family:inherit;font-size:15px;outline:none;margin-bottom:12px;transition:border-color .15s;-webkit-app-region:no-drag"/>
+    <button id="onb-btn" style="width:100%;padding:13px;background:var(--orange);border:none;border-radius:var(--r-s);color:#fff;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;transition:opacity .15s;-webkit-app-region:no-drag">Let's go →</button>
+    <button id="onb-skip" style="margin-top:10px;background:none;border:none;color:var(--t4);font-size:12px;cursor:pointer;font-family:inherit;-webkit-app-region:no-drag">Skip for now</button>
   </div>
 </div>
 
