@@ -1538,9 +1538,9 @@ function setupAutoUpdater() {
     let url;
     if (process.platform === 'darwin') {
       const arch = process.arch === 'arm64' ? '-arm64' : '';
-      url = `https://github.com/emirilgin/sidekick/releases/download/v${v}/Etaros-${v}${arch}.dmg`;
+      url = `https://github.com/emirilgin/etaros/releases/download/v${v}/Etaros-${v}${arch}.dmg`;
     } else {
-      url = `https://github.com/emirilgin/sidekick/releases/download/v${v}/Etaros.Setup.${v}.exe`;
+      url = `https://github.com/emirilgin/etaros/releases/download/v${v}/Etaros.Setup.${v}.exe`;
     }
     push('update-status', { status: 'available', version: v, url });
   });
@@ -1553,7 +1553,7 @@ function setupAutoUpdater() {
 
   // IPC: renderer opens download page
   ipcMain.on('install-update', () => {
-    shell.openExternal('https://github.com/emirilgin/sidekick/releases/latest');
+    shell.openExternal('https://github.com/emirilgin/etaros/releases/latest');
   });
 }
 
