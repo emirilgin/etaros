@@ -839,12 +839,50 @@ async function streamOllama(systemPrompt, history) {
 }
 
 // ─── Core: check limits before sending ───────────────────────────────────────
+// Server-authoritative: always fetch fresh tier from Supabase before allowing
+// a paid action. Cached tier is only used if server is unreachable (offline).
+// This closes the local-store tampering attack vector.
+async function checkLimitsAsync() {
+  if (!APP_CONFIG.ownerMode && sbReady()) {
+    // Force a fresh server check (bypass cache TTL)
+    const userId = store.get('sbUserId');
+    let token    = store.get('sbAccessToken');
+    if (userId && token) {
+      let result = await sbGet(`/rest/v1/profiles?select=tier&id=eq.${userId}&limit=1`, token);
+      if (result.status === 401 || result.status === 403) {
+        const refreshed = await refreshAccessToken();
+        if (refreshed) {
+          token  = store.get('sbAccessToken');
+          result = await sbGet(`/rest/v1/profiles?select=tier&id=eq.${userId}&limit=1`, token);
+        }
+      }
+      if (result.ok && Array.isArray(result.data) && result.data[0]) {
+        const serverTier = result.data[0].tier ?? 'free';
+        // Only allow testerTier to upgrade, never downgrade below server value
+        const tester = store.get('testerTier');
+        const effectiveTier = tester === 'max' ? 'max' : serverTier;
+        store.set('sbTier', effectiveTier);
+        store.set('sbTierTs', Date.now());
+        if (effectiveTier === 'max' || effectiveTier === 'pro') return null;
+        if (getFreeUsed() >= FREE_TOTAL) return 'free';
+        return null;
+      }
+    }
+  }
+  // Offline fallback — use cached tier
+  const tier = getTierSync();
+  if (tier === 'max') return null;
+  if (tier === 'pro') return null;
+  if (tier === 'free' && getFreeUsed() >= FREE_TOTAL) return 'free';
+  return null;
+}
+
 function checkLimits() {
   const tier = getTierSync();
-  if (tier === 'max') return null; // unlimited
-  if (tier === 'pro') return null; // unlimited
+  if (tier === 'max') return null;
+  if (tier === 'pro') return null;
   if (tier === 'free' && getFreeUsed() >= FREE_TOTAL) return 'free';
-  return null; // ok
+  return null;
 }
 
 function bumpUsage() {
@@ -859,8 +897,8 @@ async function chat(userText, thumbnail) {
   if (isStreaming) return;
   isStreaming = true;
 
-  // Check limits
-  const limitHit = checkLimits();
+  // Check limits — server-authoritative (closes local store tamper attack)
+  const limitHit = await checkLimitsAsync();
   if (limitHit) {
     const info = getLicenseInfo();
     push('upgrade-prompt', info);
@@ -911,7 +949,7 @@ async function proactiveScan(thumbnail, manual = false) {
   if (isStreaming) return;
 
   // Silently skip if free user has hit their limit (don't nag)
-  if (checkLimits() === 'free') return;
+  if ((await checkLimitsAsync()) === 'free') return;
 
   // Skip auto-scans while in quota cooldown (manual scans always allowed)
   if (!manual && Date.now() < quotaCooldownUntil) return;
@@ -1355,7 +1393,7 @@ function registerIPC() {
   // Analyze a user-provided image (drag & drop or file picker)
   ipcMain.handle('analyze-image', async (_, b64) => {
     if (isStreaming) return { ok: false, reason: 'busy' };
-    const limitHit = checkLimits();
+    const limitHit = await checkLimitsAsync();
     if (limitHit) { push('upgrade-prompt', getLicenseInfo()); return { ok: false, reason: 'limit' }; }
 
     isStreaming = true;
