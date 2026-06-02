@@ -407,6 +407,10 @@ async function sendMsg() {
   appendUser(text);
   msg.value = ''; msg.style.height = 'auto';
   send.disabled = true;
+  // Show spinning logo immediately (hidden once the stream starts)
+  showFeed();
+  thinking.style.display = 'flex';
+  scrollBottom(true);
   await window.sk.chat(text);
   send.disabled = false;
 }
@@ -559,20 +563,17 @@ function appendUser(text) {
 // ─── Render: AI group ─────────────────────────────────────────────────────────
 const AI_ICON_SVG = `<svg viewBox="0 0 32 32" fill="none"><path d="M3 16C3 16 8.5 7 16 7C23.5 7 29 16 29 16C29 16 23.5 25 16 25C8.5 25 3 16 3 16Z" stroke="url(#gi)" stroke-width="1.8" fill="none" stroke-linejoin="round" stroke-linecap="round"/><circle cx="16" cy="16" r="5" stroke="url(#gi)" stroke-width="1.8" fill="none"/><circle cx="16" cy="16" r="2.3" fill="url(#gi)"/><defs><linearGradient id="gi" x1="3" y1="7" x2="29" y2="25" gradientUnits="userSpaceOnUse"><stop offset="0%" stop-color="#D4723A"/><stop offset="100%" stop-color="#A34E18"/></linearGradient></defs></svg>`;
 
-function makeGroup(label) {
+function makeGroup() {
+  // Claude-style: clean message, no per-message avatar or name label
   const el = document.createElement('div');
   el.className = 'group';
-  el.innerHTML = `<div class="g-label">
-    <div class="g-icon">${AI_ICON_SVG}</div>
-    ${esc(label)}<span class="g-time">${now()}</span>
-  </div>`;
   return el;
 }
 
 // Render a complete AI message (for history restore)
 function appendAiGroup(text) {
   showFeed();
-  const el = makeGroup('Etaros');
+  const el = makeGroup();
   const msgDiv = document.createElement('div');
   msgDiv.className = 'chat-msg';
   msgDiv.innerHTML = md(text);
@@ -583,7 +584,7 @@ function appendAiGroup(text) {
 // ─── Render: streaming ────────────────────────────────────────────────────────
 function createStreamEl() {
   showFeed();
-  const el = makeGroup('Etaros');
+  const el = makeGroup();
   const msgDiv = document.createElement('div');
   msgDiv.className = 'chat-msg';
   msgDiv.innerHTML = '<div class="chat-body"></div><span class="stream-cursor"></span>';
@@ -614,7 +615,7 @@ function renderAnalysis(data) {
   showFeed();
   maybeTimeDivider();
   const items = Array.isArray(data.items) ? data.items : [];
-  const group = makeGroup('Etaros noticed');
+  const group = makeGroup();
   const wrap  = document.createElement('div');
   wrap.className = 'cards-wrap';
 
