@@ -567,7 +567,7 @@ function fireNotification(title, body) {
       title:    'Etaros',
       subtitle: title,             // macOS: shows under title
       body:     String(body || '').slice(0, 160),
-      silent:   false,             // plays system notification sound
+      silent:   true,              // no sound — avoids macOS ducking/pausing user's music
     });
     n.on('click', () => {
       if (mainWindow && !mainWindow.isDestroyed()) {
