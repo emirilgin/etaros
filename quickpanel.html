@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<style>
+  *{margin:0;padding:0;box-sizing:border-box}
+  :root{
+    --bg:rgba(28,22,18,.72);
+    --field:rgba(255,255,255,.06);
+    --border:rgba(255,255,255,.1);
+    --t1:#F5EFE6; --t2:#B6ADA2; --t3:#7C746A;
+    --accent:#5aa8d4;
+    --safe:#5fbf7a; --warn:#e0a85c; --danger:#e0606a;
+  }
+  html,body{width:100vw;height:100vh;overflow:hidden;background:transparent;
+    font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;}
+  #panel{
+    width:100%;height:100%;
+    background:var(--bg);
+    backdrop-filter:blur(34px) saturate(160%);
+    -webkit-backdrop-filter:blur(34px) saturate(160%);
+    border:1px solid var(--border);
+    border-radius:18px;
+    box-shadow:0 30px 80px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.06);
+    display:flex;flex-direction:column;overflow:hidden;
+    animation:rise .22s cubic-bezier(.2,.9,.3,1) both;
+  }
+  @keyframes rise{from{opacity:0;transform:translateY(-8px) scale(.985)}to{opacity:1;transform:none}}
+
+  /* Input row */
+  .ip-row{display:flex;align-items:center;gap:12px;padding:16px 18px;-webkit-app-region:drag;}
+  .ip-mark{width:24px;height:24px;flex-shrink:0;-webkit-app-region:no-drag;}
+  .ip-mark svg{width:100%;height:100%;display:block}
+  .ip-mark.busy{animation:spin 1s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  #q{flex:1;background:none;border:none;outline:none;color:var(--t1);font-size:16px;
+    font-family:inherit;-webkit-app-region:no-drag;}
+  #q::placeholder{color:var(--t3)}
+  .ip-esc{font-size:10px;color:var(--t3);border:1px solid var(--border);border-radius:5px;
+    padding:2px 6px;-webkit-app-region:no-drag;}
+
+  /* Result */
+  #result{display:none;border-top:1px solid var(--border);padding:16px 18px;
+    max-height:340px;overflow-y:auto;}
+  #result::-webkit-scrollbar{width:4px}
+  #result::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+  .verdict{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;
+    letter-spacing:.04em;text-transform:uppercase;padding:5px 11px;border-radius:20px;margin-bottom:12px;}
+  .verdict.safe{color:var(--safe);background:rgba(95,191,122,.12);border:1px solid rgba(95,191,122,.25)}
+  .verdict.warn{color:var(--warn);background:rgba(224,168,92,.12);border:1px solid rgba(224,168,92,.25)}
+  .verdict.danger{color:var(--danger);background:rgba(224,96,106,.12);border:1px solid rgba(224,96,106,.25)}
+  .verdict.neutral{color:var(--t2);background:var(--field);border:1px solid var(--border)}
+  #answer{font-size:13.5px;line-height:1.6;color:var(--t1);}
+  #answer strong{color:#fff}
+  #answer code{background:var(--field);padding:1px 5px;border-radius:4px;font-size:12px}
+  #answer ul,#answer ol{margin:8px 0 8px 18px}
+  #answer li{margin:3px 0}
+  #answer p{margin:6px 0}
+
+  .hints{display:flex;gap:8px;padding:0 18px 16px;flex-wrap:wrap;}
+  .hint{font-size:11.5px;color:var(--t2);background:var(--field);border:1px solid var(--border);
+    border-radius:14px;padding:6px 11px;cursor:pointer;-webkit-app-region:no-drag;transition:background .12s;}
+  .hint:hover{background:rgba(255,255,255,.1);color:var(--t1)}
+</style>
+</head>
+<body>
+<div id="panel">
+  <div class="ip-row">
+    <div class="ip-mark" id="mark">
+      <svg viewBox="0 0 100 100" fill="none"><g stroke="url(#qg)" stroke-width="6" stroke-linecap="round" fill="none"><circle cx="50" cy="50" r="38"/><path d="M50 40 Q60 44 58 28"/><path d="M50 40 Q44 46 30 42"/><path d="M50 40 Q56 50 68 58"/><path d="M50 40 Q42 48 34 62"/></g><circle cx="50" cy="48" r="6" fill="#1a5a7a"/><defs><linearGradient id="qg" x1="20" y1="20" x2="80" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#5aa8d4"/><stop offset="1" stop-color="#1a5a7a"/></linearGradient></defs></svg>
+    </div>
+    <input id="q" type="text" placeholder="Paste a link, email, or ask if something's safe…" autocomplete="off" spellcheck="false"/>
+    <span class="ip-esc">esc</span>
+  </div>
+  <div class="hints" id="hints">
+    <span class="hint" data-q="Is this link safe? ">🔗 Check a link</span>
+    <span class="hint" data-q="Is this email a phishing attempt? ">📧 Check an email</span>
+    <span class="hint" data-q="Scan my screen for anything risky right now.">👁️ Scan screen</span>
+  </div>
+  <div id="result">
+    <div class="verdict neutral" id="verdict" style="display:none"></div>
+    <div id="answer"></div>
+  </div>
+</div>
+<script>
+'use strict';
+const q = document.getElementById('q');
+const mark = document.getElementById('mark');
+const result = document.getElementById('result');
+const verdictEl = document.getElementById('verdict');
+const answerEl = document.getElementById('answer');
+const hints = document.getElementById('hints');
+
+function md(s){
+  s=String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  s=s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  s=s.replace(/`([^`]+)`/g,'<code>$1</code>');
+  s=s.replace(/^\d+\.\s(.+)$/gm,'<li>$1</li>');
+  s=s.replace(/(<li>[\s\S]*?<\/li>)/g,'<ol>$1</ol>');
+  return s.split(/\n\n+/).map(c=>/^<(ol|ul|li)/.test(c.trim())?c:`<p>${c.replace(/\n/g,'<br>')}</p>`).join('');
+}
+function detectVerdict(text){
+  const t=text.toLowerCase();
+  if(/🚨|dangerous|do not enter|this is phishing|it'?s a scam|malicious/.test(t)) return ['danger','🚨 Dangerous'];
+  if(/⚠️|suspicious|be careful|caution|red flag/.test(t)) return ['warn','⚠️ Suspicious'];
+  if(/✅|looks safe|appears legitimate|this is safe|no red flags/.test(t)) return ['safe','✅ Safe'];
+  return null;
+}
+
+let busy=false;
+async function ask(text){
+  if(busy||!text.trim()) return;
+  busy=true; mark.classList.add('busy');
+  result.style.display='block'; hints.style.display='none';
+  verdictEl.style.display='none';
+  answerEl.innerHTML='<span style="color:var(--t3)">Analysing…</span>';
+  try{
+    const reply = await window.sk.quickAnalyze(text.trim());
+    const v = detectVerdict(reply);
+    if(v){ verdictEl.className='verdict '+v[0]; verdictEl.textContent=v[1]; verdictEl.style.display='inline-flex'; }
+    answerEl.innerHTML = md(reply);
+  }catch(e){
+    answerEl.innerHTML='<span style="color:var(--danger)">Something went wrong. Try again.</span>';
+  }
+  busy=false; mark.classList.remove('busy');
+}
+
+q.addEventListener('keydown',e=>{
+  if(e.key==='Enter'){ e.preventDefault(); ask(q.value); }
+  if(e.key==='Escape'){ window.sk.closeQuickPanel(); }
+});
+hints.querySelectorAll('.hint').forEach(h=>h.addEventListener('click',()=>{
+  q.value=h.dataset.q; q.focus();
+  if(h.dataset.q.endsWith('.')) ask(q.value); // screen scan = run immediately
+}));
+
+// Reset + focus each time the panel is shown
+window.sk.on('quickpanel-show',()=>{
+  q.value=''; result.style.display='none'; hints.style.display='flex';
+  verdictEl.style.display='none'; answerEl.innerHTML='';
+  setTimeout(()=>q.focus(),20);
+});
+window.addEventListener('focus',()=>q.focus());
+setTimeout(()=>q.focus(),30);
+</script>
+</body>
+</html>

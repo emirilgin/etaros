@@ -1384,6 +1384,30 @@ function registerIPC() {
     return { ok: true };
   });
 
+  // ── Quick panel: one-shot non-streaming security analysis ──────────────────
+  ipcMain.on('close-quick-panel', () => { if (quickWindow && !quickWindow.isDestroyed()) quickWindow.hide(); });
+  ipcMain.handle('quick-analyze', async (_, text) => {
+    const limitHit = await checkLimitsAsync();
+    if (limitHit) return "You've used all your free checks this month. Upgrade to Pro in the app for unlimited security checks.";
+    const key = getGeminiKey();
+    if (!key) return 'No AI key set. Open Settings → AI to add your free Gemini key.';
+    try {
+      const wantsScreen = /scan (my )?screen|on (my )?screen|what.s on/i.test(text);
+      const parts = [{ text }];
+      if (wantsScreen) {
+        const thumb = await captureScreen();
+        if (thumb) parts.unshift({ inlineData: { mimeType: 'image/jpeg', data: thumbToB64(thumb) } });
+      }
+      const genAI = new GoogleGenerativeAI(key);
+      const model = genAI.getGenerativeModel({ model: GEMINI_MODELS[0], systemInstruction: CHAT_PROMPT() });
+      const res   = await model.generateContent(parts);
+      bumpUsage();
+      return res.response.text();
+    } catch (err) {
+      return friendlyError(err);
+    }
+  });
+
   // Region selector — CMD+SHIFT+4 style
   ipcMain.handle('region-select', async () => {
     mainWindow?.hide(); // hide main window so overlay is clean
@@ -1593,9 +1617,51 @@ app.whenReady().then(() => {
     if (!mainWindow) return;
     mainWindow.isVisible() ? mainWindow.hide() : mainWindow.show();
   });
+  // Quick panel — Spotlight-style instant security check from anywhere
+  globalShortcut.register('CommandOrControl+Shift+E', toggleQuickPanel);
   // Auto-scan off by default — user can enable in Settings
   if (store.get('autoScan') === true) startScanLoop();
 });
+
+// ─── Quick panel (global hotkey → instant security check) ─────────────────────
+let quickWindow = null;
+function createQuickPanel() {
+  const d = screen.getPrimaryDisplay();
+  const W = 600, H = 460;
+  quickWindow = new BrowserWindow({
+    width: W, height: H,
+    x: Math.round(d.bounds.x + (d.bounds.width - W) / 2),
+    y: Math.round(d.bounds.y + d.bounds.height * 0.18),
+    frame: false, transparent: true, resizable: false, movable: true,
+    alwaysOnTop: true, skipTaskbar: true, hasShadow: false, show: false,
+    fullscreenable: false, minimizable: false, maximizable: false,
+    vibrancy: process.platform === 'darwin' ? 'under-window' : undefined,
+    visualEffectState: 'active',
+    webPreferences: {
+      preload: path.join(__dirname, 'preload.js'),
+      contextIsolation: true, nodeIntegration: false, sandbox: false,
+    },
+  });
+  quickWindow.loadFile('quickpanel.html');
+  if (process.platform === 'darwin') quickWindow.setAlwaysOnTop(true, 'screen-saver');
+  // Hide on blur (click away)
+  quickWindow.on('blur', () => quickWindow?.hide());
+  quickWindow.on('closed', () => { quickWindow = null; });
+}
+function toggleQuickPanel() {
+  if (!quickWindow || quickWindow.isDestroyed()) createQuickPanel();
+  if (quickWindow.isVisible()) { quickWindow.hide(); return; }
+  // Re-center on the active display
+  const d = screen.getDisplayNearestPoint(screen.getCursorScreenPoint());
+  const [W, H] = quickWindow.getSize();
+  quickWindow.setPosition(
+    Math.round(d.bounds.x + (d.bounds.width - W) / 2),
+    Math.round(d.bounds.y + d.bounds.height * 0.18)
+  );
+  quickWindow.show();
+  quickWindow.focus();
+  quickWindow.webContents.send('quickpanel-show', {});
+}
 
 // ─── Deep-link protocol: sidekick:// ──────────────────────────────────────────
 // Used by the password-reset page to bring the app forward after a reset.
