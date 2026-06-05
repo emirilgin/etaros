@@ -47,6 +47,7 @@ contextBridge.exposeInMainWorld('sk', {
 
   // Fire and forget
   hideWindow:     ()       => ipcRenderer.send('hide-window'),
+  flashWindow:    ()       => ipcRenderer.send('flash-window'),
   minimizeWindow: ()       => ipcRenderer.send('minimize-window'),
   openSettings:  ()        => ipcRenderer.send('open-settings'),
   requestScreenPermission: () => ipcRenderer.invoke('request-screen-permission'),

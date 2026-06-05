@@ -1450,6 +1450,14 @@ function registerIPC() {
     return { ok: true };
   });
 
+  ipcMain.on('flash-window', () => {
+    if (!mainWindow || mainWindow.isDestroyed()) return;
+    setWindowMode('fullscreen');
+    mainWindow.show();
+    mainWindow.focus();
+    if (process.platform === 'darwin') app.dock?.bounce?.('critical');
+    else mainWindow.flashFrame(true);
+  });
   ipcMain.on('hide-window',     () => mainWindow?.hide());
   ipcMain.on('minimize-window', () => mainWindow?.minimize());
   ipcMain.on('open-settings',  openSettings);

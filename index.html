@@ -599,6 +599,25 @@ html,body{
 .theme-opt.active{ border-color:var(--orange); color:var(--t1); }
 .theme-sw{ width:32px; height:32px; border-radius:8px; box-shadow:0 1px 3px rgba(0,0,0,.12); }
 
+/* Danger alert overlay */
+#danger-overlay{ display:none; position:fixed; inset:0; z-index:99999; background:rgba(40,0,0,.55); backdrop-filter:blur(6px); align-items:center; justify-content:center; padding:24px; -webkit-app-region:no-drag; animation:dangerFade .18s ease both; }
+@keyframes dangerFade{ from{opacity:0} to{opacity:1} }
+.danger-box{ width:100%; max-width:380px; background:#1A1012; border:1.5px solid rgba(220,60,60,.5); border-radius:18px; padding:28px 26px 24px; text-align:center; box-shadow:0 24px 70px rgba(180,20,20,.4), 0 0 0 1px rgba(220,60,60,.2); animation:dangerPop .25s cubic-bezier(.2,1.1,.4,1) both; }
+@keyframes dangerPop{ from{transform:scale(.9);opacity:0} to{transform:scale(1);opacity:1} }
+.danger-pulse{ font-size:40px; animation:dangerPulse 1s ease-in-out infinite; }
+@keyframes dangerPulse{ 0%,100%{transform:scale(1)} 50%{transform:scale(1.15)} }
+.danger-label{ font-size:11px; font-weight:800; letter-spacing:.12em; text-transform:uppercase; color:#e05c5c; margin:8px 0 6px; }
+.danger-box h2{ font-size:19px; font-weight:800; color:#fff; line-height:1.25; margin-bottom:10px; }
+.danger-box p{ font-size:13.5px; color:rgba(255,220,220,.8); line-height:1.5; margin-bottom:14px; }
+.danger-action-box{ background:rgba(220,60,60,.12); border:1px solid rgba(220,60,60,.25); border-radius:10px; padding:11px 13px; font-size:13px; color:#ffd0d0; line-height:1.5; margin-bottom:18px; text-align:left; }
+.danger-action-box strong{ color:#ff9a9a; }
+.danger-btns{ display:flex; gap:8px; }
+.danger-btn{ flex:1; padding:12px; border-radius:10px; font-family:inherit; font-size:13.5px; font-weight:700; cursor:pointer; border:none; transition:opacity .15s; }
+.danger-btn.solid{ background:#cf3a3a; color:#fff; }
+.danger-btn.solid:hover{ opacity:.88; }
+.danger-btn.ghost{ background:transparent; border:1px solid rgba(220,60,60,.35); color:#ffb0b0; }
+.danger-btn.ghost:hover{ background:rgba(220,60,60,.1); }
+
 /* Limit reached message */
 .limit-msg{ margin:16px max(24px,calc(50% - 380px)); padding:24px; background:var(--surface); border:1px solid var(--border); border-radius:16px; text-align:center; animation:fadeUp .25s ease both; }
 .limit-msg-icon{ font-size:28px; margin-bottom:10px; }
@@ -1718,6 +1737,21 @@ html,body{
 <div id="tab-bar" style="display:none"></div>
 <div id="life-panel" class="tab-panel" style="display:none"></div>
 <div id="life-list" style="display:none"></div>
+
+<!-- Danger alert overlay (active threat) -->
+<div id="danger-overlay">
+  <div class="danger-box">
+    <div class="danger-pulse">🚨</div>
+    <div class="danger-label">Threat detected</div>
+    <h2 id="danger-title">Threat detected</h2>
+    <p id="danger-detail"></p>
+    <div class="danger-action-box"><strong>What to do:</strong> <span id="danger-action"></span></div>
+    <div class="danger-btns">
+      <button id="danger-explain" class="danger-btn ghost">Tell me more</button>
+      <button id="danger-dismiss" class="danger-btn solid">Got it — I'm safe</button>
+    </div>
+  </div>
+</div>
 
 <!-- Toast container -->
 <div id="toast-container"></div>

@@ -615,6 +615,11 @@ function renderAnalysis(data) {
   showFeed();
   maybeTimeDivider();
   const items = Array.isArray(data.items) ? data.items : [];
+
+  // High-confidence active threat → fire the full danger alert
+  const danger = items.find(i => i.type === 'risk' && i.notify);
+  if (danger) triggerDangerAlert(danger);
+
   const group = makeGroup();
   const wrap  = document.createElement('div');
   wrap.className = 'cards-wrap';
@@ -721,6 +726,28 @@ window.sk.on('stream-error', ({ message }) => {
   appendError(message);
   showToast('Something went wrong', 'err', 3500);
 });
+
+// ─── Danger alert — unmissable warning on an active threat ────────────────────
+let _dangerOpen = false;
+function triggerDangerAlert(item) {
+  if (_dangerOpen) return;
+  _dangerOpen = true;
+  const ov = document.getElementById('danger-overlay');
+  if (!ov) { _dangerOpen = false; return; }
+  document.getElementById('danger-title').textContent  = item.title || 'Threat detected';
+  document.getElementById('danger-detail').textContent = item.detail || '';
+  document.getElementById('danger-action').textContent = item.action || 'Do not enter any passwords or payment details. Close this page.';
+  ov.style.display = 'flex';
+  // bring app to front + flash
+  window.sk.flashWindow?.();
+  const close = () => { ov.style.display = 'none'; _dangerOpen = false; };
+  document.getElementById('danger-dismiss').onclick = close;
+  document.getElementById('danger-explain').onclick = () => {
+    close();
+    msg.value = `Explain this threat in detail and tell me exactly what to do: ${item.title} — ${item.detail || ''}`;
+    sendMsg();
+  };
+}
 
 window.sk.on('analysis', renderAnalysis);
 window.sk.on('screen-preview', ({ b64 }) => { pendingPreview = b64; });
