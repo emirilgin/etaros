@@ -161,6 +161,24 @@
       100% { top:80px; left:120px; }
     }
 
+    /* WINDOWS DEMO */
+    .win-bar { display:flex; align-items:center; justify-content:space-between; padding:10px 14px; background:#0067b8; color:#fff; }
+    .win-bar-title { font-size:12px; font-weight:600; }
+    .win-x { font-size:12px; opacity:.8; }
+    .win-dialog { position:absolute; top:28px; left:28px; right:28px; text-align:left; }
+    .win-shield { font-size:30px; margin-bottom:10px; }
+    .win-title { font-size:16px; font-weight:600; margin-bottom:8px; }
+    .win-sub { font-size:12.5px; line-height:1.5; opacity:.92; margin-bottom:10px; max-width:320px; }
+    .win-more { font-size:12.5px; color:#fff; text-decoration:underline; cursor:default; opacity:0; animation: winMore 7s ease-in-out infinite; }
+    .win-extra { margin-top:14px; opacity:0; animation: winExtra 7s ease-in-out infinite; }
+    .win-app { font-size:12px; opacity:.85; margin-bottom:14px; }
+    .win-btn { padding:7px 16px; background:#e8e8e8; color:#111; border:none; border-radius:2px; font-size:12.5px; font-family:inherit; cursor:default; animation: winBtnPulse 7s ease-in-out infinite; }
+    .win-cursor { color:#fff; filter:drop-shadow(0 1px 2px rgba(0,0,0,.5)); animation: winCur 7s ease-in-out infinite; }
+    @keyframes winMore { 0%,16%{opacity:0} 24%,52%{opacity:1} 60%,100%{opacity:.4} }
+    @keyframes winExtra { 0%,48%{opacity:0; transform:translateY(6px)} 56%,94%{opacity:1; transform:translateY(0)} 100%{opacity:0} }
+    @keyframes winBtnPulse { 0%,68%{box-shadow:0 0 0 0 rgba(255,255,255,0)} 78%{box-shadow:0 0 0 6px rgba(255,255,255,.4)} 88%,100%{box-shadow:0 0 0 0 rgba(255,255,255,0)} }
+    @keyframes winCur { 0%{top:150px;left:50px} 18%{top:150px;left:50px} 24%{top:151px;left:50px} 40%{top:150px;left:50px} 60%{top:215px;left:120px} 78%{top:215px;left:120px} 82%{top:216px;left:120px} 100%{top:150px;left:50px} }
+
     /* HOW IT WORKS */
     .steps { display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap: 32px; margin-top: 48px; }
     .step { padding: 28px; background: var(--surface); border-radius: 16px; border: 1px solid var(--border); }
@@ -373,7 +391,55 @@
     </div>
 
     <p style="margin-top:28px;font-size:13px;color:var(--muted);text-align:center;max-width:560px;margin-left:auto;margin-right:auto;line-height:1.6">
-      🔒 <strong>Why the warning?</strong> Apps need a paid Apple certificate to skip this step. Etaros is new and independent — the "Open Anyway" step is normal for indie apps and completely safe. Your screenshots are never stored.
+      🔒 <strong>Why the warning?</strong> Apps need a paid Apple certificate to skip this step. Etaros is new and independent — this step is normal for indie apps and completely safe. Works the same on Apple Silicon (M1–M4) and Intel Macs.
+    </p>
+
+    <!-- WINDOWS -->
+    <div style="margin-top:72px"></div>
+    <div class="section-label">Installing on Windows</div>
+    <h2>Same deal. 20 seconds.</h2>
+    <p class="section-sub">Windows SmartScreen shows a blue popup the first time. Click through it — here's how.</p>
+
+    <div class="mac-demo">
+      <div class="mac-window">
+        <div class="win-bar"><span class="win-bar-title">Windows protected your PC</span><span class="win-x">✕</span></div>
+        <div class="mac-body" style="background:#0067b8;color:#fff">
+          <div class="win-dialog">
+            <div class="win-shield">🛡️</div>
+            <div class="win-title">Windows protected your PC</div>
+            <div class="win-sub">Microsoft Defender SmartScreen prevented an unrecognised app from starting.</div>
+            <a class="win-more">More info</a>
+            <div class="win-extra">
+              <div class="win-app">App: Etaros.Setup.1.2.0.exe</div>
+              <button class="win-btn">Run anyway</button>
+            </div>
+          </div>
+          <div class="mac-cursor win-cursor">▲</div>
+        </div>
+      </div>
+      <p class="mac-demo-cap">More info → Run anyway. Once. Done.</p>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num">1</div>
+        <h3>Run the .exe</h3>
+        <p>Double-click <strong>Etaros.Setup.1.2.0.exe</strong> from your downloads.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">2</div>
+        <h3>Click "More info"</h3>
+        <p>A blue SmartScreen popup appears. Click the small <strong>More info</strong> link.</p>
+      </div>
+      <div class="step">
+        <div class="step-num">3</div>
+        <h3>Click "Run anyway"</h3>
+        <p>A new button appears — click <strong>Run anyway</strong>. Installs in seconds. Done!</p>
+      </div>
+    </div>
+
+    <p style="margin-top:28px;font-size:13px;color:var(--muted);text-align:center;max-width:560px;margin-left:auto;margin-right:auto;line-height:1.6">
+      🔒 <strong>Why the warning?</strong> Same reason as Mac — Etaros is a new independent app without a paid code-signing certificate yet. Completely safe. Your screenshots are never stored.
     </p>
   </div>
 </section>
