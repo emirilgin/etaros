@@ -26,9 +26,10 @@ and subscription traps in real time — before they cost you.
 
 ---
 
-> **Mac install:** Open `.dmg` → drag to Applications → right-click → Open → "Open Anyway"
+> **Mac install:** Open `.dmg` → drag to Applications → try to open → then **System Settings → Privacy & Security → "Open Anyway"** → confirm with Touch ID
 > **Windows:** Run `.exe` → if SmartScreen appears → "More info" → "Run anyway"
 > **Not sure which Mac?** About This Mac → chip says M-series → `arm64.dmg` · Intel → `.dmg`
+> Full visual guide: [emirilgin.github.io/etaros](https://emirilgin.github.io/etaros)
 
 ---
 
@@ -83,7 +84,7 @@ Upgrade from inside the app (**Settings → Plan**).
 
 ```bash
 git clone https://github.com/emirilgin/etaros.git
-cd sidekick
+cd etaros
 npm install
 cp app.config.example.js app.config.js
 # Edit app.config.js — add your Gemini key from aistudio.google.com
