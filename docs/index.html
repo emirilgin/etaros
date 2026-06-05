@@ -108,6 +108,59 @@
     .scan-result.ok   { background: rgba(45,138,90,0.12); border: 1px solid rgba(45,138,90,0.2);  color: #a0e4b8; }
     .scan-result .tag { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; opacity: .7; }
 
+    /* MAC INSTALL DEMO (animated) */
+    .mac-demo { max-width: 460px; margin: 44px auto 0; }
+    .mac-window { background:#ECEAE6; border-radius:12px; overflow:hidden; box-shadow:0 20px 50px rgba(0,0,0,.16); border:1px solid #d8d5d0; }
+    .mac-bar { display:flex; align-items:center; gap:7px; padding:10px 14px; background:#E4E1DC; border-bottom:1px solid #d2cfca; }
+    .mac-bar .d { width:11px; height:11px; border-radius:50%; }
+    .mac-bar .d.r{background:#ff5f57}.mac-bar .d.y{background:#ffbd2e}.mac-bar .d.g{background:#28ca41}
+    .mac-bar-title { margin-left:8px; font-size:12px; color:#888; font-weight:500; }
+    .mac-body { position:relative; height:280px; background:#F7F6F3; }
+    .mac-app { position:absolute; top:30px; left:40px; width:80px; text-align:center; }
+    .mac-app-icon { width:64px; height:64px; margin:0 auto 6px; border-radius:14px; background:#fff; box-shadow:0 2px 8px rgba(0,0,0,.1); padding:10px; }
+    .mac-app-icon svg { width:100%; height:100%; }
+    .mac-app-name { font-size:12px; color:#333; font-weight:500; }
+    .mac-ctx { position:absolute; top:64px; left:78px; width:130px; background:#fff; border-radius:7px; box-shadow:0 8px 24px rgba(0,0,0,.2); padding:4px; opacity:0; transform:scale(.9); transform-origin:top left;
+      animation: ctxShow 7s ease-in-out infinite; }
+    .mac-ctx-item { font-size:12px; padding:5px 10px; border-radius:4px; color:#222; }
+    .mac-ctx-item.hot { background:#3a8ab4; color:#fff; }
+    .mac-dialog { position:absolute; top:50%; left:50%; transform:translate(-50%,-46%) scale(.92); width:300px; background:#ECEAE6; border-radius:12px; box-shadow:0 16px 48px rgba(0,0,0,.28); padding:20px; text-align:center; opacity:0;
+      animation: dlgShow 7s ease-in-out infinite; }
+    .mac-dialog-icon { font-size:28px; margin-bottom:10px; }
+    .mac-dialog-title { font-size:12px; color:#333; line-height:1.45; margin-bottom:16px; }
+    .mac-dialog-btns { display:flex; gap:8px; justify-content:center; }
+    .mac-btn { padding:6px 16px; border-radius:7px; border:1px solid #c4c1bc; background:#fff; font-size:12px; font-family:inherit; cursor:default; }
+    .mac-btn.primary { background:#3a8ab4; color:#fff; border-color:#3a8ab4; animation: btnPulse 7s ease-in-out infinite; }
+    .mac-cursor { position:absolute; font-size:18px; color:#222; filter:drop-shadow(0 1px 1px rgba(255,255,255,.8)); pointer-events:none;
+      animation: curMove 7s ease-in-out infinite; }
+    .mac-demo-cap { text-align:center; font-size:13px; color:var(--muted); margin-top:16px; }
+
+    @keyframes ctxShow {
+      0%,8% { opacity:0; transform:scale(.9); }
+      12%,32% { opacity:1; transform:scale(1); }
+      36%,100% { opacity:0; transform:scale(.9); }
+    }
+    @keyframes dlgShow {
+      0%,40% { opacity:0; transform:translate(-50%,-46%) scale(.92); }
+      48%,90% { opacity:1; transform:translate(-50%,-50%) scale(1); }
+      96%,100% { opacity:0; transform:translate(-50%,-46%) scale(.92); }
+    }
+    @keyframes btnPulse {
+      0%,60% { box-shadow:0 0 0 0 rgba(58,138,180,0); }
+      70% { box-shadow:0 0 0 6px rgba(58,138,180,.35); }
+      80%,100% { box-shadow:0 0 0 0 rgba(58,138,180,0); }
+    }
+    @keyframes curMove {
+      0% { top:80px; left:120px; }
+      14% { top:74px; left:120px; }
+      30% { top:74px; left:120px; }
+      48% { top:74px; left:120px; }
+      66% { top:60%; left:62%; }
+      78% { top:60%; left:62%; }
+      82% { top:61%; left:62%; }
+      100% { top:80px; left:120px; }
+    }
+
     /* HOW IT WORKS */
     .steps { display: grid; grid-template-columns: repeat(auto-fit,minmax(220px,1fr)); gap: 32px; margin-top: 48px; }
     .step { padding: 28px; background: var(--surface); border-radius: 16px; border: 1px solid var(--border); }
@@ -267,6 +320,40 @@
     <h2>First time? 30 seconds.</h2>
     <p class="section-sub">Etaros isn't in the App Store yet, so macOS asks you to confirm once. Totally safe — here's exactly what to do.</p>
 
+    <!-- Animated macOS install demo -->
+    <div class="mac-demo">
+      <div class="mac-window">
+        <div class="mac-bar"><span class="d r"></span><span class="d y"></span><span class="d g"></span><span class="mac-bar-title">Applications</span></div>
+        <div class="mac-body">
+          <!-- App icon + context menu -->
+          <div class="mac-app">
+            <div class="mac-app-icon">
+              <svg viewBox="0 0 100 100"><g stroke="#3a8ab4" stroke-width="6" stroke-linecap="round" fill="none"><circle cx="50" cy="50" r="38"/><path d="M50 40 Q60 44 58 28"/><path d="M50 40 Q44 46 30 42"/><path d="M50 40 Q56 50 68 58"/><path d="M50 40 Q42 48 34 62"/></g><circle cx="50" cy="48" r="6" fill="#1a5a7a"/></svg>
+            </div>
+            <div class="mac-app-name">Etaros</div>
+            <!-- context menu -->
+            <div class="mac-ctx">
+              <div class="mac-ctx-item hot">Open</div>
+              <div class="mac-ctx-item">Move to Bin</div>
+              <div class="mac-ctx-item">Get Info</div>
+            </div>
+          </div>
+          <!-- Gatekeeper dialog -->
+          <div class="mac-dialog">
+            <div class="mac-dialog-icon">⚠️</div>
+            <div class="mac-dialog-title">"Etaros" can't be opened because Apple cannot check it for malicious software.</div>
+            <div class="mac-dialog-btns">
+              <button class="mac-btn">Move to Bin</button>
+              <button class="mac-btn primary">Open</button>
+            </div>
+          </div>
+          <!-- cursor -->
+          <div class="mac-cursor">▲</div>
+        </div>
+      </div>
+      <p class="mac-demo-cap">Right-click → Open → Open. Once. That's it.</p>
+    </div>
+
     <div class="steps">
       <div class="step">
         <div class="step-num">1</div>
@@ -280,7 +367,7 @@
       </div>
       <div class="step">
         <div class="step-num">3</div>
-        <h3>Click "Open Anyway"</h3>
+        <h3>Click "Open"</h3>
         <p>A popup appears — click <strong>Open</strong>. macOS remembers it, so you only do this once. Done!</p>
       </div>
     </div>
