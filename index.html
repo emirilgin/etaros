@@ -626,9 +626,12 @@ html,body{
 .limit-msg-btn{ padding:11px 22px; border-radius:10px; background:var(--orange); color:#fff; border:none; font-family:inherit; font-size:14px; font-weight:600; cursor:pointer; transition:opacity .15s; }
 .limit-msg-btn:hover{ opacity:.88; }
 
-.t-spin{ width:20px; height:20px; flex-shrink:0; animation:etSpin 1.1s linear infinite; }
-.t-spin svg{ width:100%; height:100%; display:block; }
-.t-spin img{ width:100%; height:100%; display:block; border-radius:5px; }
+/* Clean rotating ring spinner (Claude-style) */
+.t-spin{ width:17px; height:17px; flex-shrink:0; border-radius:50%;
+  border:2px solid var(--border);
+  border-top-color:var(--orange);
+  animation:ringSpin .7s linear infinite; }
+@keyframes ringSpin{ to{ transform:rotate(360deg) } }
 @keyframes etSpin{ from{transform:rotate(0)} to{transform:rotate(360deg)} }
 
 /* ── User bubble ── */
@@ -640,11 +643,11 @@ html,body{
 }
 .user-bubble{
   max-width:78%;
-  background:#E9E3DA;
+  background:var(--card-h);
   border-radius:20px 20px 5px 20px;
   padding:11px 16px; font-size:15px; line-height:1.72;
   color:var(--t1); font-weight:400;
-  box-shadow:0 1px 2px rgba(30,20,10,.06);
+  box-shadow:0 1px 2px rgba(0,0,0,.06);
 }
 .screen-thumb-wrap{ margin-bottom:8px; position:relative; display:inline-block; }
 .screen-thumb{
@@ -1553,7 +1556,7 @@ html,body{
           <!-- Thinking indicator -->
           <div id="thinking">
             <div class="t-wrap">
-              <div class="t-spin"><img src="logo.png" alt=""/></div>
+              <div class="t-spin"></div>
               <div class="t-label">Etaros is thinking<span id="think-time" style="font-weight:400;color:var(--t4);font-size:11px;margin-left:3px"></span></div>
             </div>
           </div>

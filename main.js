@@ -1392,12 +1392,21 @@ function registerIPC() {
     const key = getGeminiKey();
     if (!key) return 'No AI key set. Open Settings → AI to add your free Gemini key.';
     try {
-      const wantsScreen = /scan (my )?screen|on (my )?screen|what.s on/i.test(text);
-      const parts = [{ text }];
-      if (wantsScreen) {
-        const thumb = await captureScreen();
-        if (thumb) parts.unshift({ inlineData: { mimeType: 'image/jpeg', data: thumbToB64(thumb) } });
+      // Always capture the screen so Etaros can actually SEE what the user is looking at.
+      // Hide the panel first so it isn't in the shot.
+      let imgB64 = null;
+      if (quickWindow && !quickWindow.isDestroyed() && quickWindow.isVisible()) {
+        quickWindow.hide();
+        await new Promise(r => setTimeout(r, 120));
       }
+      const thumb = await captureScreen();
+      if (thumb) imgB64 = thumbToB64(thumb);
+      if (quickWindow && !quickWindow.isDestroyed()) { quickWindow.show(); quickWindow.focus(); }
+
+      const parts = [];
+      if (imgB64) parts.push({ inlineData: { mimeType: 'image/jpeg', data: imgB64 } });
+      parts.push({ text: `${text}\n\n(You can see the user's current screen in the attached screenshot. Analyse what's actually on it.)` });
+
       const genAI = new GoogleGenerativeAI(key);
       const model = genAI.getGenerativeModel({ model: GEMINI_MODELS[0], systemInstruction: CHAT_PROMPT() });
       const res   = await model.generateContent(parts);
@@ -1406,6 +1415,28 @@ function registerIPC() {
     } catch (err) {
       return friendlyError(err);
     }
+  });
+
+  // Quick panel → trigger region screenshot, analyze just that area
+  ipcMain.handle('quick-region', async () => {
+    const limitHit = await checkLimitsAsync();
+    if (limitHit) return "You've used all your free checks this month. Upgrade to Pro for unlimited.";
+    const key = getGeminiKey();
+    if (!key) return 'No AI key set. Open Settings → AI to add your free Gemini key.';
+    if (quickWindow && !quickWindow.isDestroyed()) quickWindow.hide();
+    const b64 = await startRegionSelect();
+    if (quickWindow && !quickWindow.isDestroyed()) { quickWindow.show(); quickWindow.focus(); }
+    if (!b64) return null; // cancelled
+    try {
+      const genAI = new GoogleGenerativeAI(key);
+      const model = genAI.getGenerativeModel({ model: GEMINI_MODELS[0], systemInstruction: CHAT_PROMPT() });
+      const res = await model.generateContent([
+        { inlineData: { mimeType: 'image/jpeg', data: b64 } },
+        { text: 'Analyse this screenshot for any security threat — phishing, scam, fake login, fraud, risky link. Give your verdict and what to do.' },
+      ]);
+      bumpUsage();
+      return res.response.text();
+    } catch (err) { return friendlyError(err); }
   });
 
   // Region selector — CMD+SHIFT+4 style

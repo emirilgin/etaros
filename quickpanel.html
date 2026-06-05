@@ -29,9 +29,12 @@
 
   /* Input row */
   .ip-row{display:flex;align-items:center;gap:12px;padding:16px 18px;-webkit-app-region:drag;}
-  .ip-mark{width:24px;height:24px;flex-shrink:0;-webkit-app-region:no-drag;}
-  .ip-mark svg{width:100%;height:100%;display:block}
-  .ip-mark.busy{animation:spin 1s linear infinite}
+  .ip-mark{width:24px;height:24px;flex-shrink:0;-webkit-app-region:no-drag;position:relative;}
+  .ip-mark svg{width:100%;height:100%;display:block;transition:opacity .15s}
+  .ip-mark.busy svg{opacity:0}
+  .ip-mark.busy::after{content:'';position:absolute;inset:2px;border-radius:50%;
+    border:2px solid rgba(255,255,255,.15);border-top-color:var(--accent);
+    animation:spin .7s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
   #q{flex:1;background:none;border:none;outline:none;color:var(--t1);font-size:16px;
     font-family:inherit;-webkit-app-region:no-drag;}
@@ -61,6 +64,8 @@
   .hint{font-size:11.5px;color:var(--t2);background:var(--field);border:1px solid var(--border);
     border-radius:14px;padding:6px 11px;cursor:pointer;-webkit-app-region:no-drag;transition:background .12s;}
   .hint:hover{background:rgba(255,255,255,.1);color:var(--t1)}
+  .hint.primary{background:rgba(90,168,212,.16);border-color:rgba(90,168,212,.35);color:#9ad0ec;font-weight:600}
+  .hint.primary:hover{background:rgba(90,168,212,.26)}
 </style>
 </head>
 <body>
@@ -69,13 +74,13 @@
     <div class="ip-mark" id="mark">
       <svg viewBox="0 0 100 100" fill="none"><g stroke="url(#qg)" stroke-width="6" stroke-linecap="round" fill="none"><circle cx="50" cy="50" r="38"/><path d="M50 40 Q60 44 58 28"/><path d="M50 40 Q44 46 30 42"/><path d="M50 40 Q56 50 68 58"/><path d="M50 40 Q42 48 34 62"/></g><circle cx="50" cy="48" r="6" fill="#1a5a7a"/><defs><linearGradient id="qg" x1="20" y1="20" x2="80" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#5aa8d4"/><stop offset="1" stop-color="#1a5a7a"/></linearGradient></defs></svg>
     </div>
-    <input id="q" type="text" placeholder="Paste a link, email, or ask if something's safe…" autocomplete="off" spellcheck="false"/>
+    <input id="q" type="text" placeholder="Ask anything — I can see your screen…" autocomplete="off" spellcheck="false"/>
     <span class="ip-esc">esc</span>
   </div>
   <div class="hints" id="hints">
+    <span class="hint primary" id="snap">📸 Screenshot &amp; analyze</span>
+    <span class="hint" data-q="Scan my screen for anything risky right now.">👁️ Scan whole screen</span>
     <span class="hint" data-q="Is this link safe? ">🔗 Check a link</span>
-    <span class="hint" data-q="Is this email a phishing attempt? ">📧 Check an email</span>
-    <span class="hint" data-q="Scan my screen for anything risky right now.">👁️ Scan screen</span>
   </div>
   <div id="result">
     <div class="verdict neutral" id="verdict" style="display:none"></div>
@@ -129,10 +134,30 @@ q.addEventListener('keydown',e=>{
   if(e.key==='Enter'){ e.preventDefault(); ask(q.value); }
   if(e.key==='Escape'){ window.sk.closeQuickPanel(); }
 });
-hints.querySelectorAll('.hint').forEach(h=>h.addEventListener('click',()=>{
+hints.querySelectorAll('.hint[data-q]').forEach(h=>h.addEventListener('click',()=>{
   q.value=h.dataset.q; q.focus();
   if(h.dataset.q.endsWith('.')) ask(q.value); // screen scan = run immediately
 }));
+
+// 📸 Screenshot & analyze — Claude-style drag-to-select then analyze
+document.getElementById('snap').addEventListener('click', async ()=>{
+  if(busy) return;
+  busy=true; mark.classList.add('busy');
+  result.style.display='block'; hints.style.display='none';
+  verdictEl.style.display='none';
+  answerEl.innerHTML='<span style="color:var(--t3)">Select the area to analyse…</span>';
+  try{
+    const reply = await window.sk.quickRegion();
+    if(reply===null){ // cancelled
+      result.style.display='none'; hints.style.display='flex';
+    } else {
+      const v = detectVerdict(reply);
+      if(v){ verdictEl.className='verdict '+v[0]; verdictEl.textContent=v[1]; verdictEl.style.display='inline-flex'; }
+      answerEl.innerHTML = md(reply);
+    }
+  }catch(e){ answerEl.innerHTML='<span style="color:var(--danger)">Something went wrong.</span>'; }
+  busy=false; mark.classList.remove('busy');
+});
 
 // Reset + focus each time the panel is shown
 window.sk.on('quickpanel-show',()=>{

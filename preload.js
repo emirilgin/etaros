@@ -49,6 +49,7 @@ contextBridge.exposeInMainWorld('sk', {
   hideWindow:     ()       => ipcRenderer.send('hide-window'),
   flashWindow:    ()       => ipcRenderer.send('flash-window'),
   quickAnalyze:   (text)   => ipcRenderer.invoke('quick-analyze', text),
+  quickRegion:    ()       => ipcRenderer.invoke('quick-region'),
   closeQuickPanel:()       => ipcRenderer.send('close-quick-panel'),
   minimizeWindow: ()       => ipcRenderer.send('minimize-window'),
   openSettings:  ()        => ipcRenderer.send('open-settings'),
