@@ -1899,7 +1899,7 @@ function showOnboarding() {
       setTimeout(() => {
         const m = document.getElementById('msg');
         if (m && !m.value) {
-          appendAiGroup(`Hey ${name}! I'm Etaros — your second pair of eyes. I'm watching your screen and I'll flag anything worth knowing: scams, bad deals, subscriptions you didn't notice. Just ask me anything or let me work quietly in the background. What are you up to today?`);
+          appendAiGroup(`Hey ${name} — I'm Etaros, your personal security guard. I watch your screen and catch scams, phishing pages, and fraud before they cost you. **Paste any link, email, or message and I'll tell you if it's safe.** Or just keep browsing — I'll tap you on the shoulder if I spot anything dangerous.`);
         }
       }, 600);
     }
