@@ -39,6 +39,7 @@
       "renderer.js",
       "index.html",
       "overlay.html",
+      "logo.png",
       "app.config.js"
     ],
     "publish": {
