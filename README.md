@@ -35,20 +35,41 @@ and subscription traps in real time — before they cost you.
 
 ## What it does
 
-Etaros quietly scans your screen on an interval and surfaces short, specific
-insights when something matters. One AI, five things it looks for:
+Etaros is a focused **cybersecurity AI**. It watches your screen and catches
+online threats the moment they appear — then tells you exactly what's wrong and
+what to do.
 
-| | Looks for |
+| | It catches |
 |---|---|
-| 🛡️ **Security** | Phishing pages, fake logins, tech-support scams, credential risks |
-| 💸 **Finance** | Hidden fees, subscription traps, the real cost of a recurring charge |
-| 🛒 **Shopping** | Cheaper alternatives, better deals, price comparisons |
-| 🥗 **Health** | Wellness scams, pseudoscience, overpriced supplements |
-| 🎯 **Productivity** | Distractions and rabbit holes worth noticing |
+| 🎣 **Phishing** | Fake logins, lookalike domains (`paypa1.com`), homograph tricks |
+| 🪪 **Impersonation** | Fake bank, government (Belastingdienst/DigiD), delivery (PostNL/DHL) |
+| 💸 **Fraud** | Investment/crypto scams, romance scams, fake invoices, gift-card fraud |
+| 🔐 **Account risk** | Passwords on unsafe pages, malware downloads, risky permissions |
 
-Insights are concrete, never vague — *"This URL misspells PayPal as paypai.com,
-a known phishing domain"*, not *"this could be a scam."* You can also chat with
-it directly and drag in any image to analyze.
+Verdicts are concrete, never vague — *"The sender domain is `paypa1-support.com`
+— that's a digit 1, not the letter l. This is phishing."*
+
+---
+
+## How to use it
+
+**1. Just browse.** Etaros runs in the background and taps you on the shoulder —
+with a full-screen alert — the moment it spots an active threat.
+
+**2. Quick check — anywhere (⌘⇧E).** Press the hotkey to open the Spotlight-style
+panel from any app:
+- **📸 Screenshot & analyze** — drag to select part of your screen → instant verdict
+- Type a question (*"is this email phishing?"*) — it sees your screen and answers
+- Get a clear verdict: ✅ Safe · ⚠️ Suspicious · 🚨 Dangerous
+
+**3. Chat.** Open the app to ask anything security-related: *"I got hacked, what
+now?"*, *"is this link safe?"*, *"how do I set up 2FA?"* — and drag in any
+screenshot to have it analysed.
+
+**4. Region capture.** Grab a precise area of your screen and have Etaros analyse
+only that.
+
+> 🔓 **Beta / tester code:** enter `SIDEKICK-BETA-2026` in Settings → for free Max access.
 
 ---
 
