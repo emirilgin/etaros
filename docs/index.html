@@ -109,6 +109,22 @@
     .scan-result.ok   { background: rgba(45,138,90,0.12); border: 1px solid rgba(45,138,90,0.2);  color: #a0e4b8; }
     .scan-result .tag { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; opacity: .7; }
 
+    /* Animated quick-panel demo */
+    .qp-demo{ max-width:460px; margin:0 auto; background:rgba(26,20,16,.96); border:1px solid rgba(255,255,255,.08); border-radius:18px; box-shadow:0 30px 70px rgba(0,0,0,.28); overflow:hidden; text-align:left; }
+    .qp-row{ display:flex; align-items:center; gap:12px; padding:18px 20px; }
+    .qp-mark{ width:26px; height:26px; flex-shrink:0; }
+    .qp-mark svg{ width:100%; height:100%; display:block; }
+    .qp-typed{ font-size:16px; color:#f5efe6; font-family:'Inter',sans-serif; }
+    .qp-caret{ display:inline-block; width:2px; height:18px; background:#5aa8d4; margin-left:1px; vertical-align:-3px; animation:caret .8s steps(1) infinite; }
+    @keyframes caret{ 50%{opacity:0} }
+    .qp-result{ border-top:1px solid rgba(255,255,255,.08); padding:18px 20px; opacity:0; transform:translateY(6px); animation:qpReveal 9s ease-in-out infinite; }
+    .qp-verdict{ display:inline-flex; font-size:12px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:#e0606a; background:rgba(224,96,106,.14); border:1px solid rgba(224,96,106,.3); padding:5px 11px; border-radius:20px; margin-bottom:12px; }
+    .qp-detail{ font-size:13.5px; line-height:1.6; color:#cfc7bd; margin-bottom:12px; }
+    .qp-detail b{ color:#fff; }
+    .qp-action{ font-size:13px; line-height:1.55; color:#ffd0d0; background:rgba(224,96,106,.1); border:1px solid rgba(224,96,106,.2); border-radius:10px; padding:11px 13px; }
+    .qp-action b{ color:#ff9a9a; }
+    @keyframes qpReveal{ 0%,42%{opacity:0;transform:translateY(8px)} 50%,92%{opacity:1;transform:translateY(0)} 98%,100%{opacity:0;transform:translateY(8px)} }
+
     /* MAC INSTALL DEMO (animated) */
     .mac-demo { max-width: 460px; margin: 44px auto 0; }
     .mac-window { background:#ECEAE6; border-radius:12px; overflow:hidden; box-shadow:0 20px 50px rgba(0,0,0,.16); border:1px solid #d8d5d0; }
@@ -293,21 +309,17 @@
 
   <p class="hero-note">🇳🇱 Built by a 15-year-old who got tired of watching people get scammed</p>
 
+  <!-- Animated live demo: quick panel catching phishing -->
   <div class="mockup-wrap">
-    <div class="mockup">
-      <div class="mockup-bar">
-        <div class="dot-r"></div><div class="dot-y"></div><div class="dot-g"></div>
-        <span class="mockup-title">Etaros — watching your screen</span>
+    <div class="qp-demo">
+      <div class="qp-row">
+        <div class="qp-mark"><svg viewBox="0 0 100 100" fill="none"><g stroke="url(#hg)" stroke-width="7" stroke-linecap="round"><circle cx="50" cy="50" r="38"/><path d="M50 40 Q60 44 58 28"/><path d="M50 40 Q44 46 30 42"/><path d="M50 40 Q56 50 68 58"/><path d="M50 40 Q42 48 34 62"/></g><circle cx="50" cy="48" r="6" fill="#1a5a7a"/><defs><linearGradient id="hg" x1="20" y1="20" x2="80" y2="80" gradientUnits="userSpaceOnUse"><stop stop-color="#5aa8d4"/><stop offset="1" stop-color="#1a5a7a"/></linearGradient></defs></svg></div>
+        <div class="qp-typed"><span id="qp-text"></span><span class="qp-caret"></span></div>
       </div>
-      <div class="mockup-body">
-        <div class="scan-result risk">
-          <div class="tag">⚠ Risk detected</div>
-          This "free trial" auto-charges €49/mo after 7 days. Cancel window: 24 hours. Buried in Terms §14.
-        </div>
-        <div class="scan-result ok">
-          <div class="tag">✓ All clear</div>
-          No hidden charges or dark patterns detected. Safe to proceed.
-        </div>
+      <div class="qp-result">
+        <div class="qp-verdict">🚨 Dangerous — phishing</div>
+        <div class="qp-detail">The domain reads <b>paypa1-login.com</b> — that's a digit <b>1</b>, not the letter <b>l</b>. This is a fake PayPal page built to steal your password.</div>
+        <div class="qp-action"><b>What to do:</b> Don't enter anything. Close the tab and go to <b>paypal.com</b> directly.</div>
       </div>
     </div>
   </div>
@@ -569,19 +581,22 @@
 </footer>
 
 <script>
-// Waitlist form — saves to localStorage + shows success
-// Replace with Tally/Mailchimp when you have a real backend
-document.getElementById('wl-form').addEventListener('submit', function(e) {
-  e.preventDefault();
-  const email = document.getElementById('wl-email').value.trim();
-  if (!email) return;
-  // Store locally (replace with real API call)
-  const existing = JSON.parse(localStorage.getItem('etaros_waitlist') || '[]');
-  if (!existing.includes(email)) existing.push(email);
-  localStorage.setItem('etaros_waitlist', JSON.stringify(existing));
-  document.getElementById('wl-form').style.display = 'none';
-  document.getElementById('wl-success').style.display = 'block';
-});
+// Animated quick-panel demo — types the phishing URL on a loop
+(function(){
+  const el = document.getElementById('qp-text');
+  if (!el) return;
+  const full = 'is paypa1-login.com safe?';
+  function run(){
+    el.textContent = '';
+    let i = 0;
+    const type = () => {
+      if (i <= full.length){ el.textContent = full.slice(0, i); i++; setTimeout(type, 55); }
+    };
+    type();
+  }
+  run();
+  setInterval(run, 9000); // matches the result reveal loop
+})();
 </script>
 
 </body>
