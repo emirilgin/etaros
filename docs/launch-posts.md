@@ -1,106 +1,106 @@
-# Etaros — Launch Posts (copy-paste klaar)
-*Afvuren zodra v1.2.0 officieel live is. Dinsdag–donderdag, ochtend US-tijd (15:00-17:00 NL).*
+# Etaros — Launch Posts (copy-paste ready)
+*Fire the day v1.2.1 is live + tested. Tue–Thu, ~15:00–17:00 NL (morning US).*
+*Positioning: a real-time AI security guard that catches scams & phishing on your screen.*
 
 ---
 
 ## 1. Reddit — r/macapps
 
-**Titel:**
-I built an AI that watches your screen and catches scams in real time (Mac + Windows, free)
+**Title:**
+I'm 15 and I built a free AI that watches your screen and catches scams in real time
 
 **Body:**
-Hey r/macapps,
+A while ago someone in my family almost lost €3,000 to a fake bank website. It looked completely real. Nobody warned them in time.
 
-I'm 15, from the Netherlands, and I spent the last months building Etaros — a desktop app that runs quietly in the background, watches your screen, and warns you the moment something dangerous shows up: phishing pages, fake login screens, hidden subscription traps, financial scams.
+So I built the warning.
 
-The idea came after a family member almost lost €3,000 to a fake bank website. Nobody warned him in time. Etaros is built to be that warning — before you click, before you pay.
+Etaros is a desktop app that quietly watches your screen and catches phishing pages, fake logins, and scams the moment they appear — then tells you exactly what's wrong and what to do. When it spots a real threat it throws up a full alert so you can't miss it.
 
-It's free to start (5 AI messages/month), Pro is €9/mo for unlimited. Screenshots are analyzed and discarded, never stored.
+- Catches typosquatted domains (paypa1.com), fake login pages, impersonation, crypto/romance scams
+- Paste any link, email or message and it gives you a verdict: ✅ safe / ⚠️ suspicious / 🚨 dangerous
+- 100% focused on security — it's not a chatbot that does everything badly, it does one thing extremely well
+- Free. Mac + Windows.
 
-Download (Mac + Windows): https://github.com/emirilgin/etaros/releases/latest
+Download: https://github.com/emirilgin/etaros/releases/latest
 Site: https://emirilgin.github.io/etaros
 
-Would love honest feedback — what would make you actually keep it running?
+Brutal feedback welcome — especially on false positives.
 
 ---
 
 ## 2. Show HN (news.ycombinator.com/submit)
 
-**Titel:**
-Show HN: Etaros – AI that watches your screen and catches scams in real time
+**Title:** Show HN: Etaros – AI that catches phishing and scams on your screen in real time
 
 **URL:** https://emirilgin.github.io/etaros
 
-**First comment (post immediately after):**
-I'm a 15-year-old dev from the Netherlands. Etaros is an Electron app that screenshots your screen on an interval, runs it through a vision model (Gemini by default, Claude on the top tier), and surfaces a short, specific warning when it detects phishing, dark-pattern subscriptions, or financial scams.
+**First comment:**
+I'm a 15-year-old dev from the Netherlands. Etaros is an Electron app that screenshots your screen on an interval, runs it through a vision model (Gemini default, Claude on the top tier), and detects active threats — phishing pages, fake logins, impersonation, financial scams. On a high-confidence detection it fires a blocking danger alert.
 
-Technical notes: screenshots are processed then discarded (not stored), tier/auth is server-authoritative via Supabase, and there's a model fallback chain for quota handling. Free tier is 5 messages/month.
+It's deliberately narrow: pure cybersecurity, not a do-everything assistant. The system prompt enforces a real analyst workflow (check domain → links → urgency → the ask → payment method) and a SAFE/SUSPICIOUS/DANGEROUS verdict.
 
-Honest feedback welcome — especially on false-positive rate and the privacy model (it does send the analyzed screenshot to the model provider; local-only via Ollama is an option).
+Screenshots are analysed then discarded (not stored). Region capture uses a freeze-frame so the overlay is never in the shot and the crop is instant. Tier/auth is server-authoritative (Supabase).
+
+Honest feedback welcome — especially false-positive rate and the privacy model (default path does send the analysed frame to the model provider; local-only via Ollama is an option).
 
 ---
 
 ## 3. Twitter / X (thread)
 
-**Tweet 1:**
-I'm 15. I built an AI that watches your screen and catches scams before they cost you.
+**1/** Someone in my family almost lost €3,000 to a fake bank site. It looked perfectly real. Nobody warned them in time.
 
-A family member almost lost €3,000 to a fake bank site. Nobody warned him in time.
+I'm 15. So I built the warning. 🧵
 
-So I built the warning. 🧵
+**2/** Etaros watches your screen and catches scams the second they appear:
 
-**Tweet 2:**
-Etaros runs silently in the background. Every 30s it analyzes your screen and flags:
+🎣 phishing & fake logins
+🪪 impersonation (bank, PostNL, gov)
+💸 crypto / investment fraud
+🚨 and throws up an alert you can't miss
 
-🎣 phishing pages
-💳 hidden subscriptions
-💸 fake discounts
-🛡️ financial scams
+**3/** Paste any link, email or message → instant verdict:
+✅ safe · ⚠️ suspicious · 🚨 dangerous
++ exactly why, and what to do.
 
-In real time. Before you click.
+It does ONE thing — security — better than the all-in-one assistants do anything.
 
-**Tweet 3:**
-It's free to start. Mac + Windows.
+**4/** Free. Mac + Windows. Built solo, from the Netherlands.
 
-Built solo, from the Netherlands, over the last few months.
+https://emirilgin.github.io/etaros
 
-Download: https://emirilgin.github.io/etaros
-
-If it catches even one scam for you, it did its job. Try it → tell me what it finds.
+Try it, then tell me what it catches 👀
 
 ---
 
-## 4. TikTok / Reels / Shorts (script, 30-45 sec)
+## 4. TikTok / Reels / Shorts (script, 30-40s)
 
-**Hook (0-3s):** "This fake website almost stole €3,000 from my uncle."
-**(3-10s):** Screen-record opening a realistic phishing page.
-**(10-20s):** Etaros pops up: "⚠ This URL misspells PayPal — known phishing domain."
-**(20-30s):** "It watches your screen and catches this stuff in real time. I'm 15 and I built it."
-**(30-40s):** "Free on Mac and Windows. Link in bio." Show logo.
+**Hook (0-3s):** "This website almost stole €3,000 from my family."
+**(3-10s):** Screen-record opening a realistic fake bank/PayPal login.
+**(10-22s):** Etaros fires a red alert: "🚨 DANGEROUS — paypa1.com is a fake. Don't enter your password."
+**(22-32s):** "It watches your screen and catches this in real time. I'm 15 and I built it. Free."
+**(32-40s):** Logo + "Link in bio."
 
-**Caption:** AI that catches scams before they cost you 👀 built by a 15 y/o · link in bio #scam #ai #tech #cybersecurity #buildinpublic
+**Caption:** I built an AI bodyguard for your screen 👀🚨 catches scams before they cost you · built by a 15 y/o · link in bio #scam #phishing #cybersecurity #ai #buildinpublic
 
 ---
 
-## 5. Other places (free, high-intent)
-
-- r/SideProject — same as macapps post, more "I built this" angle
-- r/artificial — lead with the tech
-- r/cybersecurity — lead with threat detection (careful, strict mods)
-- Product Hunt — DON'T rush. Prep 2 weeks, line up upvotes, launch Tuesday
-- Indie Hackers — "building in public" post + milestones
-- Newsletters: TLDR (tldr.tech/submit), Ben's Bites, Hacker Newsletter
+## 5. Other places
+- r/SideProject, r/artificial — same story, builder angle
+- r/cybersecurity, r/Scams — lead with threat detection (strict mods, be genuine, no hard sell)
+- Indie Hackers — build-in-public post
+- Newsletters: TLDR (tldr.tech/submit), Ben's Bites
+- Product Hunt — DON'T rush. Prep 2 weeks, line up upvotes, launch a Tuesday.
 
 ---
 
 ## RULES
-
-1. Post the SAME day v1.2.0 goes live (not before).
-2. Reply to EVERY comment in the first 2 hours — drives ranking.
-3. Never sound like an ad. Lead with the story (uncle/€3000), not features.
-4. One visual (GIF/video of a real catch) beats 10 paragraphs.
-5. Get 3-5 friends to upvote in the first 30 min (timing matters most).
+1. Post the SAME day v1.2.1 is live (not before).
+2. Reply to EVERY comment in the first 2 hours — drives ranking hard.
+3. Lead with the STORY (the €3,000 near-miss), never a feature list.
+4. One visual of a real catch (GIF/video) beats 10 paragraphs.
+5. Get 3-5 friends to upvote in the first 30 min.
+6. Never oversell. Invite criticism — it reads as honest and converts better.
 
 ---
 
-*Last updated: juni 2026*
+*Last updated: June 2026*
