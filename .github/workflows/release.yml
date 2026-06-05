@@ -158,26 +158,28 @@ jobs:
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
-          name: "Sidekick ${{ github.ref_name }}"
+          name: "Etaros ${{ github.ref_name }}"
           body: |
-            ## Sidekick ${{ github.ref_name }}
+            ## Etaros ${{ github.ref_name }}
+
+            AI that watches your screen and catches scams, phishing, and bad deals in real time.
 
             ## ⬇️ Download — pick the right file
 
             | # | Platform | File |
             |---|----------|------|
-            | 1 | 🍎 **Mac — Apple Silicon** (M1/M2/M3/M4) | `Sidekick-*-arm64.dmg` |
-            | 2 | 🍎 **Mac — Intel** (pre-2020) | `Sidekick-*-x64.dmg` |
-            | 3 | 🪟 **Windows** 10/11 | `Sidekick-*-Setup.exe` |
+            | 1 | 🍎 **Mac — Apple Silicon** (M1/M2/M3/M4) | `Etaros-*-arm64.dmg` |
+            | 2 | 🍎 **Mac — Intel** (pre-2020) | `Etaros-*.dmg` |
+            | 3 | 🪟 **Windows** 10/11 | `Etaros.Setup.*.exe` |
 
-            > **Not sure which Mac?** 🍎 → About This Mac → chip says M1/M2/M3/M4 → use `arm64.dmg`. Says Intel Core → use `x64.dmg`.
+            > **Not sure which Mac?** 🍎 → About This Mac → chip says M1/M2/M3/M4 → use `arm64.dmg`. Says Intel → use the other `.dmg`.
 
             ### Install
             **Mac:** Open `.dmg` → drag to Applications → right-click → Open → Open anyway (unsigned build).
-            **Windows:** Run `Sidekick-*-Setup.exe` → if SmartScreen appears → More info → Run anyway.
+            **Windows:** Run `Etaros.Setup.*.exe` → if SmartScreen appears → More info → Run anyway.
 
             ---
-            ✦ Sidekick will auto-update in the background. You'll see a notification when the next version is ready.
+            ✦ Made in the Netherlands 🇳🇱
           files: |
             artifacts/mac/*.dmg
             artifacts/mac/*.blockmap
