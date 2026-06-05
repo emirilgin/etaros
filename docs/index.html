@@ -9,7 +9,8 @@
   <meta property="og:description" content="Real-time AI that catches scams, phishing, and bad deals before they cost you." />
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -50,7 +51,7 @@
     section { padding: 80px 24px; }
     .container { max-width: 960px; margin: 0 auto; }
     .section-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--accent); margin-bottom: 12px; }
-    h2 { font-size: clamp(28px,4vw,40px); font-weight: 800; letter-spacing: -.02em; line-height: 1.15; margin-bottom: 16px; }
+    h2 { font-family:'Space Grotesk',sans-serif; font-size: clamp(28px,4.4vw,42px); font-weight: 700; letter-spacing: -.02em; line-height: 1.12; margin-bottom: 16px; }
     .section-sub { font-size: 17px; color: var(--muted); max-width: 560px; line-height: 1.65; }
 
     /* HERO */
@@ -63,7 +64,7 @@
     }
     .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
     @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.4} }
-    h1 { font-size: clamp(36px,6vw,64px); font-weight: 900; letter-spacing: -.03em; line-height: 1.05; margin-bottom: 20px; }
+    h1 { font-family:'Space Grotesk',sans-serif; font-size: clamp(38px,6.5vw,68px); font-weight: 700; letter-spacing: -.035em; line-height: 1.02; margin-bottom: 20px; }
     h1 em { font-style: normal; color: var(--accent); }
     .hero-sub { font-size: clamp(16px,2vw,20px); color: var(--muted); max-width: 600px; margin: 0 auto 36px; line-height: 1.6; }
     .hero-cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
@@ -257,7 +258,7 @@
 
 <!-- NAV -->
 <nav>
-  <div class="nav-logo">Eta<span>ros.</span></div>
+  <div class="nav-logo"><img src="logo.png" alt="" width="26" height="26" style="border-radius:7px;vertical-align:middle;margin-right:8px"/>Eta<span>ros.</span></div>
   <div class="nav-links">
     <a href="#how">How it works</a>
     <a href="#pricing">Pricing</a>
@@ -269,14 +270,15 @@
 <section class="hero">
   <div class="hero-badge">
     <span class="dot"></span>
-    Beta — Mac &amp; Windows
+    Live now — Mac &amp; Windows
   </div>
 
-  <h1>Scammers are fast.<br><em>Etaros is faster.</em></h1>
+  <h1>They're already<br>on your screen.<br><em>You just can't see them.</em></h1>
 
   <p class="hero-sub">
-    An AI that quietly watches your screen and catches the scam, the fake login,
-    the €49/mo trap you didn't notice — <strong>a second before it costs you.</strong>
+    Fake logins. Hidden charges. Scams built to slip right past you.
+    Etaros watches your screen and catches them in real time —
+    <strong>a second before they take your money.</strong>
   </p>
 
   <div class="hero-cta">
@@ -446,8 +448,8 @@
 <section id="features">
   <div class="container">
     <div class="section-label">What it catches</div>
-    <h2>The stuff that looks fine<br>until it isn't.</h2>
-    <p class="section-sub">The traps are designed to slip past you. Etaros is designed to catch them.</p>
+    <h2>It only takes<br>one click.</h2>
+    <p class="section-sub">Every one of these is built to look normal. By the time you notice, the money is gone. Etaros notices first.</p>
 
     <div class="features">
       <div class="feature">
