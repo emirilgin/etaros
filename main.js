@@ -288,13 +288,30 @@ let lastNotifyTime = 0;
 let overlayWindow  = null;
 
 // ─── Region selector ──────────────────────────────────────────────────────────
-function startRegionSelect() {
+async function startRegionSelect() {
+  if (overlayWindow && !overlayWindow.isDestroyed()) overlayWindow.close();
+
+  const display     = screen.getPrimaryDisplay();
+  const scaleFactor = display.scaleFactor;
+
+  // ── FREEZE-FRAME: capture the full screen BEFORE showing any overlay ──
+  // Guarantees the overlay is never in the capture, and makes the final
+  // crop instant (no post-release latency, no hide/recapture flicker).
+  let frozen = null;
+  try {
+    const physW = Math.round(display.bounds.width  * scaleFactor);
+    const physH = Math.round(display.bounds.height * scaleFactor);
+    const sources = await desktopCapturer.getSources({
+      types: ['screen'],
+      thumbnailSize: { width: physW, height: physH },
+    });
+    // Prefer the primary display's source
+    frozen = (sources.find(s => String(s.display_id) === String(display.id)) || sources[0])?.thumbnail || null;
+  } catch (err) {
+    console.error('[region] capture failed:', err.message);
+  }
+
   return new Promise(resolve => {
-    if (overlayWindow && !overlayWindow.isDestroyed()) overlayWindow.close();
-
-    const display     = screen.getPrimaryDisplay();
-    const scaleFactor = display.scaleFactor;
-
     overlayWindow = new BrowserWindow({
       x: display.bounds.x, y: display.bounds.y,
       width:  display.bounds.width,
@@ -317,34 +334,20 @@ function startRegionSelect() {
     }
 
     overlayWindow.loadFile('overlay.html');
-    overlayWindow.show();
-    overlayWindow.focus();
+    overlayWindow.once('ready-to-show', () => { overlayWindow?.show(); overlayWindow?.focus(); });
 
-    const onSelected = async (_, region) => {
+    const onSelected = (_, region) => {
       cleanup();
-      // Hide overlay before capture so it's not in the screenshot
-      overlayWindow?.hide();
-      await new Promise(r => setTimeout(r, 180));
-
       try {
-        // Capture at physical pixel resolution
-        const physW = Math.round(display.bounds.width  * scaleFactor);
-        const physH = Math.round(display.bounds.height * scaleFactor);
-        const sources = await desktopCapturer.getSources({
-          types: ['screen'],
-          thumbnailSize: { width: physW, height: physH },
-        });
-        if (!sources.length) { overlayWindow?.close(); overlayWindow = null; return resolve(null); }
-
-        // Crop: logical coords × scaleFactor (handle retina)
+        if (!frozen) { overlayWindow?.close(); overlayWindow = null; return resolve(null); }
+        // Crop the already-captured frozen frame — instant, no latency.
         const sf = region.dpr || scaleFactor;
-        const cropped = sources[0].thumbnail.crop({
+        const cropped = frozen.crop({
           x:      Math.max(0, Math.round(region.x      * sf)),
           y:      Math.max(0, Math.round(region.y      * sf)),
           width:  Math.max(1, Math.round(region.width  * sf)),
           height: Math.max(1, Math.round(region.height * sf)),
         });
-
         const b64 = cropped.toJPEG(92).toString('base64');
         overlayWindow?.close(); overlayWindow = null;
         resolve(b64);

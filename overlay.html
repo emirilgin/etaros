@@ -89,18 +89,26 @@ function draw() {
   ctx.fillText(label, lx, ly - 4);
 }
 
+// rAF-batched rendering — never more than one draw per frame (smooth 60fps)
+let rafPending = false;
+function scheduleDraw() {
+  if (rafPending) return;
+  rafPending = true;
+  requestAnimationFrame(() => { rafPending = false; draw(); });
+}
+
 canvas.addEventListener('mousedown', e => {
   sx = ex = e.clientX;
   sy = ey = e.clientY;
   down = true;
   hint.style.display = 'none';
-  draw();
+  scheduleDraw();
 });
 
 canvas.addEventListener('mousemove', e => {
   if (!down) return;
   ex = e.clientX; ey = e.clientY;
-  draw();
+  scheduleDraw();
 });
 
 canvas.addEventListener('mouseup', e => {
