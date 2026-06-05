@@ -131,8 +131,9 @@
     .mac-dialog-btns { display:flex; gap:8px; justify-content:center; }
     .mac-btn { padding:6px 16px; border-radius:7px; border:1px solid #c4c1bc; background:#fff; font-size:12px; font-family:inherit; cursor:default; }
     .mac-btn.primary { background:#3a8ab4; color:#fff; border-color:#3a8ab4; animation: btnPulse 7s ease-in-out infinite; }
-    .mac-cursor { position:absolute; font-size:18px; color:#222; filter:drop-shadow(0 1px 1px rgba(255,255,255,.8)); pointer-events:none;
+    .mac-cursor { position:absolute; width:20px; height:20px; filter:drop-shadow(0 1px 2px rgba(0,0,0,.3)); pointer-events:none;
       animation: curMove 7s ease-in-out infinite; }
+    .mac-cursor svg { display:block; }
     .mac-demo-cap { text-align:center; font-size:13px; color:var(--muted); margin-top:16px; }
 
     @keyframes ctxShow {
@@ -173,7 +174,7 @@
     .win-extra { margin-top:14px; opacity:0; animation: winExtra 7s ease-in-out infinite; }
     .win-app { font-size:12px; opacity:.85; margin-bottom:14px; }
     .win-btn { padding:7px 16px; background:#e8e8e8; color:#111; border:none; border-radius:2px; font-size:12.5px; font-family:inherit; cursor:default; animation: winBtnPulse 7s ease-in-out infinite; }
-    .win-cursor { color:#fff; filter:drop-shadow(0 1px 2px rgba(0,0,0,.5)); animation: winCur 7s ease-in-out infinite; }
+    .win-cursor { animation: winCur 7s ease-in-out infinite; }
     @keyframes winMore { 0%,16%{opacity:0} 24%,52%{opacity:1} 60%,100%{opacity:.4} }
     @keyframes winExtra { 0%,48%{opacity:0; transform:translateY(6px)} 56%,94%{opacity:1; transform:translateY(0)} 100%{opacity:0} }
     @keyframes winBtnPulse { 0%,68%{box-shadow:0 0 0 0 rgba(255,255,255,0)} 78%{box-shadow:0 0 0 6px rgba(255,255,255,.4)} 88%,100%{box-shadow:0 0 0 0 rgba(255,255,255,0)} }
@@ -366,7 +367,7 @@
             </div>
           </div>
           <!-- cursor -->
-          <div class="mac-cursor">▲</div>
+          <div class="mac-cursor"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M5 3l14 7-6 1.5L9.5 18 5 3z" fill="#000" stroke="#fff" stroke-width="1.4" stroke-linejoin="round"/></svg></div>
         </div>
       </div>
       <p class="mac-demo-cap">Right-click → Open → Open. Once. That's it.</p>
@@ -414,7 +415,7 @@
               <button class="win-btn">Run anyway</button>
             </div>
           </div>
-          <div class="mac-cursor win-cursor">▲</div>
+          <div class="mac-cursor win-cursor"><svg viewBox="0 0 24 24" width="20" height="20"><path d="M5 3l14 7-6 1.5L9.5 18 5 3z" fill="#fff" stroke="#000" stroke-width="1.4" stroke-linejoin="round"/></svg></div>
         </div>
       </div>
       <p class="mac-demo-cap">More info → Run anyway. Once. Done.</p>
