@@ -10,14 +10,16 @@ and subscription traps in real time — before they cost you.
 
 <br/>
 
-## [Download Latest Release](https://github.com/emirilgin/sidekick/releases/latest)
+# [⬇️  Download Etaros — Free](https://github.com/emirilgin/etaros/releases/latest)
 
-| Mac — Apple Silicon (M1/M2/M3/M4) | Mac — Intel (pre-2020) | Windows 10/11 |
+### [🌐 etaros website &amp; install guide](https://emirilgin.github.io/etaros)
+
+| Mac — Apple Silicon (M1/M2/M3/M4) | Mac — Intel | Windows 10/11 |
 |:---:|:---:|:---:|
-| `Etaros-*-arm64.dmg` | `Etaros-*.dmg` | `Etaros.Setup.*.exe` |
+| [`Etaros-arm64.dmg`](https://github.com/emirilgin/etaros/releases/latest) | [`Etaros.dmg`](https://github.com/emirilgin/etaros/releases/latest) | [`Etaros.Setup.exe`](https://github.com/emirilgin/etaros/releases/latest) |
 
-[![Version](https://img.shields.io/github/v/release/emirilgin/sidekick?style=flat-square&color=cf6e3c&label=latest)](https://github.com/emirilgin/sidekick/releases/latest)
-[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows-lightgray?style=flat-square)](https://github.com/emirilgin/sidekick/releases/latest)
+[![Version](https://img.shields.io/github/v/release/emirilgin/etaros?style=flat-square&color=3a8ab4&label=latest)](https://github.com/emirilgin/etaros/releases/latest)
+[![Platform](https://img.shields.io/badge/platform-macOS%20%7C%20Windows-lightgray?style=flat-square)](https://github.com/emirilgin/etaros/releases/latest)
 [![License](https://img.shields.io/badge/license-MIT-4db87a?style=flat-square)](LICENSE)
 
 </div>
@@ -80,7 +82,7 @@ Upgrade from inside the app (**Settings → Plan**).
 ## Dev setup
 
 ```bash
-git clone https://github.com/emirilgin/sidekick.git
+git clone https://github.com/emirilgin/etaros.git
 cd sidekick
 npm install
 cp app.config.example.js app.config.js
