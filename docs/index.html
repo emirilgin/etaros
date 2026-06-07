@@ -266,10 +266,23 @@
 
     @media (max-width: 640px) {
       nav { padding: 0 16px; }
-      .nav-links { gap: 12px; }
-      section { padding: 64px 16px; }
-      .hero-cta { flex-direction: column; align-items: center; }
-      .waitlist-form { flex-direction: column; }
+      .nav-links { gap: 10px; }
+      .nav-links a:not(.btn-nav){ display:none; }   /* hide text nav links, keep Download */
+      section { padding: 52px 18px; }
+      .hero { padding-top: 64px; padding-bottom: 56px; }
+      .hero-cta { flex-direction: column; align-items: stretch; }
+      .hero-cta a { text-align:center; }
+      .hero-sub { font-size: 16px; }
+      .section-sub { font-size: 15px; }
+      /* The animated OS install demos are too wide/busy on phones — hide,
+         the numbered steps below already explain it clearly. */
+      .mac-demo { display: none; }
+      .pricing-grid { gap: 14px; }
+      .steps { gap: 16px; margin-top: 32px; }
+      .features { gap: 14px; }
+      .mockup-wrap { margin-top: 32px; }
+      h1 { font-size: 34px; }
+      h2 { font-size: 26px; }
     }
   </style>
 </head>
@@ -515,11 +528,11 @@
         <div class="price-period">forever</div>
         <ul class="price-features">
           <li>Real-time screen scanning</li>
-          <li>5 AI messages / month</li>
-          <li>Threat alerts</li>
-          <li class="muted">Unlimited messages</li>
-          <li class="muted">AI Compare (find alternatives)</li>
-          <li class="muted">Claude AI model</li>
+          <li>5 security checks / month</li>
+          <li>Danger alerts</li>
+          <li class="muted">Unlimited checks</li>
+          <li class="muted">Email &amp; link deep analysis</li>
+          <li class="muted">Claude — smartest AI</li>
         </ul>
         <a href="https://github.com/emirilgin/etaros/releases/latest" class="btn-price outline">Download free</a>
       </div>
@@ -530,11 +543,11 @@
         <div class="price-amount"><sup>€</sup>9</div>
         <div class="price-period">per month · cancel anytime</div>
         <ul class="price-features">
-          <li>Everything in Free</li>
-          <li>Unlimited messages</li>
-          <li>AI Compare — find better deals</li>
-          <li>Priority scanning</li>
-          <li>Email support</li>
+          <li>Real-time screen scanning</li>
+          <li><b>Unlimited</b> security checks</li>
+          <li>Email &amp; link deep analysis</li>
+          <li>Priority real-time scanning</li>
+          <li class="muted">Claude — smartest AI</li>
         </ul>
         <span class="btn-price filled" style="opacity:.55;cursor:default">Coming soon</span>
       </div>
@@ -542,13 +555,13 @@
       <div class="price-card">
         <div class="price-name">Max</div>
         <div class="price-amount"><sup>€</sup>19</div>
-        <div class="price-period">per month</div>
+        <div class="price-period">per month · cancel anytime</div>
         <ul class="price-features">
-          <li>Everything in Pro</li>
-          <li>Claude AI — best model</li>
-          <li>Faster responses</li>
-          <li>Early access to new features</li>
-          <li>Priority support</li>
+          <li>Real-time screen scanning</li>
+          <li><b>Unlimited</b> security checks</li>
+          <li>Email &amp; link deep analysis</li>
+          <li><b>Claude</b> — smartest AI model</li>
+          <li>Faster responses + priority support</li>
         </ul>
         <span class="btn-price outline" style="opacity:.55;cursor:default">Coming soon</span>
       </div>
