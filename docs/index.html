@@ -46,6 +46,42 @@
       background: var(--accent); color: #fff;
       font-size: 14px; font-weight: 600; text-decoration: none;
     }
+    /* Hamburger */
+    .nav-burger{ width:38px;height:38px;border:none;background:none;cursor:pointer;
+      display:flex;flex-direction:column;justify-content:center;gap:5px;padding:8px;border-radius:10px;transition:background .15s;}
+    .nav-burger:hover{ background:rgba(0,0,0,.05); }
+    .nav-burger span{ height:2px;background:var(--text);border-radius:2px;transition:transform .2s,opacity .2s; }
+    .nav-burger.open span:nth-child(1){ transform:translateY(7px) rotate(45deg); }
+    .nav-burger.open span:nth-child(2){ opacity:0; }
+    .nav-burger.open span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
+    .nav-menu{ position:fixed; top:60px; right:16px; left:16px; max-width:300px; margin-left:auto;
+      background:var(--surface); border:1px solid var(--border); border-radius:16px;
+      box-shadow:0 20px 50px rgba(0,0,0,.16); padding:8px; z-index:99;
+      display:none; flex-direction:column; gap:2px; animation:menuDrop .18s ease both; }
+    .nav-menu.open{ display:flex; }
+    @keyframes menuDrop{ from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:none} }
+    .nav-menu-item{ padding:12px 14px; border-radius:10px; font-size:15px; font-weight:500; color:var(--text); text-decoration:none; }
+    .nav-menu-item:hover{ background:var(--bg); }
+    .nav-menu-dl{ margin-top:6px; padding:13px; border-radius:11px; border:none; background:var(--accent); color:#fff;
+      font-family:inherit; font-size:15px; font-weight:700; cursor:pointer; }
+    .nav-menu-dl:hover{ opacity:.9; }
+    /* Download modal */
+    .dl-overlay{ display:none; position:fixed; inset:0; z-index:200; background:rgba(20,28,38,.5); backdrop-filter:blur(6px);
+      align-items:center; justify-content:center; padding:24px; animation:menuDrop .18s ease both; }
+    .dl-overlay.open{ display:flex; }
+    .dl-box{ position:relative; width:100%; max-width:420px; background:var(--surface); border:1px solid var(--border);
+      border-radius:20px; padding:32px 28px 24px; text-align:center; box-shadow:0 30px 80px rgba(0,0,0,.3); }
+    .dl-close{ position:absolute; top:14px; right:16px; background:none; border:none; font-size:16px; color:var(--muted); cursor:pointer; }
+    .dl-title{ font-family:'Space Grotesk',sans-serif; font-size:22px; font-weight:700; margin-bottom:6px; }
+    .dl-sub{ font-size:14px; color:var(--muted); margin-bottom:22px; }
+    .dl-grid{ display:flex; flex-direction:column; gap:10px; }
+    .dl-btn{ display:flex; flex-direction:column; gap:2px; padding:14px 16px; border-radius:13px; border:1.5px solid var(--border);
+      text-decoration:none; color:var(--text); transition:border-color .15s,background .15s; text-align:left; }
+    .dl-btn:hover{ border-color:var(--accent); background:var(--bg); }
+    .dl-btn.match{ border-color:var(--accent); background:rgba(58,138,180,.06); }
+    .dl-btn b{ font-size:15px; }
+    .dl-btn span{ font-size:12.5px; color:var(--muted); }
+    .dl-hint{ font-size:12px; color:var(--muted); margin-top:16px; line-height:1.5; }
 
     /* SECTIONS */
     section { padding: 80px 24px; }
@@ -266,8 +302,6 @@
 
     @media (max-width: 640px) {
       nav { padding: 0 16px; }
-      .nav-links { gap: 10px; }
-      .nav-links a:not(.btn-nav){ display:none; }   /* hide text nav links, keep Download */
       section { padding: 52px 18px; }
       .hero { padding-top: 64px; padding-bottom: 56px; }
       .hero-cta { flex-direction: column; align-items: stretch; }
@@ -291,12 +325,32 @@
 <!-- NAV -->
 <nav>
   <div class="nav-logo"><img src="logo.png" alt="" width="26" height="26" style="border-radius:7px;vertical-align:middle;margin-right:8px"/>Eta<span>ros.</span></div>
-  <div class="nav-links">
-    <a href="#how">How it works</a>
-    <a href="#pricing">Pricing</a>
-    <a class="btn-nav" href="https://github.com/emirilgin/etaros/releases/latest">Download free</a>
-  </div>
+  <button class="nav-burger" id="nav-burger" aria-label="Menu"><span></span><span></span><span></span></button>
 </nav>
+<!-- Dropdown menu (opened by burger) -->
+<div class="nav-menu" id="nav-menu">
+  <a href="#how" class="nav-menu-item">How it works</a>
+  <a href="#features" class="nav-menu-item">What it catches</a>
+  <a href="#pricing" class="nav-menu-item">Pricing</a>
+  <a href="#install" class="nav-menu-item">Install guide</a>
+  <button class="nav-menu-dl" id="nav-menu-dl">⬇ Download free</button>
+</div>
+
+<!-- Download modal — direct download, no GitHub redirect -->
+<div class="dl-overlay" id="dl-overlay">
+  <div class="dl-box">
+    <button class="dl-close" id="dl-close" aria-label="Close">✕</button>
+    <img src="logo.png" alt="" width="48" height="48" style="border-radius:12px;margin-bottom:14px"/>
+    <h3 class="dl-title">Download Etaros — free</h3>
+    <p class="dl-sub" id="dl-sub">Pick your computer. It downloads instantly.</p>
+    <div class="dl-grid">
+      <a class="dl-btn" id="dl-mac-arm" href="#"><b>🍎 Mac</b><span>Apple Silicon (M1–M4)</span></a>
+      <a class="dl-btn" id="dl-mac-intel" href="#"><b>🍎 Mac</b><span>Intel</span></a>
+      <a class="dl-btn" id="dl-win" href="#"><b>🪟 Windows</b><span>10 / 11</span></a>
+    </div>
+    <p class="dl-hint">Not sure which Mac? Apple menu → About This Mac → if the chip says M1/M2/M3/M4, pick Apple Silicon.</p>
+  </div>
+</div>
 
 <!-- HERO -->
 <section class="hero">
@@ -610,6 +664,65 @@
   run();
   setInterval(run, 9000); // matches the result reveal loop
 })();
+
+// ── Hamburger menu ──────────────────────────────────────────────────────────
+const burger = document.getElementById('nav-burger');
+const navMenu = document.getElementById('nav-menu');
+burger.addEventListener('click', () => {
+  const open = navMenu.classList.toggle('open');
+  burger.classList.toggle('open', open);
+});
+navMenu.querySelectorAll('.nav-menu-item').forEach(a => a.addEventListener('click', () => {
+  navMenu.classList.remove('open'); burger.classList.remove('open');
+}));
+document.addEventListener('click', e => {
+  if (!navMenu.contains(e.target) && !burger.contains(e.target)) {
+    navMenu.classList.remove('open'); burger.classList.remove('open');
+  }
+});
+
+// ── Download modal — direct download, no GitHub page ────────────────────────
+const dlOverlay = document.getElementById('dl-overlay');
+function openDownload(){ dlOverlay.classList.add('open'); }
+function closeDownload(){ dlOverlay.classList.remove('open'); }
+document.getElementById('dl-close').addEventListener('click', closeDownload);
+dlOverlay.addEventListener('click', e => { if (e.target === dlOverlay) closeDownload(); });
+document.getElementById('nav-menu-dl').addEventListener('click', () => { navMenu.classList.remove('open'); burger.classList.remove('open'); openDownload(); });
+// Any "download" link/button on the page opens the modal instead of GitHub
+document.querySelectorAll('a[href*="releases/latest"], a[href*="releases/download"]').forEach(a => {
+  a.addEventListener('click', e => { e.preventDefault(); openDownload(); });
+});
+
+// Detect OS → highlight the right button
+const ua = navigator.userAgent;
+const isWin = /Windows/i.test(ua);
+const isMac = /Mac/i.test(ua);
+const isArm = isMac && (/Apple/i.test(navigator.platform) || navigator.maxTouchPoints > 1 || /arm|aarch64/i.test(ua));
+const sub = document.getElementById('dl-sub');
+if (isWin) { document.getElementById('dl-win').classList.add('match'); sub.textContent = 'Windows detected — grab the installer below.'; }
+else if (isMac) { document.getElementById(isArm ? 'dl-mac-arm' : 'dl-mac-intel').classList.add('match'); sub.textContent = 'Mac detected — pick your chip below.'; }
+
+// Pull the real download URLs from the latest GitHub release (so non-techies
+// never see the GitHub page — they just get the file).
+fetch('https://api.github.com/repos/emirilgin/etaros/releases/latest')
+  .then(r => r.json())
+  .then(rel => {
+    const a = rel.assets || [];
+    const url = pred => (a.find(pred) || {}).browser_download_url;
+    const arm   = url(x => /arm64\.dmg$/i.test(x.name));
+    const intel = url(x => /\.dmg$/i.test(x.name) && !/arm64/i.test(x.name));
+    const win   = url(x => /\.exe$/i.test(x.name));
+    const set = (id, u) => { const el = document.getElementById(id); if (el && u) el.href = u; };
+    set('dl-mac-arm', arm);
+    set('dl-mac-intel', intel);
+    set('dl-win', win);
+  })
+  .catch(() => {
+    // Fallback: send to releases page if the API is unreachable
+    ['dl-mac-arm','dl-mac-intel','dl-win'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.href = 'https://github.com/emirilgin/etaros/releases/latest';
+    });
+  });
 </script>
 
 </body>
