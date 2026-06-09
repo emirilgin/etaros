@@ -307,8 +307,15 @@ async function startRegionSelect() {
     });
     // Prefer the primary display's source
     frozen = (sources.find(s => String(s.display_id) === String(display.id)) || sources[0])?.thumbnail || null;
+    // On macOS, denied screen recording returns sources with null/empty thumbnails
+    if (frozen && frozen.isEmpty()) frozen = null;
   } catch (err) {
     console.error('[region] capture failed:', err.message);
+  }
+
+  // Screen recording permission denied — bail early before showing overlay
+  if (!frozen) {
+    return 'SCREEN_DENIED';
   }
 
   return new Promise(resolve => {
@@ -641,7 +648,7 @@ async function captureScreen() {
     const sources = await desktopCapturer.getSources({
       types: ['screen'], thumbnailSize: { width: 1920, height: 1080 },
     });
-    if (!sources?.length) {
+    if (!sources?.length || sources[0].thumbnail.isEmpty()) {
       push('error', { message: 'Screen access denied. Go to System Settings → Privacy & Security → Screen Recording → enable Etaros.' });
       return null;
     }
@@ -1426,7 +1433,8 @@ function registerIPC() {
     if (quickWindow && !quickWindow.isDestroyed()) quickWindow.hide();
     const b64 = await startRegionSelect();
     if (quickWindow && !quickWindow.isDestroyed()) { quickWindow.show(); quickWindow.focus(); }
-    if (!b64) return null; // cancelled
+    if (b64 === 'SCREEN_DENIED') return '🔒 Screen recording is disabled. Go to **System Settings → Privacy & Security → Screen Recording** and enable Etaros, then try again.';
+    if (!b64) return null; // user cancelled
     try {
       const genAI = new GoogleGenerativeAI(key);
       const model = genAI.getGenerativeModel({ model: GEMINI_MODELS[0], systemInstruction: CHAT_PROMPT() });
@@ -1445,6 +1453,7 @@ function registerIPC() {
     await new Promise(r => setTimeout(r, 120));
     const b64 = await startRegionSelect();
     mainWindow?.show(); mainWindow?.focus();
+    if (b64 === 'SCREEN_DENIED') return { b64: null, error: 'screen_denied' };
     return { b64 };
   });
   ipcMain.handle('manual-scan', async () => {
