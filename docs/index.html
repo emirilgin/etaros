@@ -318,6 +318,15 @@
       h1 { font-size: 34px; }
       h2 { font-size: 26px; }
     }
+    .demo-hint{font-size:13px;color:var(--muted);background:var(--surface);border:1px solid var(--border);
+      border-radius:20px;padding:5px 12px;cursor:pointer;transition:border-color .15s,color .15s;}
+    .demo-hint:hover{border-color:var(--accent);color:var(--accent);}
+    .demo-verdict-badge{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;
+      letter-spacing:.04em;text-transform:uppercase;padding:5px 12px;border-radius:20px;}
+    .demo-verdict-badge.safe{color:#2e7d5e;background:rgba(46,125,94,.1);border:1px solid rgba(46,125,94,.25);}
+    .demo-verdict-badge.warn{color:#b45309;background:rgba(180,83,9,.1);border:1px solid rgba(180,83,9,.25);}
+    .demo-verdict-badge.danger{color:#c0392b;background:rgba(192,57,43,.1);border:1px solid rgba(192,57,43,.25);}
+    .demo-verdict-badge.neutral{color:var(--muted);background:var(--surface);border:1px solid var(--border);}
   </style>
 </head>
 <body>
@@ -567,6 +576,42 @@
   </div>
 </section>
 
+<!-- LIVE DEMO -->
+<section id="demo" style="border-top:1px solid var(--border);">
+  <div class="container" style="text-align:center;">
+    <div class="section-label">Try it live</div>
+    <h2>Paste anything. See what Etaros sees.</h2>
+    <p class="section-sub" style="margin:0 auto 36px;">A URL, an email, a message. Etaros tells you if it's safe.</p>
+
+    <div id="demo-box" style="max-width:640px;margin:0 auto;">
+      <div style="position:relative;">
+        <textarea id="demo-input" placeholder="Paste a URL, email text, or message…" rows="3"
+          style="width:100%;resize:vertical;padding:16px;font-size:15px;font-family:inherit;
+          border:1px solid var(--border);border-radius:14px;background:var(--surface);
+          color:var(--text);outline:none;box-sizing:border-box;transition:border-color .2s;"
+          onfocus="this.style.borderColor='var(--accent)'" onblur="this.style.borderColor='var(--border)'"></textarea>
+      </div>
+      <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;justify-content:center;">
+        <span class="demo-hint" onclick="demoFill('paypal-login.com/account/verify')">paypal-login.com/…</span>
+        <span class="demo-hint" onclick="demoFill('Your account is suspended. Click here to verify: bit.ly/3xR9aKz')">Suspicious email</span>
+        <span class="demo-hint" onclick="demoFill('https://google.com')">google.com</span>
+      </div>
+      <button id="demo-btn" onclick="runDemo()"
+        style="margin-top:16px;padding:14px 36px;background:var(--accent);color:#fff;border:none;
+        border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;
+        transition:opacity .2s,transform .15s;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+        Analyze
+      </button>
+
+      <div id="demo-result" style="display:none;margin-top:24px;text-align:left;
+        background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:20px;">
+        <div id="demo-verdict" style="display:none;margin-bottom:12px;"></div>
+        <div id="demo-answer" style="font-size:14px;line-height:1.65;color:var(--text);"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
 <!-- PRICING -->
 <section id="pricing" style="background: var(--surface); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);">
   <div class="container" style="text-align:center;">
@@ -726,6 +771,74 @@ fetch('https://api.github.com/repos/emirilgin/etaros/releases/latest')
       const el = document.getElementById(id); if (el) el.href = 'https://github.com/emirilgin/etaros/releases/latest';
     });
   });
+</script>
+
+<script>
+// Live demo — calls Gemini directly from the browser
+const DEMO_KEY = 'JOUW_GEMINI_KEY_HIER';
+
+function demoFill(text) {
+  document.getElementById('demo-input').value = text;
+  document.getElementById('demo-input').focus();
+}
+
+function dmMd(s) {
+  s = String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+  s = s.replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>');
+  s = s.replace(/`([^`]+)`/g,'<code style="background:rgba(0,0,0,.06);padding:1px 5px;border-radius:4px;font-size:13px">$1</code>');
+  return s.split(/\n\n+/).map(c => `<p style="margin:6px 0">${c.replace(/\n/g,'<br>')}</p>`).join('');
+}
+
+function dmVerdict(text) {
+  const t = text.toLowerCase();
+  if (/dangerous|phishing|scam|malicious|do not|fake|fraud/.test(t)) return ['danger','🚨 Dangerous'];
+  if (/suspicious|caution|careful|risky|red flag|unverified/.test(t)) return ['warn','⚠️ Suspicious'];
+  if (/safe|legitimate|trusted|no threat|looks fine|appears legit/.test(t)) return ['safe','✅ Safe'];
+  return ['neutral','ℹ️ Analyzed'];
+}
+
+async function runDemo() {
+  const input = document.getElementById('demo-input').value.trim();
+  if (!input) return;
+  if (DEMO_KEY === 'JOUW_GEMINI_KEY_HIER') {
+    document.getElementById('demo-result').style.display = 'block';
+    document.getElementById('demo-verdict').style.display = 'none';
+    document.getElementById('demo-answer').innerHTML = '<em style="color:var(--muted)">Demo key not configured yet — check back soon.</em>';
+    return;
+  }
+  const btn = document.getElementById('demo-btn');
+  btn.textContent = 'Analyzing…'; btn.disabled = true; btn.style.opacity = '.6';
+  document.getElementById('demo-result').style.display = 'block';
+  document.getElementById('demo-verdict').style.display = 'none';
+  document.getElementById('demo-answer').innerHTML = '<em style="color:var(--muted)">Analyzing…</em>';
+  try {
+    const res = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${DEMO_KEY}`,
+      {
+        method: 'POST',
+        headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({
+          system_instruction: { parts: [{ text: 'You are Etaros, a cybersecurity AI. Analyze what the user gives you for phishing, scams, fraud, or security threats. Be direct and concise. Start with your verdict.' }] },
+          contents: [{ parts: [{ text: input }] }]
+        })
+      }
+    );
+    const data = await res.json();
+    const reply = data?.candidates?.[0]?.content?.parts?.[0]?.text || 'No response.';
+    const [cls, label] = dmVerdict(reply);
+    const vEl = document.getElementById('demo-verdict');
+    vEl.style.display = 'block';
+    vEl.innerHTML = `<span class="demo-verdict-badge ${cls}">${label}</span>`;
+    document.getElementById('demo-answer').innerHTML = dmMd(reply);
+  } catch(e) {
+    document.getElementById('demo-answer').innerHTML = '<em style="color:#c0392b">Something went wrong. Try again.</em>';
+  }
+  btn.textContent = 'Analyze'; btn.disabled = false; btn.style.opacity = '1';
+}
+
+document.getElementById('demo-input').addEventListener('keydown', e => {
+  if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) runDemo();
+});
 </script>
 
 </body>
