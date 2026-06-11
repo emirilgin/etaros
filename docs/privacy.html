@@ -8,49 +8,97 @@
   :root{--bg:#f8f9fb;--text:#1a1a2e;--muted:#5b6470;--accent:#1574d4;--border:#e8eaed}
   *{box-sizing:border-box}
   body{margin:0;background:var(--bg);color:var(--text);font:16px/1.7 -apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;-webkit-font-smoothing:antialiased}
-  .wrap{max-width:720px;margin:0 auto;padding:56px 24px 80px}
+  .wrap{max-width:760px;margin:0 auto;padding:56px 24px 90px}
   a{color:var(--accent);text-decoration:none}a:hover{text-decoration:underline}
   h1{font-size:32px;letter-spacing:-.02em;margin:0 0 6px}
-  .upd{color:var(--muted);font-size:14px;margin-bottom:36px}
-  h2{font-size:19px;margin:34px 0 10px}
+  .upd{color:var(--muted);font-size:14px;margin-bottom:30px}
+  h2{font-size:20px;margin:38px 0 10px}
+  h3{font-size:16px;margin:22px 0 6px}
   p,li{color:#2a3340}
   ul{padding-left:20px}
-  .back{display:inline-block;margin-bottom:28px;font-size:14px;color:var(--muted)}
+  table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14px}
+  th,td{border:1px solid var(--border);padding:9px 11px;text-align:left;vertical-align:top}
+  th{background:#eef1f5;font-weight:600}
+  .fill{background:#fff7d6;border:1px solid #e6d27a;border-radius:4px;padding:0 4px}
+  .note{background:#eef4ff;border:1px solid #cfe0ff;border-radius:10px;padding:14px 16px;font-size:14px;color:#274a7a;margin:20px 0}
+  .back{display:inline-block;margin-bottom:26px;font-size:14px;color:var(--muted)}
 </style>
 </head>
 <body>
 <div class="wrap">
   <a class="back" href="index.html">&larr; Back to Etaros</a>
   <h1>Privacy Policy</h1>
-  <div class="upd">Last updated: June 2026</div>
+  <div class="upd">Last updated: June 2026 · This notice is provided under Articles 13 &amp; 14 of the EU General Data Protection Regulation (GDPR / AVG).</div>
 
-  <p>Etaros is a security tool built to protect you, so protecting your privacy is the whole point. This explains what we do and don't collect.</p>
+  <p>Etaros ("Etaros", "we", "us") is a security tool that helps you detect scams, phishing, and fraud. Protecting your data is core to what we do. This policy explains what personal data we process, why, on what legal basis, who we share it with, how long we keep it, and the rights you have.</p>
 
-  <h2>What stays on your device</h2>
-  <p>Etaros analyzes your screen to detect scams and phishing. That screen analysis happens through an AI model, but <strong>your screenshots are not stored on our servers</strong>. They are sent to the AI provider only to produce a result, then discarded. We do not keep a history of what's on your screen.</p>
-
-  <h2>What we collect</h2>
+  <h2>1. Who is responsible (data controller)</h2>
+  <p>Etaros is an independent project run by a private individual based in the Netherlands. The controller responsible for your personal data can be reached at:</p>
   <ul>
-    <li><strong>Account info:</strong> if you create an account, we store your email address (via Supabase) to manage sign-in and your plan. Nothing more.</li>
-    <li><strong>Usage counts:</strong> a basic count of analyses, to enforce free/paid limits. Not tied to the content you analyzed.</li>
-    <li><strong>Crash reports:</strong> anonymous technical error data (via Sentry) so we can fix bugs.</li>
+    <li>Project: Etaros</li>
+    <li>Email: <a href="mailto:etaros.app@gmail.com">etaros.app@gmail.com</a></li>
   </ul>
+  <p>We have not appointed a Data Protection Officer, as we are not required to under Article 37 GDPR. For any privacy question, or to receive our full contact details, use the email above.</p>
 
-  <h2>The website demo</h2>
-  <p>The "try it live" demo on this site sends the text you paste to an AI provider (Groq) for analysis, through a proxy that hides our keys. We do not store what you paste. The waitlist form stores only the email you submit.</p>
+  <h2>2. What we process, why, and on what legal basis</h2>
+  <table>
+    <tr><th>Data</th><th>Purpose</th><th>Legal basis (Art. 6 GDPR)</th><th>Retention</th></tr>
+    <tr><td>Email address (account)</td><td>Create and manage your account, sign-in, support</td><td>Performance of a contract (6(1)(b))</td><td>Until you delete your account, then removed within 30 days</td></tr>
+    <tr><td>Plan / usage counts</td><td>Enforce free and paid limits, billing</td><td>Contract (6(1)(b))</td><td>Duration of account</td></tr>
+    <tr><td>Screen content analysed by the app</td><td>Detect scams/phishing in real time</td><td>Contract (6(1)(b)); you initiate each analysis</td><td><strong>Not stored by us.</strong> Sent to the AI provider only to generate a result, then discarded</td></tr>
+    <tr><td>Crash / error diagnostics</td><td>Find and fix bugs, keep the app stable</td><td>Legitimate interest (6(1)(f)) - a working, secure product</td><td>Up to 90 days</td></tr>
+    <tr><td>Website demo input</td><td>Run the "try it live" analysis</td><td>Consent (6(1)(a)); you choose to submit it</td><td>Not stored; passed to the AI provider for the single request</td></tr>
+    <tr><td>Waitlist email</td><td>Send you launch updates you asked for</td><td>Consent (6(1)(a))</td><td>Until you unsubscribe or we close the waitlist</td></tr>
+    <tr><td>Payment data (name, billing)</td><td>Process paid subscriptions</td><td>Contract (6(1)(b)); legal obligation for invoices</td><td>As required by tax law (up to 7 years in NL)</td></tr>
+  </table>
+  <p>We do not process special categories of data, and we do not use your data for automated decisions producing legal effects about you. The security verdicts are guidance for you, not decisions about you.</p>
 
-  <h2>What we never do</h2>
+  <h2>3. Where your screen data goes</h2>
+  <p>When the app analyses your screen, the relevant image is sent to an AI model to produce a verdict and is then discarded. <strong>We do not keep a history of your screen.</strong> Analysis providers act as our processors under data-processing terms.</p>
+
+  <h2>4. Who we share data with (processors)</h2>
+  <p>We use the following service providers, who process data on our behalf under GDPR-compliant agreements:</p>
+  <table>
+    <tr><th>Provider</th><th>Role</th><th>Location</th></tr>
+    <tr><td>Supabase</td><td>Account database &amp; authentication</td><td>EU region</td></tr>
+    <tr><td>Google (Gemini)</td><td>Default AI screen/text analysis</td><td>United States</td></tr>
+    <tr><td>Anthropic (Claude)</td><td>AI analysis on the top plan</td><td>United States</td></tr>
+    <tr><td>Groq</td><td>AI for the website demo</td><td>United States</td></tr>
+    <tr><td>Cloudflare</td><td>Demo proxy &amp; rate limiting</td><td>Global / United States</td></tr>
+    <tr><td>Sentry</td><td>Crash reporting</td><td>EU (Frankfurt)</td></tr>
+    <tr><td>Stripe</td><td>Payments</td><td>United States / Ireland</td></tr>
+    <tr><td>Resend</td><td>Transactional email</td><td>United States</td></tr>
+    <tr><td>Formspree</td><td>Waitlist form handling</td><td>United States</td></tr>
+  </table>
+  <p>We never sell your personal data and never share it with advertisers.</p>
+
+  <h2>5. International transfers</h2>
+  <p>Some processors above are located outside the European Economic Area (mainly the United States). Where data is transferred there, it is protected by appropriate safeguards under Articles 44-46 GDPR - the EU-US Data Privacy Framework where the provider is certified, and/or the European Commission's Standard Contractual Clauses. You can request a copy of the relevant safeguards via the contact email.</p>
+
+  <h2>6. Cookies and local storage</h2>
+  <p>The website does not use tracking or advertising cookies. The live demo stores a small counter in your browser's local storage to enforce the free-trial limit. This is strictly necessary for that feature and stores no personal data. You can clear it any time via your browser.</p>
+
+  <h2>7. Your rights</h2>
+  <p>Under the GDPR you have the right to:</p>
   <ul>
-    <li>We never sell your data.</li>
-    <li>We never share your email with advertisers.</li>
-    <li>We never store the contents of your screen.</li>
+    <li>Access the personal data we hold about you;</li>
+    <li>Rectify inaccurate data;</li>
+    <li>Erase your data ("right to be forgotten");</li>
+    <li>Restrict or object to processing;</li>
+    <li>Data portability (receive your data in a portable format);</li>
+    <li>Withdraw consent at any time, where processing is based on consent;</li>
+    <li>Lodge a complaint with a supervisory authority - in the Netherlands, the <a href="https://www.autoriteitpersoonsgegevens.nl/" target="_blank" rel="noopener">Autoriteit Persoonsgegevens</a>.</li>
   </ul>
+  <p>To exercise any right, email <a href="mailto:etaros.app@gmail.com">etaros.app@gmail.com</a>. We respond within one month (Art. 12(3) GDPR).</p>
 
-  <h2>Your rights</h2>
-  <p>You can delete your account and associated data at any time. To request deletion or ask anything privacy-related, email <a href="mailto:sidekickhelp@gmail.com">sidekickhelp@gmail.com</a>.</p>
+  <h2>8. Children</h2>
+  <p>Accounts are intended for users aged 16 or older (the digital-consent age in the Netherlands). If you are under 16, a parent or guardian must consent on your behalf.</p>
 
-  <h2>Changes</h2>
-  <p>If this policy changes, we'll update the date above. Continued use means you accept the current version.</p>
+  <h2>9. Security</h2>
+  <p>We apply appropriate technical and organisational measures to protect your data, including encryption in transit and limiting who can access account data. No system is perfectly secure, but we work to keep your data safe and will notify you and the supervisory authority of a breach where legally required.</p>
+
+  <h2>10. Changes</h2>
+  <p>If this policy changes materially we will update the date above and, where appropriate, notify you. Continued use after changes means you accept the updated policy.</p>
 </div>
 </body>
 </html>
