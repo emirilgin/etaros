@@ -1,0 +1,27 @@
+<svg width="1500" height="500" viewBox="0 0 1500 500" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif">
+  <defs>
+    <linearGradient id="eye" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6fb4dc"/><stop offset="1" stop-color="#2b6f93"/>
+    </linearGradient>
+    <radialGradient id="vig" cx="0.5" cy="0.4" r="0.8">
+      <stop offset="0" stop-color="#101d27"/><stop offset="1" stop-color="#070c11"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1500" height="500" fill="url(#vig)"/>
+
+  <!-- centered lockup (kept clear of the bottom-left avatar zone) -->
+  <g transform="translate(750 196)">
+    <g stroke="url(#eye)" stroke-width="8.5" stroke-linecap="round" fill="none">
+      <circle cx="0" cy="0" r="44"/>
+      <path d="M0 -11 Q15 -6 12 -33"/>
+      <path d="M0 -11 Q-8 -2 -29 -8"/>
+      <path d="M0 -11 Q10 2 27 13"/>
+      <path d="M0 -11 Q-9 0 -21 21"/>
+    </g>
+    <circle cx="0" cy="-11" r="10.5" fill="#6fb4dc"/>
+  </g>
+
+  <text x="750" y="320" text-anchor="middle" font-size="86" font-weight="800" fill="#f3f7fa" letter-spacing="-3">Etaros</text>
+  <text x="750" y="372" text-anchor="middle" font-size="32" font-weight="600" fill="#9cbccd">Sees the scam before you do.</text>
+</svg>

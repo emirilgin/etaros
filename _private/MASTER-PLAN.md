@@ -121,7 +121,7 @@ Markt: €10B+. Dat is een groot-bedrijf verhaal, geen lifestyle business.
 ## DEZE WEEK
 
 1. Stripe links aanmaken → mij geven
-2. Beta.6 testen
+2. Beta.8 developen
 3. v1.2.0 launchen
 4. Reddit + Show HN posten (ik schrijf de posts)
 5. Demo video opnemen (scam live gevangen)
