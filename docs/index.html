@@ -50,10 +50,11 @@
       font-size: 14px; font-weight: 600; text-decoration: none;
     }
     /* Hamburger */
-    .nav-burger{ width:38px;height:38px;border:none;background:none;cursor:pointer;
-      display:flex;flex-direction:column;justify-content:center;gap:5px;padding:8px;border-radius:10px;transition:background .15s;}
-    .nav-burger:hover{ background:rgba(0,0,0,.05); }
-    .nav-burger span{ height:2px;background:var(--text);border-radius:2px;transition:transform .2s,opacity .2s; }
+    .nav-burger{ width:42px;height:42px;cursor:pointer;background:rgba(21,116,212,.08);
+      border:1.5px solid var(--accent);
+      display:flex;flex-direction:column;justify-content:center;align-items:center;gap:4px;padding:9px;border-radius:11px;transition:background .15s;}
+    .nav-burger:hover{ background:rgba(21,116,212,.16); }
+    .nav-burger span{ width:18px;height:2px;background:var(--accent);border-radius:2px;transition:transform .2s,opacity .2s; }
     .nav-burger.open span:nth-child(1){ transform:translateY(7px) rotate(45deg); }
     .nav-burger.open span:nth-child(2){ opacity:0; }
     .nav-burger.open span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
