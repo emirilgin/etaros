@@ -758,16 +758,22 @@
   const el = document.getElementById('qp-text');
   if (!el) return;
   const full = 'is paypa1-login.com safe?';
+  let visible = true, timer = null;
   function run(){
     el.textContent = '';
     let i = 0;
     const type = () => {
+      if (!visible) return;
       if (i <= full.length){ el.textContent = full.slice(0, i); i++; setTimeout(type, 55); }
     };
     type();
   }
-  run();
-  setInterval(run, 9000); // matches the result reveal loop
+  // pause the loop whenever the hero scrolls out of view (saves main-thread work)
+  const io = new IntersectionObserver(([e]) => { visible = e.isIntersecting; }, { threshold: 0 });
+  io.observe(el);
+  // start only once the page is idle, so it never competes with first paint
+  const start = () => { run(); timer = setInterval(() => { if (visible) run(); }, 9000); };
+  (window.requestIdleCallback || (cb => setTimeout(cb, 1200)))(start);
 })();
 
 // ── Hamburger menu ──────────────────────────────────────────────────────────
@@ -809,7 +815,8 @@ else if (isMac) { document.getElementById(isArm ? 'dl-mac-arm' : 'dl-mac-intel')
 
 // Pull the real download URLs from the latest GitHub release (so non-techies
 // never see the GitHub page - they just get the file).
-fetch('https://api.github.com/repos/emirilgin/etaros/releases/latest')
+// Deferred to idle time so it never competes with first paint / blocks the main thread.
+const loadReleases = () => fetch('https://api.github.com/repos/emirilgin/etaros/releases/latest')
   .then(r => r.json())
   .then(rel => {
     const a = rel.assets || [];
@@ -828,6 +835,10 @@ fetch('https://api.github.com/repos/emirilgin/etaros/releases/latest')
       const el = document.getElementById(id); if (el) el.href = 'https://github.com/emirilgin/etaros/releases/latest';
     });
   });
+// run after load, when the browser is idle - keeps it out of the TBT window
+window.addEventListener('load', () => {
+  (window.requestIdleCallback || (cb => setTimeout(cb, 1500)))(loadReleases);
+});
 </script>
 
 <script>
