@@ -3,7 +3,39 @@
 const { init: sentryInit } = require('@sentry/electron/main');
 let _sentryDsn = '';
 try { _sentryDsn = require('./app.config').sentryDsn || ''; } catch { /* no config */ }
-if (_sentryDsn) sentryInit({ dsn: _sentryDsn });
+// Crash reporting must never carry screen contents, prompts or credentials.
+// The privacy policy promises anonymous diagnostics, so enforce that here.
+const _SCRUB = [
+  [/\b[\w.+-]+@[\w-]+\.[\w.]+\b/g, '[email]'],                       // addresses
+  [/\b(AIza|gsk_|sk-ant|sk_live|sk_test|rk_live)[A-Za-z0-9_\-]{8,}/g, '[key]'], // API keys
+  [/\bAQ\.[A-Za-z0-9_\-]{8,}/g, '[key]'],                            // new Google keys
+  [/\beyJ[A-Za-z0-9_\-]{10,}\.[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+/g, '[jwt]'],
+  [/[A-Za-z0-9+/]{200,}={0,2}/g, '[image-data]'],                    // base64 screenshots
+  [/\b(S(MAX|IDE|TEST))-[A-F0-9]{4}-[A-F0-9]{4}(-[A-F0-9]{4})?\b/gi, '[license]'],
+];
+function scrub(v) {
+  if (typeof v === 'string') return _SCRUB.reduce((s, [re, to]) => s.replace(re, to), v);
+  if (Array.isArray(v)) return v.map(scrub);
+  if (v && typeof v === 'object') {
+    for (const k of Object.keys(v)) v[k] = scrub(v[k]);
+  }
+  return v;
+}
+if (_sentryDsn) sentryInit({
+  dsn: _sentryDsn,
+  sendDefaultPii: false,
+  attachScreenshot: false,
+  beforeSend(event) {
+    delete event.user;                 // never identify the reporter
+    delete event.server_name;          // hostname is identifying
+    delete event.request;              // may carry URLs/headers
+    return scrub(event);
+  },
+  beforeBreadcrumb(bc) {
+    if (bc?.category === 'console') return null; // console logs echo prompts
+    return scrub(bc);
+  },
+});
 
 const {
   app, BrowserWindow, BrowserView, desktopCapturer, ipcMain,
@@ -286,6 +318,7 @@ let chatHistory    = [];
 let activeChatId   = null;
 let lastNotifyTime = 0;
 let overlayWindow  = null;
+let learnCounter   = 0;   // throttles background fact-extraction (every 3rd message)
 
 // ─── Region selector ──────────────────────────────────────────────────────────
 async function startRegionSelect() {
@@ -787,7 +820,7 @@ async function streamClaude(systemPrompt, history) {
 
   let full = '';
   const stream = client.messages.stream({
-    model:      'claude-sonnet-4-20250514',
+    model:      'claude-sonnet-4-6',
     max_tokens: 2048,
     system:     systemPrompt,
     messages:   historyForClaude(history),
@@ -892,14 +925,6 @@ async function checkLimitsAsync() {
   return null;
 }
 
-function checkLimits() {
-  const tier = getTierSync();
-  if (tier === 'max') return null;
-  if (tier === 'pro') return null;
-  if (tier === 'free' && getFreeUsed() >= FREE_TOTAL) return 'free';
-  return null;
-}
-
 function bumpUsage() {
   const tier = getTierSync();
   if (tier === 'pro')  return { tier, used: bumpProUsed(), limit: 0 };         // 0 = unlimited
@@ -937,8 +962,8 @@ async function chat(userText, thumbnail) {
     const reply = await streamAI(CHAT_PROMPT(), chatHistory);
     chatHistory.push({ role: 'assistant', content: reply });
 
-    // Extract facts from this exchange in background (non-blocking)
-    extractAndLearn(userText, reply).catch(() => {});
+    // Extract facts in background — throttled to every 3rd message to halve Gemini quota use
+    if ((++learnCounter % 3) === 0) extractAndLearn(userText, reply).catch(() => {});
 
     // Persist conversation
     saveCurrentChat();
@@ -1164,7 +1189,7 @@ function registerIPC() {
     apiKey:        String(store.get('apiKey')       ?? ''),
     geminiKey:     String(store.get('geminiKey')    ?? ''),
     city:          String(store.get('city')         ?? ''),
-    scanInterval:  Number(store.get('scanInterval') ?? 5),
+    scanInterval:  Number(store.get('scanInterval') ?? 30),
     autoScan:      Boolean(store.get('autoScan')    ?? false),
     licenseKey:    String(store.get('licenseKey')   ?? ''),
     startOnLogin:  app.getLoginItemSettings().openAtLogin,
@@ -1174,6 +1199,17 @@ function registerIPC() {
   }));
 
   ipcMain.handle('save-settings', (_, s) => {
+    if (!s || typeof s !== 'object' || Array.isArray(s)) return { ok: false };
+    // Coerce/bound everything the renderer hands us before it reaches the store.
+    const str = (v, max = 512) => String(v).slice(0, max);
+    for (const k of ['apiKey','geminiKey','city','licenseKey','provider','ollamaModel']) {
+      if (s[k] != null) s[k] = str(s[k]);
+    }
+    if (s.scanInterval != null) {
+      const n = Number(s.scanInterval);
+      s.scanInterval = Number.isFinite(n) ? Math.min(3600, Math.max(10, Math.round(n))) : 30;
+    }
+    for (const k of ['autoScan','startOnLogin']) if (s[k] != null) s[k] = Boolean(s[k]);
     if (s.apiKey       != null) { store.set('apiKey',       s.apiKey);      anthropic = null; cachedKey = ''; }
     if (s.geminiKey    != null) { store.set('geminiKey', s.geminiKey); quotaCooldownUntil = 0; push(getGeminiKey() ? 'key-ok' : 'no-key', {}); }
     if (s.city         != null)   store.set('city',         s.city);
@@ -1464,6 +1500,11 @@ function registerIPC() {
 
   // Analyze a user-provided image (drag & drop or file picker)
   ipcMain.handle('analyze-image', async (_, b64) => {
+    // Renderer-supplied payload: must be plain base64 and bounded, or we're
+    // shipping arbitrary bytes to a third-party model on the user's dime.
+    if (typeof b64 !== 'string' || !/^[A-Za-z0-9+/]+={0,2}$/.test(b64) || b64.length > 12_000_000) {
+      return { ok: false, reason: 'invalid-image' };
+    }
     if (isStreaming) return { ok: false, reason: 'busy' };
     const limitHit = await checkLimitsAsync();
     if (limitHit) { push('upgrade-prompt', getLicenseInfo()); return { ok: false, reason: 'limit' }; }
@@ -1538,10 +1579,16 @@ function registerIPC() {
   ipcMain.on('toggle-scan',    (_, on) => { store.set('autoScan', on); on ? startScanLoop() : stopScanLoop(); });
   ipcMain.on('set-collapsed',  (_, c)  => setWindowMode(c ? 'collapsed' : 'fullscreen'));
   ipcMain.on('set-mode',       (_, m)  => setWindowMode(m));
-  ipcMain.on('open-url',       (_, u)  => shell.openExternal(u));
+  // Only ever hand http(s)/mailto to the OS — blocks file://, custom schemes, etc.
+  const safeOpen = (u) => {
+    try {
+      if (['http:', 'https:', 'mailto:'].includes(new URL(u).protocol)) shell.openExternal(u);
+    } catch { /* invalid URL — ignore */ }
+  };
+  ipcMain.on('open-url',       (_, u)  => safeOpen(u));
   ipcMain.on('open-urls',      (_, urls) => {
     // Open multiple URLs as separate tabs — stagger slightly so browser groups them
-    urls.forEach((u, i) => setTimeout(() => shell.openExternal(u), i * 120));
+    (Array.isArray(urls) ? urls : []).forEach((u, i) => setTimeout(() => safeOpen(u), i * 120));
   });
   ipcMain.handle('get-window-mode', () => 'fullscreen');
   ipcMain.handle('get-app-version', () => app.getVersion());
@@ -1557,24 +1604,41 @@ function registerIPC() {
     searchBrowserView = null;
   }
 
+  // Only ever render remote http(s) content in the search view. Anything else
+  // (file://, custom schemes) is a sandbox-escape vector, not a search result.
+  function isWebUrl(u) {
+    try { return ['http:', 'https:'].includes(new URL(String(u)).protocol); }
+    catch { return false; }
+  }
+
   ipcMain.handle('show-search-browser', async (_, { url, x, y, width, height }) => {
     if (!mainWindow || mainWindow.isDestroyed()) return { ok: false, error: 'no window' };
+    if (!isWebUrl(url)) return { ok: false, error: 'blocked: only http(s) URLs allowed' };
     try {
       if (!searchBrowserView) {
         searchBrowserView = new BrowserView({
           webPreferences: {
-            nodeIntegration: false, contextIsolation: true, sandbox: false,
+            nodeIntegration: false, contextIsolation: true, sandbox: true,
+            webSecurity: true, allowRunningInsecureContent: false,
           },
         });
         mainWindow.addBrowserView(searchBrowserView);
         searchBrowserView.webContents.setUserAgent(
           'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
         );
-        // Keep all navigation inside the view
+        // Remote pages may not open new windows, and may not steer this view
+        // anywhere outside http(s).
         searchBrowserView.webContents.setWindowOpenHandler(({ url: u }) => {
-          searchBrowserView?.webContents.loadURL(u);
+          if (isWebUrl(u)) searchBrowserView?.webContents.loadURL(u);
           return { action: 'deny' };
         });
+        searchBrowserView.webContents.on('will-navigate', (e, u) => {
+          if (!isWebUrl(u)) e.preventDefault();
+        });
+        // A search result must never be able to attach a preload or webview.
+        searchBrowserView.webContents.on('will-attach-webview', (e) => e.preventDefault());
+        // Deny every runtime permission request (camera, mic, geo, notifications…)
+        searchBrowserView.webContents.session.setPermissionRequestHandler((_wc, _perm, cb) => cb(false));
       }
       const bx = Math.round(x), by = Math.round(y),
             bw = Math.max(1, Math.round(width)), bh = Math.max(1, Math.round(height));
@@ -1638,6 +1702,15 @@ function setupAutoUpdater() {
 }
 
 // ─── Boot ─────────────────────────────────────────────────────────────────────
+// A background scan that rejects must not take the whole app down silently.
+// Log it, report it (scrubbed), keep running.
+process.on('unhandledRejection', (reason) => {
+  console.error('[unhandled rejection]', reason?.message ?? reason);
+});
+process.on('uncaughtException', (err) => {
+  console.error('[uncaught exception]', err?.message ?? err);
+});
+
 app.whenReady().then(() => {
   initChat(); // restore last conversation
   createMainWindow();

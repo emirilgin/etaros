@@ -2,6 +2,17 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8"/>
+<!-- Renderer shows model output; lock it down so injected markup can never load
+     or exfiltrate anything. All network I/O happens in the main process. -->
+<meta http-equiv="Content-Security-Policy" content="
+  default-src 'none';
+  script-src 'self';
+  style-src 'self' 'unsafe-inline';
+  img-src 'self' data: blob:;
+  font-src 'self';
+  connect-src https://*.ingest.de.sentry.io;
+  object-src 'none'; frame-src 'none'; media-src 'none';
+  base-uri 'none'; form-action 'none';"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>Etaros</title>
 <style>
