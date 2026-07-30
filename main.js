@@ -410,30 +410,6 @@ function getMachineId() {
   return mid;
 }
 
-// HMAC check for legacy 4-segment keys
-function verifyKeyHmac(key) {
-  const secret = APP_CONFIG.licenseSecret;
-  if (!secret || secret === 'YOUR_64_CHAR_HEX_SECRET_HERE') return true;
-  const m = key.match(/^(SMAX|SIDE|STEST)-([A-F0-9]{4})-([A-F0-9]{4})-([A-F0-9]{4})$/);
-  if (!m) return false;
-  const [, , r1, r2, given] = m;
-  const expected = createHmac('sha256', secret).update(r1 + r2).digest('hex').slice(0, 4).toUpperCase();
-  return given === expected;
-}
-
-// Offline tier from key format (used when server unreachable)
-function tierFromKeyOffline(key) {
-  // New 3-segment server keys — accept format, trust cache or retry later
-  if (/^SMAX-[A-F0-9]{4}-[A-F0-9]{4}$/.test(key))  return 'max';
-  if (/^SIDE-[A-F0-9]{4}-[A-F0-9]{4}$/.test(key))  return 'pro';
-  if (/^STEST-[A-F0-9]{4}-[A-F0-9]{4}$/.test(key)) return 'max';
-  // Legacy 4-segment HMAC keys
-  if (/^SMAX-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}$/.test(key)  && verifyKeyHmac(key)) return 'max';
-  if (/^SIDE-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}$/.test(key)  && verifyKeyHmac(key)) return 'pro';
-  if (/^STEST-[A-F0-9]{4}-[A-F0-9]{4}-[A-F0-9]{4}$/.test(key) && verifyKeyHmac(key)) return 'max';
-  return null;
-}
-
 // Fetch tier from Supabase profile — cache 30min
 // Refresh access token using refresh_token
 async function refreshAccessToken() {
@@ -452,7 +428,6 @@ async function refreshTierFromServer() {
   // Tester/beta override is sticky — never let a server read downgrade it.
   // (Server-side tier PATCH needs service_role; until an Edge Function does it,
   //  the redeemed Max tier lives client-side and must survive refreshes.)
-  if (store.get('testerTier')) return store.get('testerTier');
   let accessToken = store.get('sbAccessToken');
   const userId    = store.get('sbUserId');
   if (!accessToken || !userId) return null;
@@ -484,22 +459,11 @@ async function refreshTierFromServer() {
 }
 
 function getTierSync() {
+  // Tier is decided by the backend. This only reads the last value the server
+  // told us, so a tampered local store cannot grant paid access: the Worker
+  // re-checks Supabase on every request regardless of what we return here.
   if (APP_CONFIG.ownerMode) return 'max';
-  // Tester/beta override wins (sticky, survives server refresh)
-  const tester = store.get('testerTier');
-  if (tester) return tester;
-  // Supabase account tier takes priority
-  const userId = store.get('sbUserId');
-  if (userId) {
-    const t = store.get('sbTier');
-    if (t) return t;
-  }
-  // Legacy: license key fallback
-  const key = String(store.get('licenseKey') ?? '').trim().toUpperCase();
-  if (!key) return 'free';
-  const cached = store.get(`serverTier_${key}`);
-  if (cached) return cached;
-  return tierFromKeyOffline(key) ?? 'free';
+  return store.get('sbUserId') ? (store.get('sbTier') || 'free') : 'free';
 }
 
 function currentMonth() { return new Date().toISOString().slice(0, 7); } // e.g. "2026-05"
@@ -751,19 +715,98 @@ async function streamClaude(systemPrompt, history) {
 }
 
 // ─── Pick the right AI for this request ──────────────────────────────────────
-async function streamAI(systemPrompt, history) {
-  const provider = String(store.get('provider') || 'builtin');
-  if (provider === 'ollama') return streamOllama(systemPrompt, history);
+// ─── Stream: Etaros backend (default) ────────────────────────────────────────
+// The app holds no provider key and does not decide its own tier. It sends the
+// user's session token to our Cloudflare Worker, which verifies it against
+// Supabase, reads the tier, enforces quota, and calls Mistral (EU, no training
+// on API data). Nothing about the user's screen ever reaches Google.
+function apiBase() {
+  return String(APP_CONFIG.apiBase ?? '').replace(/\/$/, '');
+}
 
-  // For Pro/Max: use Claude if an Anthropic key is available (better quality)
-  // Fall back to Gemini if no Anthropic key is set
-  const tier = getTierSync();
-  if ((tier === 'pro' || tier === 'max') && getAnthropicClient()) {
-    return streamClaude(systemPrompt, history);
+async function callBackend(systemPrompt, history, token) {
+  const last   = history[history.length - 1] ?? {};
+  const prompt = String(last.content ?? '');
+  const image  = last._b64 ?? null;
+
+  const res = await fetch(apiBase(), {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+    body: JSON.stringify({ system: systemPrompt, prompt, image }),
+    signal: AbortSignal.timeout(90_000),
+  });
+  const data = await res.json().catch(() => ({}));
+  return { status: res.status, data };
+}
+
+async function streamBackend(systemPrompt, history) {
+  if (!apiBase()) throw new Error('Etaros backend is not configured.');
+  let token = store.get('sbAccessToken');
+  if (!token) throw new Error('Please sign in to use Etaros.');
+
+  let { status, data } = await callBackend(systemPrompt, history, token);
+
+  // Expired session: refresh once, then retry.
+  if (status === 401 && await refreshAccessToken()) {
+    token = store.get('sbAccessToken');
+    ({ status, data } = await callBackend(systemPrompt, history, token));
   }
 
-  // Default: Gemini (free, works for everyone)
-  return streamGemini(systemPrompt, history);
+  if (status === 402) {
+    const err = new Error(`You've used all ${data.limit ?? FREE_TOTAL} free checks this month. Upgrade for unlimited.`);
+    err.quota = true;
+    throw err;
+  }
+  if (status === 401) throw new Error('Your session expired. Please sign in again.');
+  if (!data?.reply)  throw new Error(data?.error === 'ai_unavailable'
+    ? 'The AI is temporarily unavailable. Try again in a moment.'
+    : (data?.error || 'Unexpected response from Etaros.'));
+
+  // The backend answers in one piece; reveal it progressively so the UI still
+  // reads as a live response rather than a sudden wall of text.
+  const reply = String(data.reply);
+  for (let i = 0; i < reply.length; i += 24) {
+    push('stream-chunk', { content: reply.slice(i, i + 24) });
+    if (i % 240 === 0) await new Promise(r => setTimeout(r, 8));
+  }
+  if (data.tier) push('tier-updated', { tier: data.tier });
+  return reply;
+}
+
+// One-shot analysis for the quick panel: same routing and same limits as chat,
+// but returns a finished string instead of streaming into the main window.
+async function analyzeOnce(prompt, imageB64) {
+  const history = [{ role: 'user', content: prompt, _b64: imageB64 || null }];
+  const provider = String(store.get('provider') || 'builtin');
+
+  if (provider === 'ollama') return streamOllama(CHAT_PROMPT(), history);
+  if (provider === 'claude' && getAnthropicClient()) return streamClaude(CHAT_PROMPT(), history);
+  if (String(store.get('geminiKey') ?? '').trim()) return streamGemini(CHAT_PROMPT(), history);
+
+  if (!apiBase()) return 'Etaros backend is not configured.';
+  let token = store.get('sbAccessToken');
+  if (!token) return 'Please sign in to use Etaros.';
+
+  let { status, data } = await callBackend(CHAT_PROMPT(), history, token);
+  if (status === 401 && await refreshAccessToken()) {
+    ({ status, data } = await callBackend(CHAT_PROMPT(), history, store.get('sbAccessToken')));
+  }
+  if (status === 402) return `You've used all ${data.limit ?? FREE_TOTAL} free checks this month. Upgrade in the app for unlimited.`;
+  if (status === 401) return 'Your session expired. Please sign in again.';
+  return data?.reply || 'The AI is temporarily unavailable. Try again in a moment.';
+}
+
+async function streamAI(systemPrompt, history) {
+  const provider = String(store.get('provider') || 'builtin');
+
+  // Fully local: nothing leaves the machine at all.
+  if (provider === 'ollama') return streamOllama(systemPrompt, history);
+
+  // Power users may still bring their own keys.
+  if (provider === 'claude' && getAnthropicClient()) return streamClaude(systemPrompt, history);
+  if (String(store.get('geminiKey') ?? '').trim()) return streamGemini(systemPrompt, history);
+
+  return streamBackend(systemPrompt, history);
 }
 
 // ─── Stream: Ollama (local, developer option) ─────────────────────────────────
@@ -825,10 +868,7 @@ async function checkLimitsAsync() {
         }
       }
       if (result.ok && Array.isArray(result.data) && result.data[0]) {
-        const serverTier = result.data[0].tier ?? 'free';
-        // Only allow testerTier to upgrade, never downgrade below server value
-        const tester = store.get('testerTier');
-        const effectiveTier = tester === 'max' ? 'max' : serverTier;
+        const effectiveTier = result.data[0].tier ?? 'free';
         store.set('sbTier', effectiveTier);
         store.set('sbTierTs', Date.now());
         if (effectiveTier === 'max' || effectiveTier === 'pro') return null;
@@ -1181,7 +1221,6 @@ function registerIPC() {
     store.delete('sbUserId');
     store.delete('sbTier');
     store.delete('sbTierTs');
-    store.delete('testerTier');   // don't let next user inherit beta Max
     store.delete('profileName');
     store.delete('profileEmail');
     store.delete('profileAvatar');
@@ -1263,42 +1302,13 @@ function registerIPC() {
     return { url };
   });
 
-  // Tester/beta invite code redemption
-  ipcMain.handle('redeem-tester-code', async (_, { code }) => {
-    if (!code) return { ok: false, error: 'No code entered' };
-    const normalized = code.trim().toUpperCase();
-    const validCodes = (APP_CONFIG.testerCodes ?? []).map(c => c.toUpperCase());
-    if (!validCodes.includes(normalized)) return { ok: false, error: 'Invalid code' };
-
-    const userId      = store.get('sbUserId');
-    const accessToken = store.get('sbAccessToken');
-
-    // Sticky local override — guarantees Max access even though the server-side
-    // tier PATCH below is blocked by RLS (needs service_role). Survives refreshes.
-    store.set('testerTier', 'max');
-    store.set('sbTier', 'max');
-    store.set('sbTierTs', Date.now());
-
-    // Best-effort server update (works only if an Edge Function / service-role path exists)
-    if (userId && accessToken && sbReady()) {
-      try {
-        await fetch(`${sbUrl()}/rest/v1/profiles?id=eq.${userId}`, {
-          method: 'PATCH',
-          headers: {
-            'Content-Type': 'application/json',
-            'apikey': sbKey(),
-            'Authorization': `Bearer ${accessToken}`,
-            'Prefer': 'return=minimal',
-          },
-          body: JSON.stringify({ tier: 'max' }),
-        });
-      } catch (e) {
-        console.warn('[redeem] DB update failed (expected if RLS blocks user writes):', e.message);
-      }
-    }
-    push('tier-updated', { tier: 'max' });
-    return { ok: true, tier: 'max' };
-  });
+  // Beta access is granted by setting the tier in Supabase, not by a code the
+  // client can validate against a list it also ships. Kept so the existing UI
+  // gets an honest answer instead of silently failing.
+  ipcMain.handle('redeem-tester-code', async () => ({
+    ok: false,
+    error: 'Beta codes are issued per account. Contact support to be enabled.',
+  }));
 
   // Returns { tier, used, limit }
   ipcMain.handle('check-license', async () => {
@@ -1348,12 +1358,8 @@ function registerIPC() {
   // ── Quick panel: one-shot non-streaming security analysis ──────────────────
   ipcMain.on('close-quick-panel', () => { if (quickWindow && !quickWindow.isDestroyed()) quickWindow.hide(); });
   ipcMain.handle('quick-analyze', async (_, text) => {
-    const limitHit = await checkLimitsAsync();
-    if (limitHit) return "You've used all your free checks this month. Upgrade to Pro in the app for unlimited security checks.";
-    const key = getGeminiKey();
-    if (!key) return 'No AI key set. Open Settings → AI to add your free Gemini key.';
     try {
-      // Always capture the screen so Etaros can actually SEE what the user is looking at.
+      // Capture the screen so Etaros sees what the user is actually looking at.
       // Hide the panel first so it isn't in the shot.
       let imgB64 = null;
       if (quickWindow && !quickWindow.isDestroyed() && quickWindow.isVisible()) {
@@ -1364,15 +1370,10 @@ function registerIPC() {
       if (thumb) imgB64 = thumbToB64(thumb);
       if (quickWindow && !quickWindow.isDestroyed()) { quickWindow.show(); quickWindow.focus(); }
 
-      const parts = [];
-      if (imgB64) parts.push({ inlineData: { mimeType: 'image/jpeg', data: imgB64 } });
-      parts.push({ text: `${text}\n\n(You can see the user's current screen in the attached screenshot. Analyse what's actually on it.)` });
-
-      const genAI = new GoogleGenerativeAI(key);
-      const model = genAI.getGenerativeModel({ model: GEMINI_MODELS[0], systemInstruction: CHAT_PROMPT() });
-      const res   = await model.generateContent(parts);
-      bumpUsage();
-      return res.response.text();
+      return await analyzeOnce(
+        `${text}\n\n(You can see the user's current screen in the attached screenshot. Analyse what's actually on it.)`,
+        imgB64,
+      );
     } catch (err) {
       return friendlyError(err);
     }
@@ -1380,24 +1381,16 @@ function registerIPC() {
 
   // Quick panel → trigger region screenshot, analyze just that area
   ipcMain.handle('quick-region', async () => {
-    const limitHit = await checkLimitsAsync();
-    if (limitHit) return "You've used all your free checks this month. Upgrade to Pro for unlimited.";
-    const key = getGeminiKey();
-    if (!key) return 'No AI key set. Open Settings → AI to add your free Gemini key.';
     if (quickWindow && !quickWindow.isDestroyed()) quickWindow.hide();
     const b64 = await startRegionSelect();
     if (quickWindow && !quickWindow.isDestroyed()) { quickWindow.show(); quickWindow.focus(); }
     if (b64 === 'SCREEN_DENIED') return '🔒 Screen recording is disabled. Go to **System Settings → Privacy & Security → Screen Recording** and enable Etaros, then try again.';
     if (!b64) return null; // user cancelled
     try {
-      const genAI = new GoogleGenerativeAI(key);
-      const model = genAI.getGenerativeModel({ model: GEMINI_MODELS[0], systemInstruction: CHAT_PROMPT() });
-      const res = await model.generateContent([
-        { inlineData: { mimeType: 'image/jpeg', data: b64 } },
-        { text: 'Analyse this screenshot for any security threat — phishing, scam, fake login, fraud, risky link. Give your verdict and what to do.' },
-      ]);
-      bumpUsage();
-      return res.response.text();
+      return await analyzeOnce(
+        'Analyse this screenshot for any security threat: phishing, scam, fake login, fraud, risky link. Give your verdict and what to do.',
+        b64,
+      );
     } catch (err) { return friendlyError(err); }
   });
 

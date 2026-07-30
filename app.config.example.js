@@ -1,27 +1,22 @@
-// ─── Etaros built-in API config ─────────────────────────────────────────────
-// Copy this file to app.config.js and fill in your key.
-// app.config.js is gitignored — it never gets committed to GitHub.
-// electron-builder bundles it into the app so users never need to
-// supply any API key — the AI just works when they download.
-//
-// Get a FREE Gemini key (no credit card) at:
-//   https://aistudio.google.com  →  Get API key  →  Create API key
-//
-// Optional: add an Anthropic key to use Claude for Pro/Max users (better quality)
-//   https://console.anthropic.com
-
+// Copy to app.config.js and fill in. app.config.js is gitignored.
+// NOTE: no model API key belongs in here. The app talks to the Etaros Worker,
+// which holds the provider key server-side. Shipping a key inside the app is
+// the same as publishing it: an .asar is an archive, not a safe.
 module.exports = {
-  // Required — get free at aistudio.google.com
-  geminiKey: 'AIza_PASTE_YOUR_GEMINI_KEY_HERE',
+  // Cloudflare Worker (see _private/etaros-api-worker.js for the deploy steps)
+  apiBase: 'https://your-worker.workers.dev',
 
-  // Optional — Claude for paid tiers (better quality)
-  // Leave blank to use Gemini for all tiers
+  // Optional escape hatches for power users who bring their own key.
+  geminiKey: '',
   anthropicKey: '',
 
-  // HMAC secret for license key validation — never commit the real value
-  // Generate your own: node -e "require('crypto').randomBytes(32).toString('hex')"
-  licenseSecret: 'YOUR_64_CHAR_HEX_SECRET_HERE',
+  ownerMode: false,   // must be false in anything you ship
 
-  // Optional — your deployed server URL
-  // serverUrl: 'https://your-app.railway.app',
+  sentryDsn: '',
+
+  // Supabase: the anon key is meant to be public, RLS protects the data.
+  supabaseUrl:     'https://YOUR-PROJECT.supabase.co',
+  supabaseAnonKey: 'PASTE_ANON_KEY',
+
+  stripePlanLinks: { pro: '', max: '' },
 };
