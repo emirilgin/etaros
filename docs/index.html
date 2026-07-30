@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Etaros - Your AI companion that watches your screen</title>
-  <meta name="description" content="Etaros catches scams, phishing pages, and hidden subscription traps in real time - before they cost you. AI that watches your screen silently." />
-  <meta property="og:title" content="Etaros - Your AI companion" />
-  <meta property="og:description" content="Real-time AI that catches scams, phishing, and bad deals before they cost you." />
+  <title>Etaros - Catches the scam before you do</title>
+  <meta name="description" content="Etaros watches your screen for phishing, fake logins and fraud, and catches them in real time. European AI, nothing stored, or run it fully offline." />
+  <meta property="og:title" content="Etaros - You're not paranoid. You're outnumbered." />
+  <meta property="og:description" content="Real-time protection against phishing and fraud. Your screen never goes to Big Tech, and nothing is kept." />
   <meta name="twitter:card" content="summary_large_image" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -17,16 +17,26 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
+    /* Matches the app exactly. A site that looks unrelated to the product it
+       sells is the first thing a sceptical buyer notices. */
     :root {
-      --bg:      #f8f9fb;
-      --surface: #ffffff;
-      --border:  #e8eaed;
-      --text:    #1a1a2e;
-      --muted:   #6b7280;
-      --accent:  #1574d4;
-      --accent2: #0d4f96;
-      --green:   #2d8a5a;
+      --bg:      #0A0D11;
+      --bg-hi:   #0E1217;
+      --surface: #12171E;
+      --card:    #151B23;
+      --border:  #212A35;
+      --border2: #2E3946;
+      --text:    #E9EFF6;
+      --muted:   #97A5B4;
+      --dim:     #616F7E;
+      --accent:  #4CC2FF;
+      --accent2: #2A7FB8;
+      --green:   #3DD68C;
+      --red:     #FF6259;
+      --amber:   #F5B849;
+      --mono:    'SF Mono', ui-monospace, 'JetBrains Mono', Menlo, monospace;
     }
+    ::selection{ background:rgba(76,194,255,.28); }
 
     html { scroll-behavior: smooth; }
     body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); }
@@ -34,7 +44,7 @@
     /* NAV */
     nav {
       position: sticky; top: 0; z-index: 100;
-      background: rgba(248,249,251,0.92); backdrop-filter: blur(12px);
+      background: rgba(10,13,17,.86); backdrop-filter: blur(14px);
       border-bottom: 1px solid var(--border);
       display: flex; align-items: center; justify-content: space-between;
       padding: 0 32px; height: 60px;
@@ -44,24 +54,24 @@
     .nav-links { display: flex; align-items: center; gap: 26px; }
     .nav-links a { font-size: 14.5px; font-weight: 500; color: var(--text); text-decoration: none; opacity:.78; transition: opacity .15s; }
     .nav-links a:hover { opacity: 1; color: var(--accent); }
-    .nav-links a.btn-nav { opacity:1; }
+    .nav-links a.btn-nav { opacity:1; color:#08131B; }   /* beats `.nav-links a` on specificity */
     .btn-nav {
       padding: 8px 18px; border-radius: 20px;
-      background: var(--accent); color: #fff;
+      background: var(--accent); color: #08131B;
       font-size: 14px; font-weight: 600; text-decoration: none;
     }
     /* Hamburger */
-    .nav-burger{ width:42px;height:42px;cursor:pointer;background:rgba(21,116,212,.08);
+    .nav-burger{ width:42px;height:42px;cursor:pointer;background:rgba(76,194,255,.10);
       border:1.5px solid var(--accent);
       display:flex;flex-direction:column;justify-content:center;align-items:center;gap:4px;padding:9px;border-radius:11px;transition:background .15s;}
-    .nav-burger:hover{ background:rgba(21,116,212,.16); }
+    .nav-burger:hover{ background:rgba(76,194,255,.18); }
     .nav-burger span{ width:18px;height:2px;background:var(--accent);border-radius:2px;transition:transform .2s,opacity .2s; }
     .nav-burger.open span:nth-child(1){ transform:translateY(7px) rotate(45deg); }
     .nav-burger.open span:nth-child(2){ opacity:0; }
     .nav-burger.open span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
     .nav-menu{ position:fixed; top:60px; right:16px; left:16px; max-width:300px; margin-left:auto;
       background:var(--surface); border:1px solid var(--border); border-radius:16px;
-      box-shadow:0 20px 50px rgba(0,0,0,.16); padding:8px; z-index:99;
+      box-shadow:0 24px 60px rgba(0,0,0,.55); padding:8px; z-index:99;
       display:none; flex-direction:column; gap:2px; animation:menuDrop .18s ease both; }
     .nav-menu.open{ display:flex; }
     @keyframes menuDrop{ from{opacity:0;transform:translateY(-8px)} to{opacity:1;transform:none} }
@@ -70,15 +80,15 @@
     /* desktop = real links, mobile = hamburger */
     @media (min-width:821px){ .nav-burger{ display:none; } }
     @media (max-width:820px){ .nav-links{ display:none; } }
-    .nav-menu-dl{ margin-top:6px; padding:13px; border-radius:11px; border:none; background:var(--accent); color:#fff;
+    .nav-menu-dl{ margin-top:6px; padding:13px; border-radius:11px; border:none; background:var(--accent); color:#08131B;
       font-family:inherit; font-size:15px; font-weight:700; cursor:pointer; }
     .nav-menu-dl:hover{ opacity:.9; }
     /* Download modal */
-    .dl-overlay{ display:none; position:fixed; inset:0; z-index:200; background:rgba(20,28,38,.5); backdrop-filter:blur(6px);
+    .dl-overlay{ display:none; position:fixed; inset:0; z-index:200; background:rgba(4,7,10,.72); backdrop-filter:blur(8px);
       align-items:center; justify-content:center; padding:24px; animation:menuDrop .18s ease both; }
     .dl-overlay.open{ display:flex; }
     .dl-box{ position:relative; width:100%; max-width:420px; background:var(--surface); border:1px solid var(--border);
-      border-radius:20px; padding:32px 28px 24px; text-align:center; box-shadow:0 30px 80px rgba(0,0,0,.3); }
+      border-radius:20px; padding:32px 28px 24px; text-align:center; box-shadow:0 30px 80px rgba(0,0,0,.6); }
     .dl-close{ position:absolute; top:14px; right:16px; background:none; border:none; font-size:16px; color:var(--muted); cursor:pointer; }
     .dl-title{ font-family:'Space Grotesk',sans-serif; font-size:22px; font-weight:700; margin-bottom:6px; }
     .dl-sub{ font-size:14px; color:var(--muted); margin-bottom:22px; }
@@ -86,7 +96,7 @@
     .dl-btn{ display:flex; flex-direction:column; gap:2px; padding:14px 16px; border-radius:13px; border:1.5px solid var(--border);
       text-decoration:none; color:var(--text); transition:border-color .15s,background .15s; text-align:left; }
     .dl-btn:hover{ border-color:var(--accent); background:var(--bg); }
-    .dl-btn.match{ border-color:var(--accent); background:rgba(58,138,180,.06); }
+    .dl-btn.match{ border-color:var(--accent); background:rgba(76,194,255,.08); }
     .dl-btn b{ font-size:15px; }
     .dl-btn span{ font-size:12.5px; color:var(--muted); }
     .dl-hint{ font-size:12px; color:var(--muted); margin-top:16px; line-height:1.5; }
@@ -103,7 +113,7 @@
     .hero-badge {
       display: inline-flex; align-items: center; gap: 8px;
       padding: 6px 14px; border-radius: 20px;
-      background: rgba(58,138,180,0.1); border: 1px solid rgba(58,138,180,0.2);
+      background: rgba(76,194,255,.09); border: 1px solid rgba(76,194,255,.24);
       font-size: 13px; font-weight: 600; color: var(--accent); margin-bottom: 28px;
     }
     .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
@@ -114,7 +124,7 @@
     .hero-cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }
     .btn-primary {
       padding: 14px 28px; border-radius: 12px;
-      background: var(--accent); color: #fff;
+      background: var(--accent); color: #08131B;
       font-size: 16px; font-weight: 700; text-decoration: none;
       transition: opacity .2s, transform .15s;
     }
@@ -154,24 +164,24 @@
     .scan-result .tag { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; opacity: .7; }
 
     /* Animated quick-panel demo */
-    .qp-demo{ max-width:460px; margin:0 auto; background:rgba(26,20,16,.96); border:1px solid rgba(255,255,255,.08); border-radius:18px; box-shadow:0 30px 70px rgba(0,0,0,.28); overflow:hidden; text-align:left; }
+    .qp-demo{ max-width:460px; margin:0 auto; background:var(--surface); border:1px solid var(--border); border-radius:12px; box-shadow:0 30px 70px rgba(0,0,0,.55); overflow:hidden; text-align:left; }
     .qp-row{ display:flex; align-items:center; gap:12px; padding:18px 20px; }
     .qp-mark{ width:26px; height:26px; flex-shrink:0; }
     .qp-mark svg{ width:100%; height:100%; display:block; }
-    .qp-typed{ font-size:16px; color:#f5efe6; font-family:'Inter',sans-serif; }
-    .qp-caret{ display:inline-block; width:2px; height:18px; background:#5aa8d4; margin-left:1px; vertical-align:-3px; animation:caret .8s steps(1) infinite; }
+    .qp-typed{ font-size:15px; color:var(--text); font-family:var(--mono); }
+    .qp-caret{ display:inline-block; width:2px; height:18px; background:var(--accent); margin-left:1px; vertical-align:-3px; animation:caret .8s steps(1) infinite; }
     @keyframes caret{ 50%{opacity:0} }
-    .qp-result{ border-top:1px solid rgba(255,255,255,.08); padding:18px 20px; opacity:0; transform:translateY(6px); animation:qpReveal 9s ease-in-out infinite; }
-    .qp-verdict{ display:inline-flex; font-size:12px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; color:#e0606a; background:rgba(224,96,106,.14); border:1px solid rgba(224,96,106,.3); padding:5px 11px; border-radius:20px; margin-bottom:12px; }
-    .qp-detail{ font-size:13.5px; line-height:1.6; color:#cfc7bd; margin-bottom:12px; }
-    .qp-detail b{ color:#fff; }
-    .qp-action{ font-size:13px; line-height:1.55; color:#ffd0d0; background:rgba(224,96,106,.1); border:1px solid rgba(224,96,106,.2); border-radius:10px; padding:11px 13px; }
-    .qp-action b{ color:#ff9a9a; }
+    .qp-result{ border-top:1px solid var(--border); padding:18px 20px; opacity:0; transform:translateY(6px); animation:qpReveal 9s ease-in-out infinite; }
+    .qp-verdict{ display:inline-flex; font-size:12px; font-weight:800; letter-spacing:.04em; text-transform:uppercase; font-family:var(--mono); color:var(--red); background:rgba(255,98,89,.13); border:1px solid rgba(255,98,89,.38); padding:5px 10px; border-radius:5px; margin-bottom:12px; }
+    .qp-detail{ font-size:13.5px; line-height:1.6; color:var(--muted); margin-bottom:12px; }
+    .qp-detail b{ color:var(--text); font-family:var(--mono); }
+    .qp-action{ font-size:13px; line-height:1.55; color:#FFC9C6; background:rgba(255,98,89,.09); border:1px solid rgba(255,98,89,.22); border-radius:8px; padding:11px 13px; }
+    .qp-action b{ color:var(--red); }
     @keyframes qpReveal{ 0%,42%{opacity:0;transform:translateY(8px)} 50%,92%{opacity:1;transform:translateY(0)} 98%,100%{opacity:0;transform:translateY(8px)} }
 
     /* MAC INSTALL DEMO (animated) */
     .mac-demo { max-width: 460px; margin: 44px auto 0; }
-    .mac-window { background:#ECEAE6; border-radius:12px; overflow:hidden; box-shadow:0 20px 50px rgba(0,0,0,.16); border:1px solid #d8d5d0; }
+    .mac-window { background:#ECEAE6; border-radius:12px; overflow:hidden; box-shadow:0 24px 60px rgba(0,0,0,.55); border:1px solid #d8d5d0; }
     .mac-bar { display:flex; align-items:center; gap:7px; padding:10px 14px; background:#E4E1DC; border-bottom:1px solid #d2cfca; }
     .mac-bar .d { width:11px; height:11px; border-radius:50%; }
     .mac-bar .d.r{background:#ff5f57}.mac-bar .d.y{background:#ffbd2e}.mac-bar .d.g{background:#28ca41}
@@ -265,7 +275,7 @@
     .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); gap: 20px; margin-top: 48px; }
     .price-card { padding: 28px; background: var(--surface); border-radius: 16px; border: 1px solid var(--border); position: relative; display: flex; flex-direction: column; }
     .price-card.featured { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
-    .price-tag { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #fff; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: .05em; white-space: nowrap; }
+    .price-tag { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--accent); color: #08131B; font-size: 11px; font-weight: 700; padding: 4px 12px; border-radius: 20px; text-transform: uppercase; letter-spacing: .05em; white-space: nowrap; }
     .price-name { font-size: 13px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 12px; }
     .price-amount { font-size: 48px; font-weight: 900; letter-spacing: -2px; line-height: 1; }
     .price-amount sup { font-size: 22px; vertical-align: super; letter-spacing: 0; }
@@ -277,7 +287,7 @@
     .price-features li.muted { color: var(--muted); }
     .btn-price { display: block; width: 100%; text-align: center; padding: 14px; border-radius: 12px; font-size: 15px; font-weight: 700; text-decoration: none; transition: opacity .2s, transform .15s; }
     .btn-price:hover { opacity: 0.85; transform: translateY(-1px); }
-    .btn-price.filled { background: var(--accent); color: #fff; }
+    .btn-price.filled { background: var(--accent); color: #08131B; }
     .btn-price.outline { background: rgba(21,116,212,.08); border: 1.5px solid var(--accent); color: var(--accent); }
     .btn-price.outline:hover { background: rgba(21,116,212,.16); }
 
@@ -296,7 +306,7 @@
     .waitlist-form input:focus { border-color: var(--accent); }
     .waitlist-form button {
       padding: 14px 20px; border-radius: 12px; border: none;
-      background: var(--accent); color: #fff;
+      background: var(--accent); color: #08131B;
       font-size: 15px; font-weight: 700; font-family: inherit; cursor: pointer;
       white-space: nowrap; transition: opacity .2s;
     }
@@ -380,15 +390,15 @@
 <section class="hero">
   <div class="hero-badge">
     <span class="dot"></span>
-    Live now - Mac &amp; Windows
+    Live now · Mac &amp; Windows
   </div>
 
   <h1>They're already<br>on your screen.<br><em>You just can't see them.</em></h1>
 
   <p class="hero-sub">
-    Fake logins. Hidden charges. Scams built to slip right past you.
-    Etaros watches your screen and catches them in real time -
-    <strong>a second before they take your money.</strong>
+    Fraud is an industry. Fake logins, lookalike domains, urgency scripted to
+    beat you. Etaros puts the same pattern recognition on your side of the table,
+    <strong>and forgets everything the moment it answers.</strong>
   </p>
 
   <div class="hero-cta">
@@ -407,7 +417,7 @@
         <div class="qp-typed"><span id="qp-text"></span><span class="qp-caret"></span></div>
       </div>
       <div class="qp-result">
-        <div class="qp-verdict">🚨 Dangerous - phishing</div>
+        <div class="qp-verdict">Dangerous · phishing</div>
         <div class="qp-detail">The domain reads <b>paypa1-login.com</b> - that's a digit <b>1</b>, not the letter <b>l</b>. This is a fake PayPal page built to steal your password.</div>
         <div class="qp-action"><b>What to do:</b> Don't enter anything. Close the tab and go to <b>paypal.com</b> directly.</div>
       </div>
@@ -611,7 +621,7 @@
         <span class="demo-hint" onclick="demoFill('https://google.com')">google.com</span>
       </div>
       <button id="demo-btn" onclick="runDemo()"
-        style="margin-top:16px;padding:14px 36px;background:var(--accent);color:#fff;border:none;
+        style="margin-top:16px;padding:14px 36px;background:var(--accent);color:#08131B;border:none;
         border-radius:12px;font-size:15px;font-weight:700;cursor:pointer;font-family:inherit;
         transition:opacity .2s,transform .15s;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
         Analyze
