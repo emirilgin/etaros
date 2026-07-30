@@ -13,12 +13,13 @@
 <style>
   *{margin:0;padding:0;box-sizing:border-box}
   :root{
-    --bg:rgba(28,22,18,.72);
-    --field:rgba(255,255,255,.06);
-    --border:rgba(255,255,255,.1);
-    --t1:#F5EFE6; --t2:#B6ADA2; --t3:#7C746A;
-    --accent:#5aa8d4;
-    --safe:#5fbf7a; --warn:#e0a85c; --danger:#e0606a;
+    --bg:rgba(10,13,17,.78);
+    --field:rgba(255,255,255,.05);
+    --border:rgba(255,255,255,.09);
+    --t1:#E9EFF6; --t2:#97A5B4; --t3:#616F7E;
+    --accent:#4CC2FF;
+    --safe:#3DD68C; --warn:#F5B849; --danger:#FF6259;
+    --mono:'SF Mono', ui-monospace, 'JetBrains Mono', Menlo, monospace;
   }
   html,body{width:100vw;height:100vh;overflow:hidden;background:transparent;
     font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;}
@@ -28,7 +29,7 @@
     backdrop-filter:blur(34px) saturate(160%);
     -webkit-backdrop-filter:blur(34px) saturate(160%);
     border:1px solid var(--border);
-    border-radius:18px;
+    border-radius:12px;
     box-shadow:0 30px 80px rgba(0,0,0,.5), inset 0 1px 0 rgba(255,255,255,.06);
     display:flex;flex-direction:column;overflow:hidden;
     animation:rise .22s cubic-bezier(.2,.9,.3,1) both;
@@ -55,15 +56,15 @@
     max-height:340px;overflow-y:auto;}
   #result::-webkit-scrollbar{width:4px}
   #result::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
-  .verdict{display:inline-flex;align-items:center;gap:7px;font-size:12px;font-weight:700;
-    letter-spacing:.04em;text-transform:uppercase;padding:5px 11px;border-radius:20px;margin-bottom:12px;}
+  .verdict{display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11px;font-weight:600;
+    letter-spacing:.07em;text-transform:uppercase;padding:5px 10px;border-radius:5px;margin-bottom:12px;}
   .verdict.safe{color:var(--safe);background:rgba(95,191,122,.12);border:1px solid rgba(95,191,122,.25)}
   .verdict.warn{color:var(--warn);background:rgba(224,168,92,.12);border:1px solid rgba(224,168,92,.25)}
   .verdict.danger{color:var(--danger);background:rgba(224,96,106,.12);border:1px solid rgba(224,96,106,.25)}
   .verdict.neutral{color:var(--t2);background:var(--field);border:1px solid var(--border)}
   #answer{font-size:13.5px;line-height:1.6;color:var(--t1);}
   #answer strong{color:#fff}
-  #answer code{background:var(--field);padding:1px 5px;border-radius:4px;font-size:12px}
+  #answer code{background:var(--field);border:1px solid var(--border);padding:1px 5px;border-radius:4px;font-size:12px;font-family:var(--mono);color:var(--accent)}
   #answer ul,#answer ol{margin:8px 0 8px 18px}
   #answer li{margin:3px 0}
   #answer p{margin:6px 0}
@@ -86,9 +87,9 @@
     <span class="ip-esc">esc</span>
   </div>
   <div class="hints" id="hints">
-    <span class="hint primary" id="snap">📸 Screenshot &amp; analyze</span>
-    <span class="hint" data-q="Scan my screen for anything risky right now.">👁️ Scan whole screen</span>
-    <span class="hint" data-q="Is this link safe? ">🔗 Check a link</span>
+    <span class="hint primary" id="snap">Select an area</span>
+    <span class="hint" data-q="Scan my screen for anything risky right now.">Scan whole screen</span>
+    <span class="hint" data-q="Is this link safe? ">Check a link</span>
   </div>
   <div id="result">
     <div class="verdict neutral" id="verdict" style="display:none"></div>
@@ -114,9 +115,9 @@ function md(s){
 }
 function detectVerdict(text){
   const t=text.toLowerCase();
-  if(/🚨|dangerous|do not enter|this is phishing|it'?s a scam|malicious/.test(t)) return ['danger','🚨 Dangerous'];
-  if(/⚠️|suspicious|be careful|caution|red flag/.test(t)) return ['warn','⚠️ Suspicious'];
-  if(/✅|looks safe|appears legitimate|this is safe|no red flags/.test(t)) return ['safe','✅ Safe'];
+  if(/🚨|dangerous|do not enter|this is phishing|it'?s a scam|malicious/.test(t)) return ['danger','Dangerous'];
+  if(/⚠️|suspicious|be careful|caution|red flag/.test(t)) return ['warn','Suspicious'];
+  if(/✅|looks safe|appears legitimate|this is safe|no red flags/.test(t)) return ['safe','Safe'];
   return null;
 }
 

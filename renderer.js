@@ -314,7 +314,7 @@ offlineBanner.style.cssText =
   'display:none;position:fixed;top:44px;left:0;right:0;z-index:9997;padding:7px 12px;' +
   'background:#7a1f1f;color:#ffe;font-size:12.5px;text-align:center;font-weight:500;' +
   '-webkit-app-region:no-drag;letter-spacing:.01em';
-offlineBanner.textContent = '⚠ You\'re offline — AI features need an internet connection.';
+offlineBanner.textContent = '⚠ You\'re offline, AI features need an internet connection.';
 document.body.appendChild(offlineBanner);
 
 function setOnlineState(online) {
@@ -322,7 +322,7 @@ function setOnlineState(online) {
   if (send) send.disabled = !online;
   if (msg)  msg.placeholder = online
     ? (msg.dataset.basePlaceholder || msg.placeholder)
-    : 'Offline — reconnect to chat';
+    : 'Offline, reconnect to chat';
 }
 if (msg) msg.dataset.basePlaceholder = msg.placeholder;
 window.addEventListener('online',  () => { setOnlineState(true);  showToast('Back online', 'ok'); });
@@ -341,7 +341,7 @@ scanFsBtn?.addEventListener('click', () => doScan(scanFsBtn));
 document.getElementById('scan-sidebar-btn')?.addEventListener('click', () => doScan(scanBtn));
 document.getElementById('scan-input-btn')?.addEventListener('click', () => doScan(scanBtn));
 
-// Region selector button — CMD+SHIFT+4 style
+// Region selector button, CMD+SHIFT+4 style
 document.getElementById('region-btn')?.addEventListener('click', async () => {
   const btn = document.getElementById('region-btn');
   if (btn) { btn.style.opacity = '.4'; btn.style.pointerEvents = 'none'; }
@@ -449,7 +449,7 @@ function clearDropPreview() {
   dropPreviewBar.style.display = 'none';
   dropPreviewImg.src  = '';
   dropPreviewName.textContent = '';
-  msg.placeholder = 'Ask anything — or drop a screenshot…';
+  msg.placeholder = 'Ask about anything on your screen…';
   fileInput.value = '';
   send.disabled = !msg.value.trim();
 }
@@ -475,7 +475,7 @@ function push_screen_preview(b64) {
 document.addEventListener('sidekick-preview', ({ detail }) => { pendingPreview = detail.b64; });
 
 // Override sendMsg to include attached image
-// Drag events — whole window
+// Drag events, whole window
 document.addEventListener('dragenter', e => {
   if (!e.dataTransfer.types.includes('Files')) return;
   dragCounter++;
@@ -717,7 +717,7 @@ window.sk.on('stream-error', ({ message }) => {
   showToast('Something went wrong', 'err', 3500);
 });
 
-// ─── Danger alert — unmissable warning on an active threat ────────────────────
+// ─── Danger alert, unmissable warning on an active threat ────────────────────
 let _dangerOpen = false;
 function triggerDangerAlert(item) {
   if (_dangerOpen) return;
@@ -734,7 +734,7 @@ function triggerDangerAlert(item) {
   document.getElementById('danger-dismiss').onclick = close;
   document.getElementById('danger-explain').onclick = () => {
     close();
-    msg.value = `Explain this threat in detail and tell me exactly what to do: ${item.title} — ${item.detail || ''}`;
+    msg.value = `Explain this threat in detail and tell me exactly what to do: ${item.title}, ${item.detail || ''}`;
     sendMsg();
   };
 }
@@ -785,7 +785,7 @@ window.sk.on('upgrade-prompt', ({ tier, used, limit }) => {
     <div class="limit-msg-icon">⚡</div>
     <div class="limit-msg-title">You've used all ${limit || 5} free messages this month</div>
     <div class="limit-msg-sub">Upgrade to Pro for unlimited messages, AI Compare, and priority scanning.</div>
-    <button class="limit-msg-btn" id="limit-upgrade-btn">Upgrade to Pro — €9/mo</button>`;
+    <button class="limit-msg-btn" id="limit-upgrade-btn">Upgrade to Pro, €9/mo</button>`;
   feed.insertBefore(m, thinking);
   m.querySelector('#limit-upgrade-btn')?.addEventListener('click', () => openSettingsPage('plan'));
   scrollBottom(true);
@@ -860,16 +860,18 @@ async function init() {
 }
 
 // ─── Theme ────────────────────────────────────────────────────────────────────
+// Dark is the product's own look and lives in :root, so it is the absence of an
+// override. Only light needs a data-theme attribute.
 function applyTheme(theme) {
-  const t = theme || 'light';
-  if (t === 'light') document.documentElement.removeAttribute('data-theme');
-  else document.documentElement.setAttribute('data-theme', t);
+  const t = theme === 'light' ? 'light' : 'dark';
+  if (t === 'dark') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme', 'light');
   localStorage.setItem('etaros_theme', t);
   document.querySelectorAll('.theme-opt').forEach(b =>
     b.classList.toggle('active', b.dataset.theme === t));
 }
 // Apply saved theme immediately on load
-applyTheme(localStorage.getItem('etaros_theme') || 'light');
+applyTheme(localStorage.getItem('etaros_theme'));
 document.querySelectorAll('.theme-opt').forEach(btn =>
   btn.addEventListener('click', () => applyTheme(btn.dataset.theme)));
 
@@ -977,7 +979,7 @@ const settingsPage = document.getElementById('settings-page');
 let spAvatarDataUrl = null;
 
 function switchSettingsTab(tabId) {
-  // Settings is now a single scrollable page — scroll to section
+  // Settings is now a single scrollable page, scroll to section
   const target = document.getElementById(`sp-tab-${tabId}`);
   if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
@@ -1012,7 +1014,7 @@ function openSettingsPage(section = 'profile') {
     if (gKey) gKey.value = s.geminiKey || '';
     if (gStatus) {
       gStatus.innerHTML = s.geminiKey
-        ? '✓ Using your personal key — higher daily quota.'
+        ? '✓ Using your personal key, higher daily quota.'
         : 'Using shared key. Hit the daily limit? Paste your own free key from <a href="#" id="adv-gemini-link" style="color:var(--orange)">aistudio.google.com</a> for a higher personal quota.';
       // Re-bind link (innerHTML wiped listener)
       document.getElementById('adv-gemini-link')?.addEventListener('click', e => {
@@ -1076,7 +1078,7 @@ document.getElementById('sp-avatar-hint')?.addEventListener('click', () => spPfp
 spPfpInput?.addEventListener('change', () => {
   const file = spPfpInput.files[0];
   if (!file) return;
-  // Compress to max 200x200 before storing — prevents huge base64 in electron-store
+  // Compress to max 200x200 before storing, prevents huge base64 in electron-store
   const img = new Image();
   const url = URL.createObjectURL(file);
   img.onload = () => {
@@ -1103,7 +1105,7 @@ document.getElementById('sp-save-btn')?.addEventListener('click', async () => {
   const activeProv = document.querySelector('.adv-pcard.active');
 
   // Smart key routing: a Gemini key (AIza…) in any field goes to geminiKey,
-  // a Claude key (sk-ant…) goes to apiKey — prevents the "pasted in wrong box" trap.
+  // a Claude key (sk-ant…) goes to apiKey, prevents the "pasted in wrong box" trap.
   let apiKey    = document.getElementById('adv-own-key')?.value.trim()    || '';
   let geminiKey = document.getElementById('adv-gemini-key')?.value.trim() || '';
   if (/^AIza/i.test(apiKey))    { geminiKey = apiKey; apiKey = ''; }
@@ -1162,7 +1164,7 @@ document.getElementById('sp-logout-btn')?.addEventListener('click', () => {
 });
 
 // ─── Advanced Settings (inline in settings page) ──────────────────────────────
-// Tester status helper — called when settings page opens
+// Tester status helper, called when settings page opens
 function updateTesterStatus() {
   window.sk.checkLicense().then(lic => {
     const el = document.getElementById('adv-tester-status');
@@ -1208,7 +1210,7 @@ document.getElementById('adv-tester-btn')?.addEventListener('click', async () =>
   window.sk.checkLicense().then(lic => setTierDisplay(lic.tier, lic.used, lic.limit));
 });
 
-// adv-save-btn removed — sp-save-btn now saves everything (profile + settings)
+// adv-save-btn removed, sp-save-btn now saves everything (profile + settings)
 
 // ─── Auth overlay ─────────────────────────────────────────────────────────────
 const authOverlay   = document.getElementById('auth-overlay');
@@ -1318,7 +1320,7 @@ window.sk.on('open-settings-inline', () => openSettingsPage('profile'));
 // Deep-link from browser (e.g. after password reset on the web page)
 window.sk.on('deep-link', ({ url }) => {
   if (url?.includes('reset-done')) {
-    showToast('Password updated — log in with your new password', 'ok', 4000);
+    showToast('Password updated, log in with your new password', 'ok', 4000);
     showAuthOverlay();
     showAuthForm('login');
   }
@@ -1347,7 +1349,7 @@ function showAuthOverlay() {
   });
 }
 
-// After successful auth — hide overlay, boot app
+// After successful auth, hide overlay, boot app
 async function bootApp() {
   hideAuthOverlay();
   // Show onboarding on first run (no profile name set yet)
@@ -1383,7 +1385,7 @@ function showOnboarding() {
       setTimeout(() => {
         const m = document.getElementById('msg');
         if (m && !m.value) {
-          appendAiGroup(`Hey ${name} — I'm Etaros, your personal security guard. I watch your screen and catch scams, phishing pages, and fraud before they cost you. **Paste any link, email, or message and I'll tell you if it's safe.** Or just keep browsing — I'll tap you on the shoulder if I spot anything dangerous.`);
+          appendAiGroup(`Hey ${name}, I'm Etaros, your personal security guard. I watch your screen and catch scams, phishing pages, and fraud before they cost you. **Paste any link, email, or message and I'll tell you if it's safe.** Or just keep browsing, I'll tap you on the shoulder if I spot anything dangerous.`);
         }
       }, 600);
     }

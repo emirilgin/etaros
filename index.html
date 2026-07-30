@@ -19,63 +19,65 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
 :root{
-  /* Base — warm cream/white (clean, professional) */
-  --bg:         #F9F7F3;
-  --bg-hi:      #F3F0EA;
-  --surface:    #FFFFFF;
-  --card:       #F6F3EE;
-  --card-h:     #EDE9E2;
-  --border:     #E4DDD5;
-  --border2:    #D4CCC2;
+  /* Base, near-black with a cold cast. Terminal, not cave: every surface is a
+     distinct step so density reads as structure instead of noise. */
+  --bg:         #0A0D11;
+  --bg-hi:      #0E1217;
+  --surface:    #12171E;
+  --card:       #151B23;
+  --card-h:     #1C232D;
+  --border:     #212A35;
+  --border2:    #2E3946;
 
-  /* Brand — ocean blue (matches the logo) */
-  --orange:     #2E7DA8;
-  --orange-dim: rgba(46,125,168,.10);
-  --orange-glow:rgba(46,125,168,.05);
-  --orange-t:   #1F5E82;
-  --orange-hi:  #3A8AB4;
+  /* Signal accent. One colour carries brand + "system is active"; everything
+     else earns attention through hierarchy, not hue. */
+  --orange:     #4CC2FF;
+  --orange-dim: rgba(76,194,255,.12);
+  --orange-glow:rgba(76,194,255,.06);
+  --orange-t:   #7FD4FF;
+  --orange-hi:  #6BCBFF;
 
-  /* Status colors */
-  --green: #2A7A50; --green-bg: rgba(42,122,80,.1);
-  --red:   #B83030; --red-bg:   rgba(184,48,48,.1);
-  --blue:  #3460A8; --blue-bg:  rgba(52,96,168,.1);
-  --amber: #906818; --amber-bg: rgba(144,104,24,.1);
+  /* Verdict colours, the only other hues in the product. */
+  --green: #3DD68C; --green-bg: rgba(61,214,140,.12);
+  --red:   #FF6259; --red-bg:   rgba(255,98,89,.13);
+  --blue:  #4CC2FF; --blue-bg:  rgba(76,194,255,.12);
+  --amber: #F5B849; --amber-bg: rgba(245,184,73,.12);
 
-  /* Text scale — warm neutrals */
-  --t1: #1A1714;
-  --t2: #6A6460;
-  --t3: #A09890;
-  --t4: #C4BDB5;
+  --t1: #E9EFF6;
+  --t2: #97A5B4;
+  --t3: #616F7E;
+  --t4: #3D4855;
 
-  --r:    16px;
-  --r-s:  11px;
-  --r-xs:  8px;
+  /* Machine-readable data (domains, verdicts, counts, time) sits in mono.
+     It is the cheapest way to say "this was measured, not guessed". */
+  --mono: 'SF Mono', ui-monospace, 'JetBrains Mono', Menlo, monospace;
+
+  --r:    10px;
+  --r-s:   7px;
+  --r-xs:  5px;
 
   --sidebar:  252px;
   --titlebar:  44px;
 }
 
-/* ── Theme: Dark ── */
-[data-theme="dark"]{
-  --bg:#15130F; --bg-hi:#1C1916; --surface:#1F1B17; --card:#221E19; --card-h:#2A251F;
-  --border:#332E27; --border2:#403A31;
-  --t1:#F2EDE6; --t2:#B0A89E; --t3:#7C746A; --t4:#544E46;
+/* ── Theme: Light, for people who work in bright rooms ── */
+[data-theme="light"]{
+  --bg:#F7F9FB; --bg-hi:#EFF3F7; --surface:#FFFFFF; --card:#F4F7FA; --card-h:#E8EEF4;
+  --border:#DCE4EC; --border2:#C4D0DC;
+  --orange:#0A7CC4; --orange-dim:rgba(10,124,196,.1); --orange-glow:rgba(10,124,196,.05);
+  --orange-t:#075E95; --orange-hi:#1A8FD8;
+  --green:#128257; --green-bg:rgba(18,130,87,.1);
+  --red:#C4332B;   --red-bg:rgba(196,51,43,.1);
+  --amber:#9A6B12; --amber-bg:rgba(154,107,18,.1);
+  --t1:#0D1620; --t2:#4C5B6B; --t3:#7B8B9B; --t4:#AEBCC8;
 }
-/* ── Theme: Ocean (matches logo) ── */
+/* Legacy theme keys kept so saved preferences don't land on a blank palette. */
+[data-theme="dark"], [data-theme="midnight"]{ color-scheme: dark; }
 [data-theme="ocean"]{
-  --bg:#F0F6FB; --bg-hi:#E6F0F8; --surface:#FFFFFF; --card:#EEF5FB; --card-h:#E0EDF6;
-  --border:#D6E4F0; --border2:#C2D6E8;
-  --orange:#2E7DA8; --orange-dim:rgba(46,125,168,.1); --orange-glow:rgba(46,125,168,.05);
-  --orange-t:#1F5E82; --orange-hi:#3A8AB4;
-  --t1:#10243A; --t2:#4A6072; --t3:#8AA0B2; --t4:#B8CADA;
-}
-/* ── Theme: Midnight ── */
-[data-theme="midnight"]{
-  --bg:#0A1018; --bg-hi:#0E1622; --surface:#111A28; --card:#13202F; --card-h:#1A2A3D;
-  --border:#1E2E42; --border2:#2A3E58;
-  --orange:#4A9ED0; --orange-dim:rgba(74,158,208,.12); --orange-glow:rgba(74,158,208,.06);
-  --orange-t:#6AB4DE; --orange-hi:#5AA8D4;
-  --t1:#E8F0F8; --t2:#9CB0C4; --t3:#6A7E92; --t4:#44566A;
+  --bg:#F7F9FB; --bg-hi:#EFF3F7; --surface:#FFFFFF; --card:#F4F7FA; --card-h:#E8EEF4;
+  --border:#DCE4EC; --border2:#C4D0DC;
+  --orange:#0A7CC4; --orange-t:#075E95; --orange-hi:#1A8FD8;
+  --t1:#0D1620; --t2:#4C5B6B; --t3:#7B8B9B; --t4:#AEBCC8;
 }
 
 html,body{
@@ -558,14 +560,21 @@ html,body{
   padding:11px 14px; border-radius:var(--r-s); border:1px solid;
   animation:fadeUp .22s ease both;
 }
-.card.risk{ background:rgba(200,88,88,.07); border-color:rgba(200,88,88,.22); }
-.card.warn{ background:rgba(184,142,46,.07); border-color:rgba(184,142,46,.22); }
-.card.save,.card.rec,.card.tip{ background:rgba(78,170,120,.07); border-color:rgba(78,170,120,.2); }
+/* A finding is evidence, so it is presented like a readout: a coloured rule on
+   the left edge instead of a tinted blob, and a square mono tag. */
+.card{ border-left-width:2px; }
+.card.risk{ background:var(--red-bg);   border-color:var(--border); border-left-color:var(--red); }
+.card.warn{ background:var(--amber-bg); border-color:var(--border); border-left-color:var(--amber); }
+.card.save,.card.rec,.card.tip{ background:var(--green-bg); border-color:var(--border); border-left-color:var(--green); }
 .card-top{ display:flex; align-items:center; gap:8px; margin-bottom:5px; }
-.badge{ font-size:8.5px; font-weight:700; letter-spacing:.07em; text-transform:uppercase; padding:2px 7px; border-radius:20px; flex-shrink:0; }
-.badge.risk{ background:rgba(200,88,88,.18); color:#e07070; }
-.badge.warn{ background:rgba(184,142,46,.18); color:#c8a840; }
-.badge.save,.badge.rec,.badge.tip{ background:rgba(78,170,120,.18); color:#5ab47a; }
+.badge{
+  font-family:var(--mono); font-size:9px; font-weight:600; letter-spacing:.08em;
+  text-transform:uppercase; padding:2px 6px; border-radius:var(--r-xs);
+  flex-shrink:0; border:1px solid;
+}
+.badge.risk{ background:var(--red-bg);   color:var(--red);   border-color:rgba(255,98,89,.35); }
+.badge.warn{ background:var(--amber-bg); color:var(--amber); border-color:rgba(245,184,73,.35); }
+.badge.save,.badge.rec,.badge.tip{ background:var(--green-bg); color:var(--green); border-color:rgba(61,214,140,.3); }
 .card-title{ font-size:13px; font-weight:600; color:var(--t1); line-height:1.4; }
 .card-detail{ font-size:12.5px; color:var(--t2); line-height:1.6; margin-bottom:4px; }
 .card-action{ display:block; font-size:12px; color:var(--orange-t); margin-top:5px; font-weight:500; }
@@ -1247,7 +1256,7 @@ html,body{
 /* search-panel flex fills remaining height when WebContentsView is overlaid */
 
 /* ── Advanced settings full-screen page ── */
-/* Advanced page CSS removed — settings now inline */
+/* Advanced page CSS removed, settings now inline */
 .adv-section { padding:16px 20px 4px; }
 .adv-section-lbl { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--t3); padding-bottom:8px; }
 .adv-field { display:flex; flex-direction:column; gap:4px; margin-bottom:10px; }
@@ -1285,7 +1294,7 @@ html,body{
 .adv-pcard.active .adv-pcard-name { color:var(--orange-t); }
 .adv-hint { font-size:11.5px; color:var(--t3); line-height:1.6; margin-top:4px; }
 .adv-divider { height:1px; background:var(--border); margin:8px 20px; }
-/* #adv-footer + #adv-save-btn removed — settings save button now inline */
+/* #adv-footer + #adv-save-btn removed, settings save button now inline */
 
 /* Conv context menu */
 .conv-menu-btn { background:none; border:none; cursor:pointer; color:var(--t3); padding:2px 5px; border-radius:4px; opacity:0; transition:opacity .12s,color .12s; flex-shrink:0; font-size:13px; line-height:1; }
@@ -1414,6 +1423,43 @@ html,body{
 .mem-fact-del { background:none; border:none; cursor:pointer; color:var(--t4); padding:2px 4px; border-radius:3px; flex-shrink:0; font-size:12px; opacity:0; transition:opacity .12s,color .12s; }
 .mem-fact-card:hover .mem-fact-del { opacity:1; }
 .mem-fact-del:hover { color:var(--red); }
+
+/* ══ Instrument layer ══════════════════════════════════════════════════════
+   Anything the product measured, counts, tiers, times, domains, is set in
+   mono. It separates what Etaros observed from what Etaros is saying about it,
+   and it is what makes a security tool read as instrumentation rather than
+   another chat app. */
+#counter, #tier-badge, #app-version, .conv-date, .time-div,
+.card-detail code, .chat-msg code, #trial-info{
+  font-family:var(--mono);
+  font-variant-numeric:tabular-nums;
+}
+#tier-badge{ letter-spacing:.06em; text-transform:uppercase; font-size:9.5px; }
+#counter, #trial-info{ font-size:11px; letter-spacing:.01em; }
+.conv-date{ font-size:10px; letter-spacing:-.02em; }
+.time-div{ font-size:10px; letter-spacing:.08em; text-transform:uppercase; }
+
+/* Domains and code inside a verdict are evidence: give them a surface so the
+   eye lands on the thing being judged. */
+.chat-msg code, .card-detail code{
+  background:var(--bg-hi); border:1px solid var(--border);
+  padding:1px 5px; border-radius:var(--r-xs); font-size:.92em; color:var(--orange-t);
+}
+
+/* A single hairline of texture. Enough to feel engineered, quiet enough that it
+   never competes with a threat alert. */
+body::before{
+  content:''; position:fixed; inset:0; pointer-events:none; z-index:0; opacity:.5;
+  background:
+    radial-gradient(900px 500px at 78% -10%, var(--orange-glow), transparent 62%),
+    linear-gradient(var(--border) 1px, transparent 1px) 0 0 / 100% 46px;
+  mask-image:linear-gradient(#000, transparent 42%);
+  -webkit-mask-image:linear-gradient(#000, transparent 42%);
+}
+#shell{ position:relative; z-index:1; }
+
+/* Focus has to be visible in a security product, people check. */
+:focus-visible{ outline:2px solid var(--orange); outline-offset:2px; border-radius:var(--r-xs); }
 </style>
 </head>
 <body>
@@ -1424,7 +1470,7 @@ html,body{
     <svg viewBox="0 0 48 48" fill="none"><rect x="5" y="9" width="38" height="30" rx="3" stroke="currentColor" stroke-width="1.5"/><circle cx="16" cy="19" r="3" stroke="currentColor" stroke-width="1.5"/><path d="M5 30l10-9 8 7 9-11 11 13" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round"/></svg>
   </div>
   <div class="dz-text">Drop to analyze</div>
-  <div class="dz-sub">PNG, JPG, screenshot — Etaros will scan it</div>
+  <div class="dz-sub">PNG, JPG, screenshot, Etaros will scan it</div>
 </div>
 
 <div id="shell">
@@ -1494,7 +1540,7 @@ html,body{
     <!-- ── Main content ──────────────────────────────────────────────────── -->
     <div id="main">
 
-      <!-- no-key-banner stub (hidden — AI is built-in) -->
+      <!-- no-key-banner stub (hidden, AI is built-in) -->
       <div id="no-key-banner" style="display:none"></div>
 
       <!-- Update banner -->
@@ -1506,7 +1552,7 @@ html,body{
       <!-- Upgrade banner -->
       <div id="upgrade">
         <h4>Free trial complete</h4>
-        <p>Upgrade to Pro for unlimited messages and priority AI — <strong>$9/mo</strong>.</p>
+        <p>Upgrade to Pro for unlimited messages and priority AI, <strong>$9/mo</strong>.</p>
         <button id="up-btn">Upgrade in Settings →</button>
       </div>
 
@@ -1528,36 +1574,31 @@ html,body{
           <div id="empty">
             <div class="empty-mark">
               <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <!-- Outer soft glow ring -->
-                <circle cx="28" cy="28" r="26.5" fill="rgba(210,88,30,0.08)"/>
-                <!-- Rounded organic background -->
-                <path d="M28 3.5C37.2 3.5 52.5 11.8 52.5 28C52.5 44.2 37.2 52.5 28 52.5C18.8 52.5 3.5 44.2 3.5 28C3.5 11.8 18.8 3.5 28 3.5Z" fill="url(#em-rad)"/>
-                <!-- Top sheen -->
-                <path d="M28 8.5C34 8.5 45 13.5 48 22C41.5 13 35 11 28 11C21 11 14.5 13 8 22C11 13.5 22 8.5 28 8.5Z" fill="rgba(255,255,255,0.18)"/>
-                <!-- Eye almond -->
-                <path d="M13.5 28C17.5 21.5 22.5 19 28 19C33.5 19 38.5 21.5 42.5 28C38.5 34.5 33.5 37 28 37C22.5 37 17.5 34.5 13.5 28Z" stroke="rgba(255,255,255,0.92)" stroke-width="2" fill="rgba(255,255,255,0.09)" stroke-linejoin="round"/>
-                <!-- Iris ring -->
-                <circle cx="28" cy="28" r="6" stroke="rgba(255,255,255,0.78)" stroke-width="1.8" fill="rgba(255,255,255,0.12)"/>
-                <!-- Pupil -->
-                <circle cx="28" cy="28" r="2.8" fill="white"/>
+                <circle cx="28" cy="28" r="27" fill="var(--card)" stroke="var(--border2)"/>
+                <g stroke="url(#em-g)" stroke-width="2.1" stroke-linecap="round" fill="none">
+                  <circle cx="28" cy="28" r="17"/>
+                  <path d="M28 23.5 Q34 26 32.5 15"/>
+                  <path d="M28 23.5 Q25 27 14 24.5"/>
+                  <path d="M28 23.5 Q32 29 41 34"/>
+                  <path d="M28 23.5 Q24 28 20 39"/>
+                </g>
+                <circle cx="28" cy="23.5" r="4.2" fill="#4CC2FF"/>
                 <defs>
-                  <radialGradient id="em-rad" cx="44%" cy="34%" r="64%" gradientUnits="objectBoundingBox">
-                    <stop offset="0%"   stop-color="#FCC078"/>
-                    <stop offset="48%"  stop-color="#D46030"/>
-                    <stop offset="100%" stop-color="#A02A0E"/>
-                  </radialGradient>
+                  <linearGradient id="em-g" x1="11" y1="11" x2="45" y2="45" gradientUnits="userSpaceOnUse">
+                    <stop stop-color="#7FD4FF"/><stop offset="1" stop-color="#2A7FB8"/>
+                  </linearGradient>
                 </defs>
               </svg>
             </div>
-            <h3>Your second pair of eyes.</h3>
-            <p class="empty-sub">Always watching. Catches scams, bad deals, and subscription traps before they cost you. Ask anything — it sees what you see.</p>
+            <h3>Sees the scam before you do.</h3>
+            <p class="empty-sub">Watching your screen for phishing, fake logins and fraud. Ask about anything in front of you.</p>
             <div class="empty-chips">
-              <button class="empty-chip" data-msg="Is this page a scam or phishing? Analyze what's on my screen carefully — domain, links, red flags.">🚨 Is this a scam?</button>
-              <button class="empty-chip" data-msg="Is this email or message safe? Check the sender, links, and any urgency tactics on my screen.">📧 Check this email</button>
-              <button class="empty-chip" data-msg="Is the website on my screen safe to enter my password on? Check the URL and connection.">🔒 Is this site safe?</button>
-              <button class="empty-chip" data-msg="My account may be hacked. Walk me through exactly what to do right now, step by step.">⚠️ I got hacked</button>
-              <button class="empty-chip" data-msg="How do I make my accounts more secure? Give me a quick prioritized checklist (passwords, 2FA, etc).">🛡️ Secure my accounts</button>
-              <button class="empty-chip" data-msg="What do you see on my screen right now? Flag anything risky or suspicious.">👁️ Scan my screen</button>
+              <button class="empty-chip" data-msg="Is this page a scam or phishing? Analyze what's on my screen carefully, domain, links, red flags.">Is this a scam?</button>
+              <button class="empty-chip" data-msg="Is this email or message safe? Check the sender, links, and any urgency tactics on my screen.">Check this email</button>
+              <button class="empty-chip" data-msg="Is the website on my screen safe to enter my password on? Check the URL and connection.">Is this site safe?</button>
+              <button class="empty-chip" data-msg="My account may be hacked. Walk me through exactly what to do right now, step by step.">I got hacked</button>
+              <button class="empty-chip" data-msg="How do I make my accounts more secure? Give me a quick prioritized checklist (passwords, 2FA, etc).">Secure my accounts</button>
+              <button class="empty-chip" data-msg="What do you see on my screen right now? Flag anything risky or suspicious.">Scan my screen</button>
             </div>
             <div id="trial-info"></div>
           </div>
@@ -1578,7 +1619,7 @@ html,body{
             <div class="drop-preview">
               <img id="drop-preview-img" src="" alt=""/>
               <div class="drop-preview-info">
-                <span class="drop-preview-label">Image attached — will be analyzed</span>
+                <span class="drop-preview-label">Image attached, will be analyzed</span>
                 <span class="drop-preview-name" id="drop-preview-name"></span>
               </div>
               <button class="drop-preview-close" id="drop-preview-close" title="Remove">
@@ -1587,7 +1628,7 @@ html,body{
             </div>
           </div>
           <div class="input-shell">
-            <textarea id="msg" rows="1" placeholder="Ask anything — Etaros sees what you see…"></textarea>
+            <textarea id="msg" rows="1" placeholder="Ask about anything on your screen…"></textarea>
             <div class="input-actions">
               <div class="input-actions-left">
                 <button id="attach-btn" title="Share an image with Etaros to analyze" class="input-action-labeled">
@@ -1605,7 +1646,7 @@ html,body{
             </div>
             <input type="file" id="file-input" accept="image/*" style="display:none"/>
           </div>
-          <p class="input-hint">Your second pair of eyes · always watching · ↵ to send</p>
+          <p class="input-hint">Etaros sees your screen · nothing is stored · ↵ to send</p>
         </div>
 
       </div><!-- /chat-panel -->
@@ -1657,7 +1698,7 @@ html,body{
   <div id="onboarding-inner" style="width:100%;max-width:340px;display:flex;flex-direction:column;gap:0">
     <div style="font-size:28px;text-align:center;margin-bottom:8px">⚡</div>
     <h2 style="text-align:center;font-size:18px;font-weight:700;color:var(--t1);margin-bottom:4px" id="onb-title">Hey, I'm Etaros.</h2>
-    <p style="text-align:center;font-size:13px;color:var(--t3);margin-bottom:28px;line-height:1.6" id="onb-sub">Your second pair of eyes. Before we start — what should I call you?</p>
+    <p style="text-align:center;font-size:13px;color:var(--t3);margin-bottom:28px;line-height:1.6" id="onb-sub">Before we start, what should I call you?</p>
     <input id="onb-name" type="text" placeholder="Your name…" autocomplete="given-name" style="width:100%;padding:13px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-s);color:var(--t1);font-family:inherit;font-size:15px;outline:none;margin-bottom:12px;transition:border-color .15s;-webkit-app-region:no-drag"/>
     <button id="onb-btn" style="width:100%;padding:13px;background:var(--orange);border:none;border-radius:var(--r-s);color:#fff;font-family:inherit;font-size:15px;font-weight:600;cursor:pointer;transition:opacity .15s;-webkit-app-region:no-drag">Let's go →</button>
     <button id="onb-skip" style="margin-top:10px;background:none;border:none;color:var(--t4);font-size:12px;cursor:pointer;font-family:inherit;-webkit-app-region:no-drag">Skip for now</button>
@@ -1683,14 +1724,14 @@ html,body{
 <!-- Danger alert overlay (active threat) -->
 <div id="danger-overlay">
   <div class="danger-box">
-    <div class="danger-pulse">🚨</div>
+    <div class="danger-pulse"><svg viewBox="0 0 24 24" fill="none" style="width:34px;height:34px"><path d="M12 3.2 22 20H2L12 3.2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 10v4.4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="17.4" r="1.15" fill="currentColor"/></svg></div>
     <div class="danger-label">Threat detected</div>
     <h2 id="danger-title">Threat detected</h2>
     <p id="danger-detail"></p>
     <div class="danger-action-box"><strong>What to do:</strong> <span id="danger-action"></span></div>
     <div class="danger-btns">
       <button id="danger-explain" class="danger-btn ghost">Tell me more</button>
-      <button id="danger-dismiss" class="danger-btn solid">Got it — I'm safe</button>
+      <button id="danger-dismiss" class="danger-btn solid">Got it, I'm safe</button>
     </div>
   </div>
 </div>
@@ -1838,10 +1879,8 @@ html,body{
       <div class="sp-section-lbl" style="padding-top:20px">Appearance</div>
       <div style="padding:0 20px 10px">
         <div class="theme-grid" id="theme-grid">
-          <button class="theme-opt" data-theme="light"><span class="theme-sw" style="background:#F9F7F3;border:1px solid #E4DDD5"></span>Light</button>
-          <button class="theme-opt" data-theme="dark"><span class="theme-sw" style="background:#15130F"></span>Dark</button>
-          <button class="theme-opt" data-theme="ocean"><span class="theme-sw" style="background:#F0F6FB;border:1px solid #D6E4F0"></span>Ocean</button>
-          <button class="theme-opt" data-theme="midnight"><span class="theme-sw" style="background:#0A1018"></span>Midnight</button>
+          <button class="theme-opt" data-theme="dark"><span class="theme-sw" style="background:#0A0D11;border:1px solid #212A35"></span>Dark</button>
+          <button class="theme-opt" data-theme="light"><span class="theme-sw" style="background:#F7F9FB;border:1px solid #DCE4EC"></span>Light</button>
         </div>
       </div>
       <div class="sp-divider"></div>
@@ -1907,7 +1946,7 @@ html,body{
         </div>
       </div>
 
-      <!-- Personal Gemini key — removes shared daily quota -->
+      <!-- Personal Gemini key, removes shared daily quota -->
       <div class="sp-section-lbl">Personal Gemini key <span style="color:var(--t4);font-weight:400">· optional</span></div>
       <div style="padding:0 20px 4px">
         <div class="adv-field">
@@ -1935,7 +1974,7 @@ html,body{
     <button id="sp-save-btn">Save changes</button>
   </div>
 </div>
-<!-- Advanced Settings — now fully inline in settings page -->
+<!-- Advanced Settings, now fully inline in settings page -->
 
 <!-- Custom confirm dialog -->
 <div id="confirm-overlay" style="display:none;position:fixed;inset:0;z-index:9998;background:rgba(15,10,5,.7);align-items:center;justify-content:center">
@@ -1992,7 +2031,7 @@ html,body{
       <button class="auth-btn-primary" id="auth-login-btn">Sign in</button>
       <button class="auth-link" id="auth-forgot-btn">Forgot password?</button>
       <div class="auth-divider"><span>No account?</span></div>
-      <button class="auth-btn-secondary" id="auth-goto-register">Create account — it's free</button>
+      <button class="auth-btn-secondary" id="auth-goto-register">Create account, it's free</button>
     </div>
 
     <!-- Register form -->
