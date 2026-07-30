@@ -8,11 +8,8 @@ if (_sentryDsn) sentryRendererInit({ dsn: _sentryDsn });
 const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('sk', {
+  purgeLegacyData: () => ipcRenderer.invoke('purge-legacy-data'),
   // Async (return promises)
-  getMemory:    ()          => ipcRenderer.invoke('get-memory'),
-  clearMemory:  ()          => ipcRenderer.invoke('clear-memory'),
-  deleteFact:   (key)       => ipcRenderer.invoke('delete-fact', key),
-  addNote:      (text)      => ipcRenderer.invoke('add-note', text),
   getSettings:  ()     => ipcRenderer.invoke('get-settings'),
   saveSettings: (s)    => ipcRenderer.invoke('save-settings', s),
   getProfile:   ()     => ipcRenderer.invoke('get-profile'),
@@ -36,9 +33,6 @@ contextBridge.exposeInMainWorld('sk', {
   renameChat: (id, title) => ipcRenderer.invoke('rename-chat', { id, title }),
   pinChat:    (id)        => ipcRenderer.invoke('pin-chat', id),
   chat:         (text) => ipcRenderer.invoke('chat', text),
-  showSearchBrowser: (opts) => ipcRenderer.invoke('show-search-browser', opts),
-  hideSearchBrowser: ()     => ipcRenderer.invoke('hide-search-browser'),
-  getSearchUrl:      ()     => ipcRenderer.invoke('get-search-url'),
   manualScan:   ()        => ipcRenderer.invoke('manual-scan'),
   regionSelect: ()        => ipcRenderer.invoke('region-select'),
   selectRegion: (r)       => ipcRenderer.send('region-selected', r),

@@ -38,7 +38,7 @@ if (_sentryDsn) sentryInit({
 });
 
 const {
-  app, BrowserWindow, BrowserView, desktopCapturer, ipcMain,
+  app, BrowserWindow, desktopCapturer, ipcMain,
   Tray, Menu, nativeImage, Notification, screen, globalShortcut, shell,
 } = require('electron');
 const path           = require('path');
@@ -219,95 +219,16 @@ function CHAT_PROMPT() {
     ? `\n\nIMPORTANT: Always respond in the user's language (${lang}). Never switch to English unless asked.`
     : '';
   const nameNote = name && name !== 'You' ? `\n\nUser's name: ${name}. Use it naturally in conversation.` : '';
-  return CHAT_PROMPT_BASE + nameNote + langNote + buildMemoryContext();
+  return CHAT_PROMPT_BASE + nameNote + langNote;
 }
 
 // ─── Store (encrypted — machine-specific key prevents manual resets) ──────────
 const store = new Store({ encryptionKey: machineKey() });
 
-// ─── Memory system ────────────────────────────────────────────────────────────
-// Persistent facts about the user — injected into every AI call.
-// Structure: [{ key, value, type, updated }]
-
-const MEMORY_MAX = 80; // max facts stored
-
-function getMemory() {
-  return Array.isArray(store.get('memory')) ? store.get('memory') : [];
-}
-
-function saveMemory(facts) {
-  store.set('memory', facts);
-}
-
-function upsertFacts(newFacts) {
-  if (!Array.isArray(newFacts) || !newFacts.length) return;
-  const mem = getMemory();
-  for (const f of newFacts) {
-    if (!f.key || !f.value) continue;
-    const key = String(f.key).toLowerCase().trim().replace(/\s+/g, '_');
-    const idx = mem.findIndex(m => m.key === key);
-    const entry = { key, value: String(f.value).slice(0, 200), type: f.type || 'personal', updated: Date.now() };
-    if (idx >= 0) mem[idx] = entry;
-    else mem.unshift(entry);
-  }
-  // Keep most recently updated, cap at MEMORY_MAX
-  mem.sort((a, b) => b.updated - a.updated);
-  saveMemory(mem.slice(0, MEMORY_MAX));
-}
-
-function buildMemoryContext() {
-  const mem = getMemory();
-  if (!mem.length) return '';
-  const lines = mem.slice(0, 30).map(f => `- ${f.key.replace(/_/g,' ')}: ${f.value}`).join('\n');
-  return `\n\nWHAT YOU KNOW ABOUT THIS USER (use naturally, never recite):\n${lines}`;
-}
-
-// Extract facts from conversation in background (non-blocking, uses cheapest model)
-async function extractAndLearn(userText, aiReply) {
-  const geminiKey = getGeminiKey();
-  if (!geminiKey) return;
-  try {
-    const genAI  = new GoogleGenerativeAI(geminiKey);
-    const model  = genAI.getGenerativeModel({ model: GEMINI_CHEAP_MODEL });
-    const prompt = `Extract personal facts about the user from this exchange.
-User: ${String(userText).slice(0, 400)}
-Assistant: ${String(aiReply).slice(0, 400)}
-
-Return ONLY valid JSON (or {"learn":[]} if nothing new):
-{"learn":[{"key":"fact_name","value":"fact value","type":"location|preference|goal|habit|personal|interest|finance|health"}]}
-
-Rules:
-- Only concrete facts explicitly stated by the user
-- Keys: simple lowercase with underscores (city, job, diet, budget, hobby, age, etc.)
-- Max 4 facts. Skip vague inferences.`;
-
-    const result = await model.generateContent(prompt);
-    const raw    = result.response.text();
-    const m      = raw.match(/\{[\s\S]*\}/);
-    if (!m) return;
-    const parsed = JSON.parse(m[0]);
-    if (Array.isArray(parsed.learn)) upsertFacts(parsed.learn);
-  } catch {
-    // Memory extraction is best-effort — never block the user
-  }
-}
-
-// Journal: save a summary entry per day
-function journalEntry(summary, context) {
-  if (!summary) return;
-  const today   = new Date().toISOString().slice(0, 10);
-  const journal = Array.isArray(store.get('journal')) ? store.get('journal') : [];
-  const entry   = { date: today, summary, context, ts: Date.now() };
-  // Keep last 90 days, max 500 entries
-  journal.unshift(entry);
-  store.set('journal', journal.slice(0, 500));
-}
-
 // ─── State ────────────────────────────────────────────────────────────────────
 let mainWindow     = null;
 let tray           = null;
 let scanTimer      = null;
-let searchBrowserView = null;
 let lastBitmap     = null;
 let isStreaming    = false;
 let retryTimer     = null;
@@ -318,7 +239,6 @@ let chatHistory    = [];
 let activeChatId   = null;
 let lastNotifyTime = 0;
 let overlayWindow  = null;
-let learnCounter   = 0;   // throttles background fact-extraction (every 3rd message)
 
 // ─── Region selector ──────────────────────────────────────────────────────────
 async function startRegionSelect() {
@@ -963,7 +883,6 @@ async function chat(userText, thumbnail) {
     chatHistory.push({ role: 'assistant', content: reply });
 
     // Extract facts in background — throttled to every 3rd message to halve Gemini quota use
-    if ((++learnCounter % 3) === 0) extractAndLearn(userText, reply).catch(() => {});
 
     // Persist conversation
     saveCurrentChat();
@@ -1010,7 +929,6 @@ async function proactiveScan(thumbnail, manual = false) {
     if (!parsed?.items?.length) return;
 
     // Save to journal
-    journalEntry(parsed.summary, parsed.context);
 
     // Fire OS notification ONLY for active risk/warn items explicitly marked notify:true
     const urgentItems = parsed.items.filter(i => i.type === 'risk' || i.type === 'warn');
@@ -1521,8 +1439,7 @@ function registerIPC() {
       try { const m = raw.match(/\{[\s\S]*\}/); if (m) parsed = JSON.parse(m[0]); } catch {}
 
       if (parsed?.items?.length) {
-        journalEntry(parsed.summary, parsed.context);
-        const scans   = Number(store.get('statScans')   ?? 0) + 1;
+            const scans   = Number(store.get('statScans')   ?? 0) + 1;
         const threats = Number(store.get('statThreats') ?? 0)
           + parsed.items.filter(i => i.type === 'risk' || i.type === 'warn').length;
         store.set('statScans',   scans);
@@ -1549,12 +1466,11 @@ function registerIPC() {
   });
 
   // ── Memory (facts the AI learns about you) ─────────────────────────────────
-  ipcMain.handle('get-memory',    ()      => ({ facts: getMemory(), journal: (store.get('journal') ?? []).slice(0, 30) }));
-  ipcMain.handle('clear-memory',  ()      => { saveMemory([]); store.set('journal', []); return { ok: true }; });
-  ipcMain.handle('delete-fact',   (_, k)  => { saveMemory(getMemory().filter(f => f.key !== k)); return { ok: true }; });
-  ipcMain.handle('add-note',      (_, text) => {
-    upsertFacts([{ key: 'note_' + Date.now(), value: text, type: 'personal' }]);
-    extractAndLearn(text, '').catch(() => {});
+  // Etaros deliberately keeps no profile of you: no learned personal facts,
+  // no daily journal of what was on your screen. This handler exists only so
+  // existing installs can wipe anything an older build stored.
+  ipcMain.handle('purge-legacy-data', () => {
+    for (const k of ['memory', 'journal']) store.delete(k);
     return { ok: true };
   });
 
@@ -1593,79 +1509,6 @@ function registerIPC() {
   ipcMain.handle('get-window-mode', () => 'fullscreen');
   ipcMain.handle('get-app-version', () => app.getVersion());
 
-  // ─── Embedded search browser (BrowserView) ────────────────────────────────
-  function destroySearchBrowserView() {
-    if (searchBrowserView && mainWindow && !mainWindow.isDestroyed()) {
-      try {
-        mainWindow.removeBrowserView(searchBrowserView);
-        searchBrowserView.webContents.destroy();
-      } catch {}
-    }
-    searchBrowserView = null;
-  }
-
-  // Only ever render remote http(s) content in the search view. Anything else
-  // (file://, custom schemes) is a sandbox-escape vector, not a search result.
-  function isWebUrl(u) {
-    try { return ['http:', 'https:'].includes(new URL(String(u)).protocol); }
-    catch { return false; }
-  }
-
-  ipcMain.handle('show-search-browser', async (_, { url, x, y, width, height }) => {
-    if (!mainWindow || mainWindow.isDestroyed()) return { ok: false, error: 'no window' };
-    if (!isWebUrl(url)) return { ok: false, error: 'blocked: only http(s) URLs allowed' };
-    try {
-      if (!searchBrowserView) {
-        searchBrowserView = new BrowserView({
-          webPreferences: {
-            nodeIntegration: false, contextIsolation: true, sandbox: true,
-            webSecurity: true, allowRunningInsecureContent: false,
-          },
-        });
-        mainWindow.addBrowserView(searchBrowserView);
-        searchBrowserView.webContents.setUserAgent(
-          'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
-        );
-        // Remote pages may not open new windows, and may not steer this view
-        // anywhere outside http(s).
-        searchBrowserView.webContents.setWindowOpenHandler(({ url: u }) => {
-          if (isWebUrl(u)) searchBrowserView?.webContents.loadURL(u);
-          return { action: 'deny' };
-        });
-        searchBrowserView.webContents.on('will-navigate', (e, u) => {
-          if (!isWebUrl(u)) e.preventDefault();
-        });
-        // A search result must never be able to attach a preload or webview.
-        searchBrowserView.webContents.on('will-attach-webview', (e) => e.preventDefault());
-        // Deny every runtime permission request (camera, mic, geo, notifications…)
-        searchBrowserView.webContents.session.setPermissionRequestHandler((_wc, _perm, cb) => cb(false));
-      }
-      const bx = Math.round(x), by = Math.round(y),
-            bw = Math.max(1, Math.round(width)), bh = Math.max(1, Math.round(height));
-      searchBrowserView.setBounds({ x: bx, y: by, width: bw, height: bh });
-      await searchBrowserView.webContents.loadURL(url);
-      return { ok: true };
-    } catch (e) {
-      console.error('[search-browser] error:', e.message);
-      destroySearchBrowserView();
-      return { ok: false, error: e.message };
-    }
-  });
-
-  ipcMain.handle('hide-search-browser', () => {
-    destroySearchBrowserView();
-    return { ok: true };
-  });
-
-  ipcMain.handle('get-search-url', () => {
-    try { return searchBrowserView?.webContents.getURL() || ''; } catch { return ''; }
-  });
-
-  // Resize search view when main window resizes
-  mainWindow.on('resize', () => {
-    if (!searchBrowserView) return;
-    mainWindow.webContents.send('search-view-resize');
-  });
 }
 
 // ─── Auto-updater ─────────────────────────────────────────────────────────────
@@ -1712,6 +1555,11 @@ process.on('uncaughtException', (err) => {
 });
 
 app.whenReady().then(() => {
+  // Older builds profiled the user (learned personal facts + a daily journal of
+  // screen activity). That data is gone from the product; wipe it on upgrade so
+  // no one is left carrying a profile they never asked for.
+  for (const k of ['memory', 'journal']) store.delete(k);
+
   initChat(); // restore last conversation
   createMainWindow();
   createTray();
