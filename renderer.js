@@ -774,6 +774,23 @@ if (updateBtn) {
 }
 
 window.sk.on('error',          ({ message })       => appendError(message));
+
+// Screen access is an upgrade, not a gate: everything else already works, so
+// this explains the trade rather than reading like a failure.
+window.sk.on('screen-permission-needed', () => {
+  showFeed();
+  const el = document.createElement('div');
+  el.className = 'perm-note';
+  el.innerHTML = `
+    <div class="perm-title">Etaros can't see your screen yet</div>
+    <div class="perm-body">You can still paste links, emails and messages and I'll check them.
+      To have me watch your screen and catch things on my own, turn on Screen Recording.</div>
+    <div class="perm-steps">System Settings &rsaquo; Privacy &amp; Security &rsaquo; Screen Recording &rsaquo; enable Etaros, then restart the app.</div>
+    <button class="perm-btn" id="perm-open">Open System Settings</button>`;
+  feed.insertBefore(el, thinking);
+  el.querySelector('#perm-open')?.addEventListener('click', () => window.sk.openScreenSettings());
+  scrollBottom(true);
+});
 window.sk.on('upgrade-prompt', ({ tier, used, limit }) => {
   setTierDisplay(tier || 'free', used, limit);
   upgrade.style.display = 'block';

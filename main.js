@@ -560,18 +560,23 @@ function getGeminiKey() {
 }
 
 // ─── Screen capture ───────────────────────────────────────────────────────────
-async function captureScreen() {
+// `silent` is for the chat path, where a screenshot is a bonus rather than the
+// point: someone asking "is this link safe?" should get an answer whether or not
+// they have granted screen access. Only complain when the user explicitly asked
+// us to look at their screen.
+async function captureScreen({ silent = false } = {}) {
   try {
     const sources = await desktopCapturer.getSources({
       types: ['screen'], thumbnailSize: { width: 1920, height: 1080 },
     });
     if (!sources?.length || sources[0].thumbnail.isEmpty()) {
-      push('error', { message: 'Screen access denied. Go to System Settings → Privacy & Security → Screen Recording → enable Etaros.' });
+      if (!silent) push('screen-permission-needed', {});
       return null;
     }
     return sources[0].thumbnail;
   } catch (err) {
     console.error('[capture]', err.message);
+    if (!silent) push('screen-permission-needed', {});
     return null;
   }
 }
@@ -1011,7 +1016,8 @@ function scheduleRetry(thumb) {
 
 // ─── Scan loop ────────────────────────────────────────────────────────────────
 async function runScan() {
-  const thumb = await captureScreen();
+  // Runs on a timer, so a missing permission must stay quiet.
+  const thumb = await captureScreen({ silent: true });
   if (!thumb) return;
   const small  = thumb.resize({ width: 160 });
   const bitmap = small.toBitmap();
@@ -1345,7 +1351,9 @@ function registerIPC() {
   ipcMain.handle('check-ollama', () => getOllamaStatus());
 
   ipcMain.handle('chat', async (_, text) => {
-    const thumb = await captureScreen();
+    // Opportunistic: if we can see the screen it makes the answer better, but a
+    // typed question must never depend on a permission the user hasn't granted.
+    const thumb = await captureScreen({ silent: true });
     // Send thumb preview to renderer so user bubble shows screenshot context
     if (thumb) {
       const previewB64 = thumb.resize({ width: 280, quality: 'good' }).toJPEG(60).toString('base64');
@@ -1366,7 +1374,7 @@ function registerIPC() {
         quickWindow.hide();
         await new Promise(r => setTimeout(r, 120));
       }
-      const thumb = await captureScreen();
+      const thumb = await captureScreen({ silent: true });
       if (thumb) imgB64 = thumbToB64(thumb);
       if (quickWindow && !quickWindow.isDestroyed()) { quickWindow.show(); quickWindow.focus(); }
 
@@ -1494,6 +1502,15 @@ function registerIPC() {
       if (['http:', 'https:', 'mailto:'].includes(new URL(u).protocol)) shell.openExternal(u);
     } catch { /* invalid URL — ignore */ }
   };
+  // Deep-linking into System Settings needs a scheme the URL allowlist blocks,
+  // so it gets its own handler with a fixed destination instead.
+  ipcMain.on('open-screen-settings', () => {
+    if (process.platform === 'darwin') {
+      shell.openExternal('x-apple.systempreferences:com.apple.preference.security?Privacy_ScreenCapture');
+    } else if (process.platform === 'win32') {
+      shell.openExternal('ms-settings:privacy-broadfilesystemaccess');
+    }
+  });
   ipcMain.on('open-url',       (_, u)  => safeOpen(u));
   ipcMain.on('open-urls',      (_, urls) => {
     // Open multiple URLs as separate tabs — stagger slightly so browser groups them

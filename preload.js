@@ -52,6 +52,7 @@ contextBridge.exposeInMainWorld('sk', {
   setCollapsed:  (bool)    => ipcRenderer.send('set-collapsed', bool),
   setMode:       (mode)    => ipcRenderer.send('set-mode', mode),
   openUrl:       (url)     => ipcRenderer.send('open-url', url),
+  openScreenSettings: ()   => ipcRenderer.send('open-screen-settings'),
   openUrls:      (urls)    => ipcRenderer.send('open-urls', urls),
   clearHistory:  ()        => ipcRenderer.send('clear-history'),
   getWindowMode:  ()       => ipcRenderer.invoke('get-window-mode'),
