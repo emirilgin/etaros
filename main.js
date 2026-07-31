@@ -767,7 +767,14 @@ async function streamBackend(systemPrompt, history) {
     push('stream-chunk', { content: reply.slice(i, i + 24) });
     if (i % 240 === 0) await new Promise(r => setTimeout(r, 8));
   }
-  if (data.tier) push('tier-updated', { tier: data.tier });
+  // The backend returns the tier on every reply. Only tell the renderer when it
+  // actually changed, otherwise a routine answer looks like an upgrade.
+  if (data.tier && data.tier !== store.get('sbTier')) {
+    store.set('sbTier', data.tier);
+    push('tier-updated', { tier: data.tier });
+  } else if (data.tier) {
+    push('usage-updated', { tier: data.tier, used: data.used, limit: data.limit });
+  }
   return reply;
 }
 

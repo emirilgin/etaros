@@ -1419,11 +1419,14 @@ window.sk.on('deep-link', ({ url }) => {
   }
 });
 
-// tier-updated event from main (after Stripe payment)
+// Real tier change, e.g. after a Stripe payment. Worth announcing once.
 window.sk.on('tier-updated', ({ tier }) => {
   window.sk.checkLicense().then(lic => setTierDisplay(lic.tier, lic.used, lic.limit));
-  if (tier !== 'free') showToast(`Upgraded to ${tier.charAt(0).toUpperCase() + tier.slice(1)}! 🎉`, 'ok');
+  if (tier && tier !== 'free') showToast(`Upgraded to ${tier.charAt(0).toUpperCase() + tier.slice(1)}`, 'ok');
 });
+
+// Routine status that rides along with every reply: update the counter quietly.
+window.sk.on('usage-updated', ({ tier, used, limit }) => setTierDisplay(tier, used, limit));
 
 // ─── Smooth overlay transitions ───────────────────────────────────────────────
 function hideAuthOverlay() {
