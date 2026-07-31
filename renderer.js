@@ -984,6 +984,81 @@ function switchSettingsTab(tabId) {
   if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
+// ── What leaves this device ─────────────────────────────────────────────────
+// Renders from live state. If a future change starts sending something new,
+// this panel is wrong until someone updates it, which is the point: the claim
+// and the behaviour are kept in the same place.
+async function renderPrivacyPanel() {
+  const list = document.getElementById('pv-list');
+  const note = document.getElementById('pv-note');
+  if (!list) return;
+
+  const [s, convs] = await Promise.all([
+    window.sk.getSettings(),
+    window.sk.getConversations().catch(() => ({ conversations: [] })),
+  ]);
+  const local   = (s.provider || 'builtin') === 'ollama';
+  const ownKey  = Boolean((s.geminiKey || '').trim() || (s.apiKey || '').trim());
+  const chats   = (convs?.conversations || []).length;
+
+  const rows = [
+    ['Screen captures', local
+        ? 'Analysed on this machine. Never transmitted.'
+        : 'Sent for analysis, then discarded. Never stored by us.',
+      local],
+    ['Where analysis happens', local
+        ? 'Your machine (Ollama). No network request is made.'
+        : ownKey ? 'Your own API key, direct to your chosen provider.'
+                 : 'Etaros backend, European infrastructure. Not Google.',
+      local],
+    ['Conversations', `${chats} stored on this device only. Never uploaded.`, true],
+    ['Profile of you', 'None. No learned facts, no habits, no activity journal.', true],
+    ['Account email', s.hasAccount === false ? 'Not signed in.' : 'Stored to manage sign-in and your plan.', false],
+    ['Crash reports', 'Anonymous. Emails, keys and image data are stripped before sending.', false],
+    ['Advertising & data sales', 'None. There is no third party to sell to.', true],
+  ];
+
+  list.innerHTML = rows.map(([k, v, stays]) => `
+    <div class="pv-row">
+      <span class="pv-dot ${stays ? 'stay' : 'out'}"></span>
+      <div style="flex:1;min-width:0">
+        <div class="pv-k">${esc(k)}</div>
+        <div class="pv-v">${esc(v)}</div>
+      </div>
+      <span class="pv-tag ${stays ? 'stay' : 'out'}">${stays ? 'stays' : 'leaves'}</span>
+    </div>`).join('');
+
+  note.innerHTML = local
+    ? 'Local mode is on. Nothing about your screen leaves this machine, so you do not have to take our word for any of the above.'
+    : 'Our processor holds API traffic for 30 days for abuse prevention, then deletes it. We hold nothing at any point. If that is still too much trust, switch to local mode and verify it yourself.';
+
+  const btn = document.getElementById('pv-local-btn');
+  if (btn) {
+    btn.textContent = local ? 'Local mode is on' : 'Switch to local mode';
+    btn.disabled = local;
+    btn.style.opacity = local ? '.5' : '';
+  }
+}
+
+document.getElementById('privacy-btn')?.addEventListener('click', () => openSettingsPage('privacy'));
+
+document.getElementById('pv-local-btn')?.addEventListener('click', async () => {
+  await window.sk.saveSettings({ provider: 'ollama' });
+  showToast('Local mode on. Requires Ollama running.', 'ok', 4000);
+  renderPrivacyPanel();
+});
+
+document.getElementById('pv-wipe-btn')?.addEventListener('click', () => {
+  showConfirm('Erase every conversation and stored setting on this device? This cannot be undone.', async () => {
+    await window.sk.purgeLegacyData().catch(() => {});
+    window.sk.clearHistory();
+    const el = document.getElementById('pv-wiped');
+    if (el) { el.style.display = 'block'; el.textContent = 'Erased ' + new Date().toLocaleTimeString(); }
+    renderPrivacyPanel();
+    showToast('Local data erased', 'ok');
+  });
+});
+
 function openSettingsPage(section = 'profile') {
   if (!settingsPage) return;
   settingsPage.classList.add('open');
@@ -991,6 +1066,7 @@ function openSettingsPage(section = 'profile') {
   spAvatarDataUrl = null;
 
   // Load advanced/settings fields (now inline)
+  renderPrivacyPanel().catch(() => {});
   window.sk.getSettings().then(s => {
     const city      = document.getElementById('adv-city');
     const autoScan  = document.getElementById('adv-auto-scan');

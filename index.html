@@ -1424,6 +1424,25 @@ html,body{
 .mem-fact-card:hover .mem-fact-del { opacity:1; }
 .mem-fact-del:hover { color:var(--red); }
 
+/* ── What leaves this device ── */
+.pv-row{ display:flex; align-items:flex-start; gap:11px; padding:11px 0; border-bottom:1px solid var(--border); }
+.pv-row:last-child{ border-bottom:none; }
+.pv-dot{ width:7px; height:7px; border-radius:50%; margin-top:6px; flex-shrink:0; }
+.pv-dot.out{ background:var(--amber); }
+.pv-dot.stay{ background:var(--green); }
+.pv-k{ font-size:13px; color:var(--t1); font-weight:550; }
+.pv-v{ font-size:12px; color:var(--t3); margin-top:2px; line-height:1.5; font-family:var(--mono); }
+.pv-tag{ margin-left:auto; font-family:var(--mono); font-size:9.5px; font-weight:600; letter-spacing:.06em;
+  text-transform:uppercase; padding:3px 7px; border-radius:var(--r-xs); border:1px solid; flex-shrink:0; }
+.pv-tag.out{ color:var(--amber); background:var(--amber-bg); border-color:rgba(245,184,73,.32); }
+.pv-tag.stay{ color:var(--green); background:var(--green-bg); border-color:rgba(61,214,140,.3); }
+.pv-note{ font-size:12px; color:var(--t3); line-height:1.6; margin-top:14px; padding:11px 13px;
+  background:var(--bg-hi); border:1px solid var(--border); border-radius:var(--r-s); }
+.pv-btn{ font-family:inherit; font-size:12.5px; font-weight:550; padding:8px 14px; border-radius:var(--r-s);
+  border:1px solid var(--border2); background:var(--card); color:var(--t1); cursor:pointer; transition:border-color .15s; }
+.pv-btn:hover{ border-color:var(--orange); }
+.pv-btn.danger:hover{ border-color:var(--red); color:var(--red); }
+
 /* ══ Instrument layer ══════════════════════════════════════════════════════
    Anything the product measured, counts, tiers, times, domains, is set in
    mono. It separates what Etaros observed from what Etaros is saying about it,
@@ -1524,6 +1543,10 @@ body::before{
       <div class="sb-divider" style="margin:6px 14px"></div>
 
       <!-- Bottom actions -->
+
+      <button class="sb-bottom-btn" id="privacy-btn" title="See exactly what leaves this device">
+        <span class="nav-icon">◇</span>What leaves this device
+      </button>
 
       <div class="sb-divider" style="margin:6px 0 4px"></div>
 
@@ -1871,6 +1894,30 @@ body::before{
       <span id="sp-tier-badge" style="display:none"></span>
       <span id="sp-tier-desc"  style="display:none"></span>
       <button id="sp-upgrade-btn" style="display:none"></button>
+    </div>
+
+    <div class="sp-section-divider"></div>
+
+    <!-- ── What leaves this device ──────────────────────────────────────────
+         The philosophy says people should be able to verify rather than
+         believe, so this reads live state instead of restating promises. -->
+    <div class="sp-tab-content" id="sp-tab-privacy">
+      <div class="sp-section-lbl" style="padding-top:20px">What leaves this device</div>
+      <div style="padding:0 20px 6px">
+        <p style="font-size:12.5px;color:var(--t3);line-height:1.6;margin-bottom:14px">
+          Read from what the app is actually doing right now, not from a policy page.
+        </p>
+
+        <div class="pv-list" id="pv-list"></div>
+
+        <div class="pv-note" id="pv-note"></div>
+
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:14px">
+          <button class="pv-btn" id="pv-local-btn">Switch to local mode</button>
+          <button class="pv-btn danger" id="pv-wipe-btn">Erase everything stored here</button>
+        </div>
+        <div id="pv-wiped" style="display:none;font-size:12px;color:var(--green);margin-top:9px;font-family:var(--mono)"></div>
+      </div>
     </div>
 
     <div class="sp-section-divider"></div>
