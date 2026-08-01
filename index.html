@@ -1443,6 +1443,23 @@ html,body{
 .pv-btn:hover{ border-color:var(--orange); }
 .pv-btn.danger:hover{ border-color:var(--red); color:var(--red); }
 
+/* Status strip */
+#status-strip{ display:flex; align-items:center; gap:10px; padding:7px 20px;
+  border-bottom:1px solid var(--border); background:var(--bg-hi);
+  font-family:var(--mono); font-size:11px; color:var(--t3); letter-spacing:.01em;
+  -webkit-app-region:drag; user-select:none; }
+.st-live{ display:inline-flex; align-items:center; gap:6px; color:var(--t2); }
+.st-dot{ width:6px; height:6px; border-radius:50%; background:var(--green);
+  box-shadow:0 0 0 0 rgba(61,214,140,.45); animation:stPulse 2.6s ease-out infinite; }
+@keyframes stPulse{ 0%{box-shadow:0 0 0 0 rgba(61,214,140,.4)} 70%{box-shadow:0 0 0 5px rgba(61,214,140,0)} 100%{box-shadow:0 0 0 0 rgba(61,214,140,0)} }
+#status-strip[data-state="scanning"] .st-dot{ background:var(--orange); animation-duration:1s; }
+#status-strip[data-state="threat"] .st-dot{ background:var(--red); animation-duration:.7s; }
+#status-strip[data-state="local"] .st-dot{ background:var(--green); }
+.st-sep{ width:1px; height:10px; background:var(--border2); }
+.st-spacer{ flex:1; }
+.st-caught{ color:var(--amber); }
+.st-quiet{ color:var(--t4); }
+
 /* Settings section rail */
 #sp-rail{ display:flex; gap:2px; padding:10px 16px 0; border-bottom:1px solid var(--border);
   background:var(--bg); position:sticky; top:var(--titlebar); z-index:5; }
@@ -1607,10 +1624,18 @@ body::before{
       <div id="counter"></div>
 
       <!-- Stats bar -->
-      <div id="stats-bar" data-empty="true">
-        <div class="stat-pill"><span class="stat-n" id="stat-threats-n">0</span><span>threats caught</span></div>
-        <div class="stat-pill"><span class="stat-n green" id="stat-saved-n">$0</span><span>saved</span></div>
-        <div class="stat-pill"><span class="stat-n" id="stat-scans-n">0</span><span>scans</span></div>
+      <!-- Status strip. Etaros is quiet when nothing is wrong, which reads as
+           "switched off" unless the interface says otherwise. This makes the
+           silence legible: you can see it working and finding nothing. -->
+      <div id="status-strip">
+        <span class="st-live"><span class="st-dot"></span><span id="st-state">Ready</span></span>
+        <span class="st-sep"></span>
+        <span class="st-item" id="st-where">European AI</span>
+        <span class="st-sep"></span>
+        <span class="st-item" id="st-checks">0 checks</span>
+        <span class="st-item st-caught" id="st-caught" style="display:none"></span>
+        <span class="st-spacer"></span>
+        <span class="st-item st-quiet" id="st-kept">nothing stored</span>
       </div>
 
       <!-- ── Chat panel ──────────────────────────────────────────────── -->

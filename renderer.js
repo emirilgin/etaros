@@ -608,7 +608,7 @@ function renderAnalysis(data) {
 
   // High-confidence active threat → fire the full danger alert
   const danger = items.find(i => i.type === 'risk' && i.notify);
-  if (danger) triggerDangerAlert(danger);
+  if (danger) { setStatus('threat', 'Threat found'); triggerDangerAlert(danger); }
 
   const group = makeGroup();
   const wrap  = document.createElement('div');
@@ -693,6 +693,7 @@ function setTierDisplay(tier, used, limit) {
 
 // ─── Events from main ─────────────────────────────────────────────────────────
 window.sk.on('stream-start', () => {
+  setStatus('scanning', 'Analysing');
   streamBuffer = '';
   streamEl = createStreamEl();
   hdrDot.classList.add('on');
@@ -704,6 +705,8 @@ window.sk.on('stream-start', () => {
 window.sk.on('stream-chunk', ({ content }) => appendChunk(content));
 
 window.sk.on('stream-done', (data) => {
+  setStatus('idle', 'Ready');
+  refreshStatus();
   hdrDot.classList.remove('on');
   document.getElementById('sb-mark')?.classList.remove('spinning');
   finalizeStream(data);
@@ -743,6 +746,8 @@ window.sk.on('analysis', renderAnalysis);
 window.sk.on('screen-preview', ({ b64 }) => { pendingPreview = b64; });
 
 window.sk.on('scan-status', ({ scanning }) => {
+  setStatus(scanning ? 'scanning' : 'idle', scanning ? 'Scanning' : 'Ready');
+  if (!scanning) refreshStatus();
   hdrDot.classList.toggle('on', scanning);
   if (scanning && !streamEl) {
     thinkTime.textContent  = now();
@@ -875,6 +880,51 @@ async function init() {
     if (el && v) el.textContent = `v${v}`;
   }).catch(() => {});
 }
+
+// ─── Status strip ───────────────────────────────────────────────────────────
+// Reads real state. If it ever shows something the app isn't doing, it is lying,
+// which for this product is worse than showing nothing.
+const strip$ = document.getElementById('status-strip');
+
+function setStatus(state, label) {
+  if (!strip$) return;
+  strip$.dataset.state = state;
+  const el = document.getElementById('st-state');
+  if (el) el.textContent = label;
+}
+
+async function refreshStatus() {
+  if (!strip$) return;
+  try {
+    const [s, stats] = await Promise.all([
+      window.sk.getSettings(),
+      window.sk.getStats().catch(() => ({ scans: 0, threats: 0 })),
+    ]);
+    const local = (s.provider || 'builtin') === 'ollama';
+    const where = document.getElementById('st-where');
+    const kept  = document.getElementById('st-kept');
+    if (where) where.textContent = local ? 'on this machine' : 'European AI';
+    if (kept)  kept.textContent  = local ? 'nothing leaves' : 'nothing stored';
+
+    const checks = Number(stats.scans) || 0;
+    const el = document.getElementById('st-checks');
+    if (el) el.textContent = `${checks} ${checks === 1 ? 'check' : 'checks'}`;
+
+    const caught = Number(stats.threats) || 0;
+    const c = document.getElementById('st-caught');
+    if (c) {
+      c.style.display = caught ? '' : 'none';
+      c.textContent = caught ? `${caught} caught` : '';
+    }
+    if (!strip$.dataset.state || strip$.dataset.state === 'idle') {
+      setStatus(local ? 'local' : 'idle', s.autoScan ? 'Watching' : 'Ready');
+    }
+  } catch { /* status is decoration; never let it break the app */ }
+}
+
+window.sk.on('stats-updated', refreshStatus);
+window.sk.on('settings-updated', refreshStatus);
+refreshStatus();
 
 // ─── Theme ────────────────────────────────────────────────────────────────────
 // Dark is the product's own look and lives in :root, so it is the absence of an
