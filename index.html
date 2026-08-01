@@ -1443,6 +1443,17 @@ html,body{
 .pv-btn:hover{ border-color:var(--orange); }
 .pv-btn.danger:hover{ border-color:var(--red); color:var(--red); }
 
+/* Settings section rail */
+#sp-rail{ display:flex; gap:2px; padding:10px 16px 0; border-bottom:1px solid var(--border);
+  background:var(--bg); position:sticky; top:var(--titlebar); z-index:5; }
+.sp-rail-btn{ font-family:inherit; font-size:13px; font-weight:550; color:var(--t3);
+  background:none; border:none; border-bottom:2px solid transparent;
+  padding:9px 13px 10px; cursor:pointer; transition:color .15s, border-color .15s; }
+.sp-rail-btn:hover{ color:var(--t1); }
+.sp-rail-btn.active{ color:var(--orange); border-bottom-color:var(--orange); }
+.sp-tab-content{ display:none; }
+.sp-tab-content.active{ display:block; animation:fadeUp .18s ease both; }
+
 /* Screen-permission note: informative, not an error. Uses the accent rather
    than red, because nothing has gone wrong. */
 .perm-note{ margin:10px 0; padding:14px 16px; border-radius:var(--r-s);
@@ -1587,9 +1598,9 @@ body::before{
 
       <!-- Upgrade banner -->
       <div id="upgrade">
-        <h4>Free trial complete</h4>
-        <p>Upgrade to Pro for unlimited messages and priority AI, <strong>$9/mo</strong>.</p>
-        <button id="up-btn">Upgrade in Settings →</button>
+        <h4>Free checks used up</h4>
+        <p>Pro gives you unlimited checks and continuous monitoring, <strong>&euro;8,99/mo</strong>.</p>
+        <button id="up-btn">See plans</button>
       </div>
 
       <!-- Counter / free trial info -->
@@ -1824,6 +1835,15 @@ body::before{
     <span id="sp-title">Settings</span>
     <div style="width:60px;-webkit-app-region:no-drag"></div>
   </div>
+
+  <!-- Section rail. Settings was one long scroll with no way to navigate it,
+       so everything past the first screen was effectively hidden. -->
+  <nav id="sp-rail">
+    <button class="sp-rail-btn active" data-sp-tab="profile">Account</button>
+    <button class="sp-rail-btn" data-sp-tab="plan">Plan</button>
+    <button class="sp-rail-btn" data-sp-tab="privacy">Privacy</button>
+    <button class="sp-rail-btn" data-sp-tab="advanced">Advanced</button>
+  </nav>
   <div id="sp-body">
 
     <!-- ── Profile tab ── -->
@@ -1867,7 +1887,6 @@ body::before{
       </div>
     </div>
 
-    <div class="sp-section-divider"></div>
     <!-- ── Plan tab ── -->
     <div class="sp-tab-content" id="sp-tab-plan">
       <div class="sp-section-lbl" style="padding-top:20px">Plan &amp; Billing</div>
@@ -1875,30 +1894,30 @@ body::before{
         <div class="sp-plan-row" id="plan-tile-free">
           <div class="sp-plan-row-left">
             <span class="sp-plan-row-name">Free</span>
-            <span class="sp-plan-row-desc">5 messages · screen scanning</span>
+            <span class="sp-plan-row-desc">10 checks a month · local mode</span>
           </div>
           <div class="sp-plan-row-right">
-            <span class="sp-plan-row-price">$0</span>
+            <span class="sp-plan-row-price">&euro;0</span>
             <button class="sp-plan-row-btn current-lbl" id="plan-free-action">Current</button>
           </div>
         </div>
         <div class="sp-plan-row" id="plan-tile-pro">
           <div class="sp-plan-row-left">
             <span class="sp-plan-row-name">Pro <span class="sp-plan-popular">Popular</span></span>
-            <span class="sp-plan-row-desc">Unlimited · AI Compare · all features</span>
+            <span class="sp-plan-row-desc">Unlimited checks · continuous monitoring</span>
           </div>
           <div class="sp-plan-row-right">
-            <span class="sp-plan-row-price">$9<sub>/mo</sub></span>
+            <span class="sp-plan-row-price">&euro;8,99<sub>/mo</sub></span>
             <button class="sp-plan-row-btn upgrade" id="plan-pro-action">Upgrade →</button>
           </div>
         </div>
         <div class="sp-plan-row" id="plan-tile-max">
           <div class="sp-plan-row-left">
             <span class="sp-plan-row-name">Max</span>
-            <span class="sp-plan-row-desc">Everything + Claude AI · best model</span>
+            <span class="sp-plan-row-desc">Everything in Pro · most capable model</span>
           </div>
           <div class="sp-plan-row-right">
-            <span class="sp-plan-row-price">$19<sub>/mo</sub></span>
+            <span class="sp-plan-row-price">&euro;19,99<sub>/mo</sub></span>
             <button class="sp-plan-row-btn upgrade" id="plan-max-action">Upgrade →</button>
           </div>
         </div>
@@ -1906,10 +1925,8 @@ body::before{
       <!-- Hidden compat elements referenced in renderer -->
       <span id="sp-tier-badge" style="display:none"></span>
       <span id="sp-tier-desc"  style="display:none"></span>
-      <button id="sp-upgrade-btn" style="display:none"></button>
-    </div>
+          </div>
 
-    <div class="sp-section-divider"></div>
 
     <!-- ── What leaves this device ──────────────────────────────────────────
          The philosophy says people should be able to verify rather than
@@ -1933,7 +1950,6 @@ body::before{
       </div>
     </div>
 
-    <div class="sp-section-divider"></div>
     <!-- ── Advanced tab (inline) ── -->
     <div class="sp-tab-content" id="sp-tab-advanced">
       <div class="sp-section-lbl" style="padding-top:20px">Appearance</div>

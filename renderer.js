@@ -800,9 +800,9 @@ window.sk.on('upgrade-prompt', ({ tier, used, limit }) => {
   m.className = 'limit-msg';
   m.innerHTML = `
     <div class="limit-msg-icon">⚡</div>
-    <div class="limit-msg-title">You've used all ${limit || 5} free messages this month</div>
-    <div class="limit-msg-sub">Upgrade to Pro for unlimited messages, AI Compare, and priority scanning.</div>
-    <button class="limit-msg-btn" id="limit-upgrade-btn">Upgrade to Pro, €9/mo</button>`;
+    <div class="limit-msg-title">That's your ${limit || 10} free checks this month</div>
+    <div class="limit-msg-sub">Pro removes the limit and keeps watching in the background.</div>
+    <button class="limit-msg-btn" id="limit-upgrade-btn">See plans</button>`;
   feed.insertBefore(m, thinking);
   m.querySelector('#limit-upgrade-btn')?.addEventListener('click', () => openSettingsPage('plan'));
   scrollBottom(true);
@@ -996,9 +996,13 @@ const settingsPage = document.getElementById('settings-page');
 let spAvatarDataUrl = null;
 
 function switchSettingsTab(tabId) {
-  // Settings is now a single scrollable page, scroll to section
-  const target = document.getElementById(`sp-tab-${tabId}`);
-  if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const id = ['profile', 'plan', 'privacy', 'advanced'].includes(tabId) ? tabId : 'profile';
+  document.querySelectorAll('.sp-tab-content').forEach(el =>
+    el.classList.toggle('active', el.id === `sp-tab-${id}`));
+  document.querySelectorAll('.sp-rail-btn').forEach(b =>
+    b.classList.toggle('active', b.dataset.spTab === id));
+  document.querySelector('#settings-page .sp-body, #settings-page')?.scrollTo?.({ top: 0 });
+  if (id === 'privacy') renderPrivacyPanel().catch(() => {});
 }
 
 // ── What leaves this device ─────────────────────────────────────────────────
@@ -1160,7 +1164,7 @@ function openSettingsPage(section = 'profile') {
 }
 
 // Tab click handlers
-document.querySelectorAll('.sp-tab').forEach(tab =>
+document.querySelectorAll('.sp-rail-btn').forEach(tab =>
   tab.addEventListener('click', () => switchSettingsTab(tab.dataset.spTab)));
 
 document.getElementById('sp-back')?.addEventListener('click', () => settingsPage?.classList.remove('open'));
@@ -1233,7 +1237,6 @@ document.getElementById('adv-gemini-link')?.addEventListener('click', e => {
   window.sk.openUrl('https://aistudio.google.com/app/apikey');
 });
 
-document.getElementById('sp-upgrade-btn')?.addEventListener('click', () => openSettingsPage('plan'));
 // Plan tile upgrade buttons → open Stripe with user ID
 async function openUpgrade(planTier) {
   const res = await window.sk.authGetUpgradeUrl({ planTier });
