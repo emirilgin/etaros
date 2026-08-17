@@ -28,14 +28,13 @@ jobs:
         run: |
           cat > app.config.js << 'CONF'
           module.exports = {
-            geminiKey:       '${{ secrets.GEMINI_KEY }}',
-            anthropicKey:    '${{ secrets.ANTHROPIC_KEY }}',
+            // No provider keys here. They live as Worker secrets and never ship
+            // inside the app; a key in the asar is extractable by anyone.
+            apiBase:         '${{ secrets.API_BASE }}',
             ownerMode: false,
             sentryDsn:       '${{ secrets.SENTRY_DSN }}',
             supabaseUrl:     '${{ secrets.SUPABASE_URL }}',
             supabaseAnonKey: '${{ secrets.SUPABASE_ANON_KEY }}',
-            licenseSecret:   '${{ secrets.LICENSE_SECRET }}',
-            testerCodes:     ${{ secrets.TESTER_CODES_JSON || '[]' }},
             stripePlanLinks: {
               pro: '${{ secrets.STRIPE_PRO_LINK }}',
               max: '${{ secrets.STRIPE_MAX_LINK }}',
@@ -83,14 +82,13 @@ jobs:
         run: |
           cat > app.config.js << 'CONF'
           module.exports = {
-            geminiKey:       '${{ secrets.GEMINI_KEY }}',
-            anthropicKey:    '${{ secrets.ANTHROPIC_KEY }}',
+            // No provider keys here. They live as Worker secrets and never ship
+            // inside the app; a key in the asar is extractable by anyone.
+            apiBase:         '${{ secrets.API_BASE }}',
             ownerMode: false,
             sentryDsn:       '${{ secrets.SENTRY_DSN }}',
             supabaseUrl:     '${{ secrets.SUPABASE_URL }}',
             supabaseAnonKey: '${{ secrets.SUPABASE_ANON_KEY }}',
-            licenseSecret:   '${{ secrets.LICENSE_SECRET }}',
-            testerCodes:     ${{ secrets.TESTER_CODES_JSON || '[]' }},
             stripePlanLinks: {
               pro: '${{ secrets.STRIPE_PRO_LINK }}',
               max: '${{ secrets.STRIPE_MAX_LINK }}',

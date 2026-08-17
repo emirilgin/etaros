@@ -27,3 +27,21 @@ logo-finals.html
 _private/
 .agents/
 .impeccable/config.local.json
+
+# Scratch logs
+.build.txt
+.faillog.txt
+.r.txt
+
+# Business strategy — same class as _private/
+POSITIONING.md
+
+# Dead: the HMAC license system was removed; the Railway server went with it
+DEPLOY.md
+server/
+scripts/gen-keys.js
+supabase/functions/validate-key/
+
+# Marketing automation, needs API secrets — not part of the app
+social-bot/
+.github/workflows/social.yml
