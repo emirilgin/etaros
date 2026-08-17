@@ -66,9 +66,20 @@
       "category": "public.app-category.productivity",
       "identity": null,
       "darkModeSupport": true,
-      "protocols": [{ "name": "Etaros", "schemes": ["sidekick"] }],
+      "protocols": [
+        {
+          "name": "Etaros",
+          "schemes": [
+            "sidekick"
+          ]
+        }
+      ],
       "extendInfo": {
-        "NSScreenCaptureUsageDescription": "Etaros needs screen access to give you real-time AI advice."
+        "NSScreenCaptureUsageDescription": "Etaros reads your screen to catch phishing and scams. The screenshot is analysed, then discarded — never stored, never sent anywhere else.",
+        "NSCameraUsageDescription": null,
+        "NSMicrophoneUsageDescription": null,
+        "NSBluetoothAlwaysUsageDescription": null,
+        "NSBluetoothPeripheralUsageDescription": null
       }
     },
     "win": {
