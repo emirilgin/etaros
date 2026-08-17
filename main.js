@@ -179,6 +179,7 @@ Never pad to seem thorough. Never truncate real analysis to seem crisp.
 
 WHAT YOU CAN SEE
 The user's screen, text they paste, and images or screenshots they attach. Nothing else.
+The screen is attached only when the question is about the screen, because uploading one otherwise would be pointless data collection. If a question seems to be about something in front of them and no screenshot came with it, say you can't see it and ask them to paste the text or say "look at this screen". Never assume what is on it.
 You cannot read files, and sending you one will not change that: no .dmg, .exe, .pdf, .zip or document contents, and no downloads, network traffic, running processes or email headers. Never imply the file itself would help. A file extension is a format, not a threat, so never judge one by its name. What you can do instead: check where it came from, the domain that served it, and the message that delivered it. Say that.
 
 VERDICTS
@@ -572,6 +573,28 @@ async function captureScreen({ silent = false } = {}) {
     if (!silent) push('screen-permission-needed', {});
     return null;
   }
+}
+
+// Data minimisation: a typed question is not consent to upload a screenshot.
+// Only send the screen when the message is actually about the screen — a
+// pointing word ("this page", "dit venster") or a verdict question with no
+// object, which can only mean whatever is in front of them. Everything else
+// travels as text alone. When the model needs the screen and doesn't have it,
+// the prompt tells it to say so rather than guess.
+const SCREEN_REF = new RegExp([
+  // explicit surface: English + Dutch
+  'screen|scherm|\\bpage\\b|pagina|\\btab\\b|popup|pop-up|window|venster|dialog|melding',
+  // pointing at something present
+  '\\b(this|that|these|those|dit|deze|dat|die)\\s+(page|site|website|link|email|mail|message|bericht|popup|pop-up|window|venster|app|download|invoice|factuur|login|form|formulier)\\b',
+  // verdict question with no object stated
+  '^\\s*(is|are|zijn)?\\s*(this|dit|deze|dat|it|het)?\\s*(safe|veilig|legit|echt|real|fake|nep|scam|phishing|oplichting|betrouwbaar)\\s*\\??\\s*$',
+  // asking us to look
+  '\\b(look at|check|kijk|bekijk|analyse|analyze|analyseer)\\b.*\\b(this|dit|deze|screen|scherm)\\b',
+  '\\bwhat (do you |can you )?see\\b|\\bwat zie je\\b',
+].join('|'), 'i');
+
+function refersToScreen(text) {
+  return SCREEN_REF.test(String(text || ''));
 }
 
 // ─── Pixel diff ───────────────────────────────────────────────────────────────
@@ -1351,9 +1374,11 @@ function registerIPC() {
   ipcMain.handle('check-ollama', () => getOllamaStatus());
 
   ipcMain.handle('chat', async (_, text) => {
-    // Opportunistic: if we can see the screen it makes the answer better, but a
-    // typed question must never depend on a permission the user hasn't granted.
-    const thumb = await captureScreen({ silent: true });
+    // The screen goes up only when the question is about the screen. A general
+    // question travels as text alone — see refersToScreen(). Still opportunistic
+    // when it does apply: a typed question must never depend on a permission the
+    // user hasn't granted.
+    const thumb = refersToScreen(text) ? await captureScreen({ silent: true }) : null;
     // Send thumb preview to renderer so user bubble shows screenshot context
     if (thumb) {
       const previewB64 = thumb.resize({ width: 280, quality: 'good' }).toJPEG(60).toString('base64');
