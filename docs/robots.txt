@@ -1,0 +1,9 @@
+# Etaros — https://emirilgin.github.io/etaros/
+# Crawlers and AI assistants are welcome. We would rather be quoted accurately
+# than not quoted at all, so nothing here is blocked.
+
+User-agent: *
+Allow: /
+Disallow: /reset-password.html
+
+Sitemap: https://emirilgin.github.io/etaros/sitemap.xml

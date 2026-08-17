@@ -1162,7 +1162,7 @@ function openSettingsPage(section = 'profile') {
     if (gStatus) {
       gStatus.innerHTML = s.geminiKey
         ? '✓ Using your personal key, higher daily quota.'
-        : 'Using shared key. Hit the daily limit? Paste your own free key from <a href="#" id="adv-gemini-link" style="color:var(--orange)">aistudio.google.com</a> for a higher personal quota.';
+        : 'Using shared key. Hit the daily limit? Paste your own free key from <a href="#" id="adv-gemini-link" style="color:var(--accent)">aistudio.google.com</a> for a higher personal quota.';
       // Re-bind link (innerHTML wiped listener)
       document.getElementById('adv-gemini-link')?.addEventListener('click', e => {
         e.preventDefault(); window.sk.openUrl('https://aistudio.google.com/app/apikey');
@@ -1191,7 +1191,7 @@ function openSettingsPage(section = 'profile') {
       if (!tile) return;
       tile.classList.toggle('current', lic.tier === tier);
       // Highlight Pro row when user is on free plan
-      tile.style.borderColor = (tier === 'pro' && lic.tier === 'free') ? 'var(--orange)' : '';
+      tile.style.borderColor = (tier === 'pro' && lic.tier === 'free') ? 'var(--accent)' : '';
       if (action) {
         if (lic.tier === tier) {
           action.className = 'sp-plan-row-btn current-lbl';

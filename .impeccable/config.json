@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "flat-type-hierarchy",
+        "value": "*",
+        "files": [
+          "docs/reset-password.html"
+        ],
+        "createdAt": "2026-08-06T14:39:19.487Z",
+        "reason": "380px auth card: input/button/msg sit at one optical size by role; hierarchy carried by weight and colour"
+      }
+    ]
+  }
+}

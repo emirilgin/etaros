@@ -3,17 +3,49 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Etaros - Catches the scam before you do</title>
-  <meta name="description" content="Etaros watches your screen for phishing, fake logins and fraud, and catches them in real time. European AI, nothing stored, or run it fully offline." />
-  <meta property="og:title" content="Etaros - You're not paranoid. You're outnumbered." />
+  <title>Etaros - Watches your screen. Reports to nobody.</title>
+  <meta name="description" content="Etaros catches phishing, fake logins and fraud on your screen in real time. European AI, nothing stored, or run it fully offline on your own machine." />
+  <link rel="canonical" href="https://emirilgin.github.io/etaros/" />
+  <link rel="icon" type="image/png" href="logo.png" />
+  <link rel="apple-touch-icon" href="logo.png" />
+
+  <meta property="og:type" content="website" />
+  <meta property="og:site_name" content="Etaros" />
+  <meta property="og:url" content="https://emirilgin.github.io/etaros/" />
+  <meta property="og:title" content="Etaros - Watches your screen. Reports to nobody." />
   <meta property="og:description" content="Real-time protection against phishing and fraud. Your screen never goes to Big Tech, and nothing is kept." />
+  <meta property="og:image" content="https://emirilgin.github.io/etaros/banner.png" />
+  <meta property="og:image:width" content="1500" />
+  <meta property="og:image:height" content="500" />
+  <meta property="og:image:alt" content="Etaros - watches your screen, reports to nobody" />
   <meta name="twitter:card" content="summary_large_image" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-  <!-- non-render-blocking font load: text paints instantly in system font, then swaps -->
-  <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" />
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" media="print" onload="this.media='all'" />
-  <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" /></noscript>
+  <meta name="twitter:title" content="Etaros - Watches your screen. Reports to nobody." />
+  <meta name="twitter:description" content="Real-time protection against phishing and fraud. Your screen never goes to Big Tech, and nothing is kept." />
+  <meta name="twitter:image" content="https://emirilgin.github.io/etaros/banner.png" />
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    "name": "Etaros",
+    "applicationCategory": "SecurityApplication",
+    "operatingSystem": "macOS, Windows",
+    "url": "https://emirilgin.github.io/etaros/",
+    "description": "Desktop security app that reads your screen with AI and catches phishing, impersonation and subscription traps in real time. Analysis runs on European infrastructure and nothing is retained.",
+    "softwareVersion": "1.2.4",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "EUR",
+      "description": "Free tier: 10 security checks per month, plus unlimited fully-local analysis."
+    },
+    "author": { "@type": "Person", "name": "Emir Ilgin" },
+    "publisher": { "@type": "Organization", "name": "Etaros" }
+  }
+  </script>
+  <!-- No webfonts. A page promising your screen never reaches Big Tech cannot open
+       by asking Google for a typeface. System stack only: zero external requests,
+       nothing to preconnect to, and it matches what the app itself renders. -->
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -35,11 +67,13 @@
       --red:     #FF6259;
       --amber:   #F5B849;
       --mono:    'SF Mono', ui-monospace, 'JetBrains Mono', Menlo, monospace;
+      /* Same stack the app renders, so the site looks like the product. */
+      --sans:    -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
     }
     ::selection{ background:rgba(76,194,255,.28); }
 
     html { scroll-behavior: smooth; }
-    body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); }
+    body { font-family: var(--sans); background: var(--bg); color: var(--text); }
 
     /* NAV */
     nav {
@@ -90,7 +124,7 @@
     .dl-box{ position:relative; width:100%; max-width:420px; background:var(--surface); border:1px solid var(--border);
       border-radius:20px; padding:32px 28px 24px; text-align:center; box-shadow:0 30px 80px rgba(0,0,0,.6); }
     .dl-close{ position:absolute; top:14px; right:16px; background:none; border:none; font-size:16px; color:var(--muted); cursor:pointer; }
-    .dl-title{ font-family:'Space Grotesk',sans-serif; font-size:22px; font-weight:700; margin-bottom:6px; }
+    .dl-title{ font-family:var(--sans); font-size:22px; font-weight:700; margin-bottom:6px; }
     .dl-sub{ font-size:14px; color:var(--muted); margin-bottom:22px; }
     .dl-grid{ display:flex; flex-direction:column; gap:10px; }
     .dl-btn{ display:flex; flex-direction:column; gap:2px; padding:14px 16px; border-radius:13px; border:1.5px solid var(--border);
@@ -105,7 +139,7 @@
     section { padding: 80px 24px; }
     .container { max-width: 960px; margin: 0 auto; }
     .section-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .1em; color: var(--accent); margin-bottom: 12px; }
-    h2 { font-family:'Space Grotesk',sans-serif; font-size: clamp(28px,4.4vw,42px); font-weight: 700; letter-spacing: -.02em; line-height: 1.12; margin-bottom: 16px; }
+    h2 { font-family:var(--sans); font-size: clamp(28px,4.4vw,42px); font-weight: 700; letter-spacing: -.02em; line-height: 1.12; margin-bottom: 16px; }
     .section-sub { font-size: 17px; color: var(--muted); max-width: 560px; line-height: 1.65; }
 
     /* HERO */
@@ -118,7 +152,7 @@
     }
     .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: pulse 2s infinite; }
     @keyframes pulse { 0%,100%{opacity:1}50%{opacity:.4} }
-    h1 { font-family:'Space Grotesk',sans-serif; font-size: clamp(38px,6.5vw,68px); font-weight: 700; letter-spacing: -.035em; line-height: 1.02; margin-bottom: 20px; }
+    h1 { font-family:var(--sans); font-size: clamp(38px,6.5vw,68px); font-weight: 700; letter-spacing: -.035em; line-height: 1.02; margin-bottom: 20px; }
     h1 em { font-style: normal; color: var(--accent); }
     .hero-sub { font-size: clamp(16px,2vw,20px); color: var(--muted); max-width: 600px; margin: 0 auto 36px; line-height: 1.6; }
     .hero-cta { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-bottom: 20px; }

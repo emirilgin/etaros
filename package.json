@@ -1,7 +1,7 @@
 {
   "name": "etaros",
   "version": "1.2.4",
-  "description": "AI sidekick that watches your screen — catches scams, bad deals, and subscription traps in real time",
+  "description": "Etaros watches your screen for the things watching you — phishing, impersonation, and subscription traps, caught in real time and never stored",
   "main": "main.js",
   "scripts": {
     "start": "electron .",
