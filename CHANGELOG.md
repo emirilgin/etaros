@@ -3,6 +3,30 @@
 All notable changes to Etaros are documented here.
 Format loosely follows [Keep a Changelog](https://keepachangelog.com/).
 
+## [1.0.0] — 2026-08-17
+
+First public release. Version reset to 1.0.0: everything before this was
+pre-launch and is no longer published.
+
+### Changed
+- **Analysis runs on Mistral, on European infrastructure.** Google is gone from
+  the default path. Claude and Ollama remain available for anyone who brings
+  their own key or wants everything on their own machine.
+- **The screen is only sent when the question is about the screen.** Previously
+  every chat message uploaded a screenshot, whether or not it was relevant.
+- **No provider key ships inside the app.** Model traffic goes through a
+  Cloudflare Worker that holds the key and resolves your plan server-side, so
+  neither can be extracted or edited locally.
+
+### Fixed
+- Builds no longer ship without a backend URL, which left the AI unreachable.
+- The site and the app now use one design system. The privacy and terms pages
+  were light-themed, and the password-reset page was still the old brand.
+- The landing page no longer requests fonts from Google.
+
+### Removed
+- The HMAC license system and the server that went with it.
+
 ## [1.2.0] — 2026-06-01
 
 A stability + honesty release. ~20 bugs fixed, ~840 lines of dead code removed,

@@ -1,6 +1,6 @@
 {
   "name": "etaros",
-  "version": "1.2.4",
+  "version": "1.0.0",
   "description": "Etaros watches your screen for the things watching you — phishing, impersonation, and subscription traps, caught in real time and never stored",
   "main": "main.js",
   "scripts": {
