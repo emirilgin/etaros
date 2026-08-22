@@ -23,7 +23,7 @@ logo-options.html
 logo-finals.html
 
 # Business strategy, financials, grant applications, launch plans.
-# Named _private but was tracked until 2026-08-17 — never commit these.
+# Named _private but was tracked until 2026-08-22 — never commit these.
 _private/
 .agents/
 .impeccable/config.local.json

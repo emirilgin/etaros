@@ -34,7 +34,7 @@ must never demand attention while nothing is wrong.
 - **Verifiable, not reassuring.** Where analysis runs and what is retained are stated in the
   interface, not in a policy page.
 
-## Pinned direction (user, 2026-08-17)
+## Pinned direction (user, 2026-08-22)
 The canon, played straight: an Apple-native desktop application, with Claude's calm. The craft
 bar is macOS system apps and Claude's interface. Executed at full fidelity, no irony.
 
