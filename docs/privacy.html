@@ -34,7 +34,7 @@
 <div class="wrap">
   <a class="back" href="index.html">&larr; Back to Etaros</a>
   <h1>Privacy Policy</h1>
-  <div class="upd">Last updated: June 2026 · This notice is provided under Articles 13 &amp; 14 of the EU General Data Protection Regulation (GDPR / AVG).</div>
+  <div class="upd">Last updated: 22 August 2026 · This notice is provided under Articles 13 &amp; 14 of the EU General Data Protection Regulation (GDPR / AVG).</div>
 
   <p>Etaros ("Etaros", "we", "us") is a security tool that helps you detect scams, phishing, and fraud. Protecting your data is core to what we do. This policy explains what personal data we process, why, on what legal basis, who we share it with, how long we keep it, and the rights you have.</p>
 
@@ -60,26 +60,35 @@
   <p>We do not process special categories of data, and we do not use your data for automated decisions producing legal effects about you. The security verdicts are guidance for you, not decisions about you.</p>
 
   <h2>3. Where your screen data goes</h2>
-  <p>When the app analyses your screen, the relevant image is sent to an AI model to produce a verdict and is then discarded. <strong>We do not keep a history of your screen.</strong> Analysis providers act as our processors under data-processing terms.</p>
+  <p>Analysis runs on <strong>Mistral AI, on European infrastructure</strong>. Your screen is not sent to Google, Meta or Microsoft. Mistral does not train models on API data and holds API traffic for 30 days for abuse prevention before deleting it; we hold nothing at any point.</p>
+  <p><strong>The screen is only sent when the question is about the screen.</strong> A general question &mdash; "how does 2FA work?" &mdash; travels as text alone, with no image attached. Automatic scanning sends a frame only while you have monitoring switched on.</p>
+  <p>Each image is analysed to produce a verdict and then discarded. <strong>We keep no history of your screen</strong>, no profile and no record of your habits.</p>
+  <p><strong>You can switch this off entirely.</strong> Local mode runs the analysis on your own machine through Ollama; nothing leaves the device, and it is free on every plan.</p>
+
+  <h2>3a. Use of artificial intelligence</h2>
+  <p>Etaros is an AI product and we say so plainly, as Article 50 of the EU AI Act requires: <strong>you are interacting with an AI system, not a human reviewer.</strong> No person at Etaros reads your screen or your conversations.</p>
+  <p>The AI can be wrong in both directions: it will sometimes miss a real threat and sometimes flag something harmless. Its verdicts are guidance to help you decide, never a decision made about you, and you should keep your own judgement. Etaros performs no automated decision-making with legal or similarly significant effects within the meaning of Article 22 GDPR.</p>
 
   <h2>4. Who we share data with (processors)</h2>
   <p>We use the following service providers, who process data on our behalf under GDPR-compliant agreements:</p>
   <table>
     <tr><th>Provider</th><th>Role</th><th>Location</th></tr>
-    <tr><td>Supabase</td><td>Account database &amp; authentication</td><td>EU region</td></tr>
-    <tr><td>Google (Gemini)</td><td>Default AI screen/text analysis</td><td>United States</td></tr>
-    <tr><td>Anthropic (Claude)</td><td>AI analysis on the top plan</td><td>United States</td></tr>
-    <tr><td>Groq</td><td>AI for the website demo</td><td>United States</td></tr>
-    <tr><td>Cloudflare</td><td>Demo proxy &amp; rate limiting</td><td>Global / United States</td></tr>
-    <tr><td>Sentry</td><td>Crash reporting</td><td>EU (Frankfurt)</td></tr>
-    <tr><td>Stripe</td><td>Payments</td><td>United States / Ireland</td></tr>
-    <tr><td>Resend</td><td>Transactional email</td><td>United States</td></tr>
-    <tr><td>Formspree</td><td>Waitlist form handling</td><td>United States</td></tr>
+    <tr><td><strong>Mistral AI</strong></td><td><strong>All screen and text analysis in the app</strong></td><td><strong>EU (France)</strong></td></tr>
+    <tr><td>Supabase</td><td>Account database, authentication, account emails</td><td>EU region</td></tr>
+    <tr><td>Cloudflare</td><td>API proxy &amp; rate limiting (holds our model key so the app never does)</td><td>Global</td></tr>
+    <tr><td>Sentry</td><td>Crash reporting, with personal data and images stripped before sending</td><td>EU (Frankfurt)</td></tr>
+    <tr><td>Groq</td><td><em>Website demo only.</em> Never used by the installed app</td><td>United States</td></tr>
+    <tr><td>Formspree</td><td>Waitlist form on the website</td><td>United States</td></tr>
+    <tr><td>Stripe</td><td>Payments — <em>not active yet; no paid plans are on sale</em></td><td>United States / Ireland</td></tr>
+    <tr><td>Anthropic (Claude), Google (Gemini)</td><td><em>Only if you enter your own API key in Settings.</em> Off by default, and no key of ours is involved</td><td>United States</td></tr>
+    <tr><td>Ollama (local mode)</td><td>Runs on your own machine. Not a processor: nothing leaves the device</td><td>Your computer</td></tr>
   </table>
   <p>We never sell your personal data and never share it with advertisers.</p>
 
   <h2>5. International transfers</h2>
-  <p>Some processors above are located outside the European Economic Area (mainly the United States). Where data is transferred there, it is protected by appropriate safeguards under Articles 44-46 GDPR - the EU-US Data Privacy Framework where the provider is certified, and/or the European Commission's Standard Contractual Clauses. You can request a copy of the relevant safeguards via the contact email.</p>
+  <p><strong>Your screen content does not leave the European Economic Area.</strong> Analysis (Mistral), your account (Supabase) and crash reports (Sentry) all stay in the EU by design, and that is the point of the architecture rather than a side effect.</p>
+  <p>Three processors sit outside the EEA and none of them touches your screen: Formspree (the website waitlist form), Groq (the demo on the website, never the installed app) and Stripe (payments, not active yet). Where data reaches them it is protected by appropriate safeguards under Articles 44-46 GDPR &mdash; the EU-US Data Privacy Framework where the provider is certified, and/or the European Commission's Standard Contractual Clauses. You can request a copy of the relevant safeguards via the contact email.</p>
+  <p>If you enter your own Anthropic or Google API key in Settings, requests go to that provider under your own agreement with them. That is off by default.</p>
 
   <h2>6. Cookies and local storage</h2>
   <p>The website does not use tracking or advertising cookies. The live demo stores a small counter in your browser's local storage to enforce the free-trial limit. This is strictly necessary for that feature and stores no personal data. You can clear it any time via your browser.</p>
