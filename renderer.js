@@ -83,9 +83,17 @@ feed.addEventListener('scroll', () => {
   userScrolled = feed.scrollHeight - feed.scrollTop - feed.clientHeight > 60;
 });
 
+// The empty conversation composes differently: greeting, openers and composer
+// read as one centred block instead of the composer sitting on the window floor.
+// CSS keys off this class, so it must move with every show/hide of #empty.
+function setEmptyLayout(isEmpty) {
+  const panel = document.getElementById('chat-panel');
+  if (panel) panel.classList.toggle('is-empty', isEmpty);
+}
+
 // ─── Show feed ────────────────────────────────────────────────────────────────
 function showFeed() {
-  if (!hasMessages) { empty.style.display = 'none'; hasMessages = true; }
+  if (!hasMessages) { empty.style.display = 'none'; setEmptyLayout(false); hasMessages = true; }
 }
 
 // ─── Time divider ─────────────────────────────────────────────────────────────
@@ -284,7 +292,7 @@ function clearFeed() {
 }
 
 function showEmpty() {
-  if (empty) empty.style.display = '';
+  if (empty) { empty.style.display = ''; setEmptyLayout(true); }
   hasMessages = false;
 }
 
@@ -821,6 +829,7 @@ window.sk.on('history-cleared', () => {
     if (c.id !== 'empty' && c.id !== 'thinking') c.remove();
   });
   empty.style.display = 'flex';
+  setEmptyLayout(true);
   hasMessages = false;
   lastMsgTime = 0;
 });
