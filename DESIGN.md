@@ -77,6 +77,27 @@ decoration, and on a security product a red one is theatre.
 state change. Nothing loops: the danger icon enters once and stops, and honours
 `prefers-reduced-motion`.
 
+## Accessibility
+
+- **Focus is visible.** `:focus-visible` at 2px `--accent`, offset 2px, across all 91
+  focusable elements. Every control previously resolved to `outline:none` with nothing
+  replacing it, so keyboard users had no position.
+- **Dynamic regions announce.** Status strip and thinking indicator are `role="status"`
+  `aria-live="polite"`; the feed is `role="log"` with `aria-relevant="additions text"` so a
+  streaming reply is read as it arrives.
+- **The danger overlay is `role="alertdialog"`, `aria-live="assertive"`.** It is the one
+  moment the app interrupts on purpose. A security tool that finds a threat and says nothing
+  to a screen reader has failed at its only job for that user.
+- Every interactive element carries an accessible name (91/91).
+- `prefers-reduced-motion` honoured on the one entrance animation.
+
+## Copy density
+
+No sub-header restating the heading it sits under. The empty state's line was two sentences
+where the first repeated the display line; only the instruction survives. "nothing stored"
+appears in the status strip and nowhere else — it was previously also under the composer.
+No eyebrow above a heading: the danger overlay printed "Threat detected" twice.
+
 ## Known debt
 
 - **Light theme still has ~20 contrast failures** from colours hardcoded outside the token

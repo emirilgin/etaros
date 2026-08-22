@@ -495,6 +495,24 @@ html,body{
 #chat-panel.is-empty #input-area{ margin-bottom:auto; padding-top:18px; }
 /* Optical, not mathematical: a block centred on the true midline reads low. */
 #chat-panel.is-empty{ padding-bottom:7vh; }
+/* Keyboard focus was invisible across all 91 focusable elements: every control
+   resolved to outline:none with nothing replacing it. :focus-visible keeps the
+   ring off mouse clicks, so this costs the pointer user nothing. */
+:focus-visible{
+  outline:2px solid var(--accent);
+  outline-offset:2px;
+  border-radius:var(--r-xs);
+}
+.tl-btn:focus-visible{ outline-offset:3px; }
+#msg:focus-visible{ outline:none; }              /* the shell already rings */
+.input-shell:has(#msg:focus-visible){ outline:2px solid var(--accent); outline-offset:2px; }
+
+/* Announced to screen readers only. */
+.sr-only{
+  position:absolute; width:1px; height:1px; padding:0; margin:-1px;
+  overflow:hidden; clip:rect(0 0 0 0); white-space:nowrap; border:0;
+}
+
 /* One icon primitive. Everything drawn, one stroke weight, aligned to text. */
 .ico{ width:14px; height:14px; flex-shrink:0; display:block; }
 .tl-btn-action, .sb-bottom-btn, #update-msg{ display:inline-flex; align-items:center; gap:6px; }
@@ -1705,7 +1723,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
       <!-- Status strip. Etaros is quiet when nothing is wrong, which reads as
            "switched off" unless the interface says otherwise. This makes the
            silence legible: you can see it working and finding nothing. -->
-      <div id="status-strip">
+      <div id="status-strip" role="status" aria-live="polite" aria-atomic="false">
         <span class="st-live"><span class="st-dot"></span><span id="st-state">Ready</span></span>
         <span class="st-sep"></span>
         <span class="st-item" id="st-where">European AI</span>
@@ -1719,7 +1737,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
       <!-- ── Chat panel ──────────────────────────────────────────────── -->
       <div id="chat-panel" class="tab-panel active">
 
-        <div id="feed">
+        <div id="feed" role="log" aria-live="polite" aria-relevant="additions text" aria-label="Conversation">
           <!-- Empty state -->
           <div id="empty">
             <div class="empty-mark">
@@ -1741,7 +1759,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
               </svg>
             </div>
             <h3>Sees the scam before you do.</h3>
-            <p class="empty-sub">Watching your screen for phishing, fake logins and fraud. Ask about anything in front of you.</p>
+            <p class="empty-sub">Ask about anything in front of you.</p>
             <div class="empty-chips">
               <button class="empty-chip" data-msg="Is this page a scam or phishing? Analyze what's on my screen carefully, domain, links, red flags.">Is this a scam?</button>
               <button class="empty-chip" data-msg="Is this email or message safe? Check the sender, links, and any urgency tactics on my screen.">Check this email</button>
@@ -1754,7 +1772,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
           </div>
 
           <!-- Thinking indicator -->
-          <div id="thinking">
+          <div id="thinking" role="status" aria-live="polite">
             <div class="t-wrap">
               <div class="t-spin"></div>
               <div class="t-label">Etaros is thinking<span id="think-time" style="font-weight:400;color:var(--t4);font-size:11px;margin-left:3px"></span></div>
@@ -1796,7 +1814,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
             </div>
             <input type="file" id="file-input" accept="image/*" style="display:none"/>
           </div>
-          <p class="input-hint">Etaros sees your screen · nothing is stored · ↵ to send</p>
+          <p class="input-hint">↵ to send</p>
         </div>
 
       </div><!-- /chat-panel -->
@@ -1872,10 +1890,9 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 <div id="life-list" style="display:none"></div>
 
 <!-- Danger alert overlay (active threat) -->
-<div id="danger-overlay">
+<div id="danger-overlay" role="alertdialog" aria-modal="true" aria-live="assertive" aria-labelledby="danger-title">
   <div class="danger-box">
     <div class="danger-pulse"><svg viewBox="0 0 24 24" fill="none" style="width:34px;height:34px"><path d="M12 3.2 22 20H2L12 3.2Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/><path d="M12 10v4.4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cx="12" cy="17.4" r="1.15" fill="currentColor"/></svg></div>
-    <div class="danger-label">Threat detected</div>
     <h2 id="danger-title">Threat detected</h2>
     <p id="danger-detail"></p>
     <div class="danger-action-box"><strong>What to do:</strong> <span id="danger-action"></span></div>
