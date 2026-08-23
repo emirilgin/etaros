@@ -1120,7 +1120,6 @@ async function renderPrivacyPanel() {
   }
 }
 
-document.getElementById('privacy-btn')?.addEventListener('click', () => openSettingsPage('privacy'));
 
 document.getElementById('pv-local-btn')?.addEventListener('click', async () => {
   await window.sk.saveSettings({ provider: 'ollama' });
