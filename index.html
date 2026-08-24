@@ -1373,6 +1373,16 @@ html,body{
 .sp-row:hover{ background:var(--bg-hi); }
 .sp-select{ transition:border-color .26s var(--ease), background-color .26s var(--ease), transform .3s var(--spring); }
 .sp-select:active{ transform:scale(.975); transition-duration:.09s; }
+.sp-row-input{
+  flex-shrink:0; width:220px; height:28px; padding:0 11px;
+  font-family:inherit; font-size:var(--fs-sub); color:var(--t1);
+  background:var(--card); border:1px solid var(--border2); border-radius:var(--r-xs);
+  outline:none; transition:border-color .26s var(--ease), background-color .26s var(--ease);
+}
+.sp-row-input:hover{ background-color:var(--card-h); }
+.sp-row-input:focus-visible{ border-color:var(--accent); }
+.sp-row-input.is-locked{ color:var(--t3); cursor:default; }
+.sp-row-input.is-locked:hover{ background-color:var(--card); }
 .sp-select:hover{ background-color:var(--card-h); }
 .sp-select:focus-visible{ border-color:var(--accent); }
 .sp-select option{ background:var(--surface); color:var(--t1); }
@@ -2144,18 +2154,26 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
         <button class="sp-avatar-btn" id="sp-avatar-hint">Change photo</button>
         <input type="file" id="sp-pfp-input" accept="image/*" style="display:none"/>
       </div>
-      <div class="sp-section-lbl">Name &amp; Email</div>
-      <div class="sp-field">
-        <label>Name</label>
-        <input id="sp-name" type="text" placeholder="Your name" autocomplete="given-name"/>
+      <div class="sp-row">
+        <div class="sp-row-text">
+          <div class="sp-row-name">Name</div>
+          <div class="sp-row-desc">Shown in the app. Never sent anywhere.</div>
+        </div>
+        <input class="sp-row-input" id="sp-name" type="text" placeholder="Your name" autocomplete="given-name"/>
       </div>
-      <div class="sp-field">
-        <label>Email</label>
-        <input id="sp-email" type="email" placeholder="you@email.com" autocomplete="off" readonly style="opacity:.5;cursor:default" title="Email is managed by your account"/>
+      <div class="sp-row">
+        <div class="sp-row-text">
+          <div class="sp-row-name">Email</div>
+          <div class="sp-row-desc">Set when you signed up. Contact support to change it.</div>
+        </div>
+        <input class="sp-row-input is-locked" id="sp-email" type="email" placeholder="you@email.com" autocomplete="off" readonly title="Email is managed by your account"/>
       </div>
-      <div class="sp-section-lbl">Language</div>
-      <div class="sp-field">
-        <select id="sp-lang">
+      <div class="sp-row">
+        <div class="sp-row-text">
+          <div class="sp-row-name">Language</div>
+          <div class="sp-row-desc">What Etaros answers in.</div>
+        </div>
+        <select class="sp-select" id="sp-lang">
           <option value="en">English</option>
           <option value="nl">Nederlands</option>
           <option value="de">Deutsch</option>
