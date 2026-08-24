@@ -52,6 +52,8 @@
   /* Machine-readable data (domains, verdicts, counts, time) sits in mono.
      It is the cheapest way to say "this was measured, not guessed". */
   --ease: cubic-bezier(.22,.85,.3,1);
+  /* Slight overshoot, for things the user pushes. */
+  --spring: cubic-bezier(.34,1.4,.5,1);
   --mono: 'SF Mono', ui-monospace, 'JetBrains Mono', Menlo, monospace;
 
   /* Type scale. Real steps (~1.25) so a heading reads as a heading. */
@@ -67,9 +69,9 @@
   --sh-3: 0 12px 34px rgba(0,0,0,.44);
 
   /* Softer corner language. 10/7/5 read as boxes; these read as surfaces. */
-  --r:    13px;
-  --r-s:  10px;
-  --r-xs:  7px;
+  --r:    16px;
+  --r-s:  12px;
+  --r-xs:  9px;
 
   --sidebar:  252px;
   --titlebar:  44px;
@@ -614,7 +616,10 @@ html,body{
   transition:background .2s var(--ease), color .2s var(--ease), border-color .2s var(--ease), transform .2s var(--ease);
 }
 .empty-chip:hover{ background:var(--card-h); color:var(--t1); }
-.empty-chip:active{ transform:scale(.975); }
+.empty-chip{ transition:background .2s var(--ease), color .2s var(--ease),
+             border-color .2s var(--ease), transform .22s var(--spring); }
+.empty-chip:hover{ transform:translateY(-1px); }
+.empty-chip:active{ transform:translateY(0) scale(.96); transition-duration:.09s; }
 /* One opener leads. Without this the six read as a wall and none is an entry. */
 .empty-chip.is-primary{
   order:-1; background:var(--accent); border-color:var(--accent);
@@ -639,7 +644,11 @@ html,body{
 .group{
   padding:0 max(24px,calc(50% - 400px));
   margin-bottom:28px; flex-shrink:0;
-  animation:fadeUp .25s cubic-bezier(.16,.8,.3,1) both;
+  animation:msgIn .34s var(--spring) both;
+}
+@keyframes msgIn{
+  from{ opacity:0; transform:translateY(10px) scale(.985); }
+  to  { opacity:1; transform:none; }
 }
 .g-label{
   font-size:12.5px; font-weight:600; color:var(--t2);
@@ -800,10 +809,15 @@ html,body{
 .user-bubble{
   max-width:78%;
   background:var(--card-h);
-  border-radius:20px 20px 5px 20px;
+  border-radius:22px 22px 7px 22px;
   padding:11px 16px; font-size:15px; line-height:1.72;
   color:var(--t1); font-weight:400;
-  box-shadow:0 1px 2px rgba(0,0,0,.06);
+  box-shadow:var(--sh-1);
+  animation:bubbleIn .34s var(--spring) both;
+}
+@keyframes bubbleIn{
+  from{ opacity:0; transform:translateY(8px) scale(.94); transform-origin:100% 100%; }
+  to  { opacity:1; transform:none; }
 }
 .screen-thumb-wrap{ margin-bottom:8px; position:relative; display:inline-block; }
 .screen-thumb{
@@ -865,7 +879,9 @@ html,body{
   color:var(--on-accent); transition:opacity .2s var(--ease), transform .2s var(--ease), background .2s var(--ease);
   box-shadow:var(--sh-1);
 }
-#send:hover:not(:disabled){ opacity:.9; transform:scale(1.06); }
+#send{ transition:opacity .2s var(--ease), transform .24s var(--spring), background .2s var(--ease); }
+#send:hover:not(:disabled){ opacity:.9; transform:scale(1.09); }
+#send:active:not(:disabled){ transform:scale(.94); transition-duration:.09s; }
 #send:disabled{ opacity:0; cursor:default; pointer-events:none; transform:scale(.9); }
 #send svg{ width:14px; height:14px; display:block; }
 .input-hint{
@@ -1640,6 +1656,8 @@ html,body{
   padding:7px 10px; cursor:pointer;
   transition:background .2s var(--ease), color .2s var(--ease);
 }
+.sp-rail-btn{ transition:background .2s var(--ease), color .2s var(--ease), transform .22s var(--spring); }
+.sp-rail-btn:active{ transform:scale(.975); transition-duration:.09s; }
 .sp-rail-btn:hover{ background:var(--card); color:var(--t1); }
 /* Selected row is a filled pill, the way a macOS sidebar marks its selection —
    not an underline, which belongs to tabs in a browser. */
@@ -2530,6 +2548,15 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 @keyframes auth-fadein {
   from { opacity: 0; transform: translateY(4px); }
   to   { opacity: 1; transform: translateY(0);   }
+}
+
+/* Every entrance and spring above answers something the user did. Someone who
+   asks the OS for less movement gets the interface without any of it. */
+@media (prefers-reduced-motion:reduce){
+  *, *::before, *::after{
+    animation-duration:.01ms !important; animation-iteration-count:1 !important;
+    transition-duration:.01ms !important; scroll-behavior:auto !important;
+  }
 }
 </style>
 
