@@ -568,6 +568,21 @@ function makeGroup() {
   return el;
 }
 
+// The verdict is the product. It arrived as ordinary bold text, so the one
+// moment that matters looked like any other sentence. Colour is reserved for
+// judgements (see DESIGN.md), and this is the judgement.
+const VERDICT = [
+  [/^\s*(?:\*\*)?DANGEROUS\b/i,  'v-danger'],
+  [/^\s*(?:\*\*)?SUSPICIOUS\b/i, 'v-warn'],
+  [/^\s*(?:\*\*)?SAFE\b/i,       'v-safe'],
+];
+function markVerdict(msgDiv, text) {
+  if (!msgDiv) return;
+  msgDiv.classList.remove('v-danger', 'v-warn', 'v-safe');
+  const hit = VERDICT.find(([re]) => re.test(text || ''));
+  if (hit) msgDiv.classList.add(hit[1]);
+}
+
 // Render a complete AI message (for history restore)
 function appendAiGroup(text) {
   showFeed();
@@ -575,6 +590,7 @@ function appendAiGroup(text) {
   const msgDiv = document.createElement('div');
   msgDiv.className = 'chat-msg';
   msgDiv.innerHTML = md(text);
+  markVerdict(msgDiv, text);
   el.appendChild(msgDiv);
   feed.insertBefore(el, thinking);
 }
@@ -595,6 +611,7 @@ function appendChunk(text) {
   if (!streamEl) return;
   streamBuffer += text;
   streamEl.querySelector('.chat-body').innerHTML = md(streamBuffer);
+  markVerdict(streamEl.querySelector('.chat-msg'), streamBuffer);
   scrollBottom();
 }
 

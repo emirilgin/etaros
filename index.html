@@ -1623,6 +1623,25 @@ html,body{
 .conv-date{ font-size:10px; letter-spacing:-.02em; }
 .time-div{ font-size:10px; letter-spacing:.08em; text-transform:uppercase; }
 
+/* Verdicts. The one moment colour is allowed, and the only moment the product
+   is actually giving an answer. Kept to a marker and the opening word: a full
+   coloured panel would be the alarm theatre philosophy.md rules out. */
+.chat-msg.v-danger, .chat-msg.v-warn, .chat-msg.v-safe{
+  padding-left:15px; border-left:1px solid var(--border2);
+}
+.chat-msg.v-danger{ border-left-color:var(--red); }
+.chat-msg.v-warn{   border-left-color:var(--amber); }
+.chat-msg.v-safe{   border-left-color:var(--green); }
+
+/* The opening word carries the verdict's colour; the rest of the answer stays
+   ordinary text, so the eye lands on the judgement and then reads the reason. */
+.chat-msg.v-danger > p:first-child > strong:first-child{ color:var(--red); }
+.chat-msg.v-warn   > p:first-child > strong:first-child{ color:var(--amber); }
+.chat-msg.v-safe   > p:first-child > strong:first-child{ color:var(--green); }
+.chat-msg.v-danger > .chat-body > p:first-child > strong:first-child{ color:var(--red); }
+.chat-msg.v-warn   > .chat-body > p:first-child > strong:first-child{ color:var(--amber); }
+.chat-msg.v-safe   > .chat-body > p:first-child > strong:first-child{ color:var(--green); }
+
 /* Domains and code inside a verdict are evidence: give them a surface so the
    eye lands on the thing being judged. */
 .chat-msg code, .card-detail code{
