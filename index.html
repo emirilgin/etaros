@@ -1313,7 +1313,7 @@ html,body{
 .sp-big-avatar svg { width:32px; height:32px; color:var(--t3); }
 .sp-avatar-btn { font-size:12px; color:var(--accent-t); cursor:pointer; font-weight:500; background:none; border:none; font-family:inherit; }
 .sp-avatar-btn:hover { text-decoration:underline; }
-.sp-section-lbl { font-size:10.5px; font-weight:700; text-transform:uppercase; letter-spacing:.1em; color:var(--t3); padding:16px 20px 6px; }
+.sp-section-lbl { font-size:13px; font-weight:600; letter-spacing:-.01em; color:var(--t1); padding:20px 20px 8px; }
 .sp-field { display:flex; flex-direction:column; gap:4px; padding:0 20px 10px; }
 .sp-field label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.09em; color:var(--t3); }
 .sp-field input, .sp-field select { height:40px; padding:0 12px; background:var(--surface); border:1px solid var(--border); border-radius:var(--r-s); color:var(--t1); font-family:inherit; font-size:14px; outline:none; transition:border-color .2s var(--ease); -webkit-appearance:none; }
@@ -1358,8 +1358,8 @@ html,body{
 .sp-link-row.danger:hover { background:rgba(184,48,48,.06); }
 .sp-divider { height:1px; background:var(--border); margin:8px 0; }
 .sp-section-divider { height:1px; background:var(--border); margin:16px 0 0; }
-#sp-footer { flex-shrink:0; padding:12px 20px 20px; border-top:1px solid var(--border); background:var(--bg); }
-#sp-save-btn { width:100%; height:40px; background:var(--accent); color:#08131B; border:none; border-radius:var(--r-s); font-family:inherit; font-size:14px; font-weight:600; cursor:pointer; transition:opacity .2s var(--ease); }
+#sp-footer { flex-shrink:0; display:flex; justify-content:flex-end; padding:12px 20px; border-top:1px solid var(--border); background:var(--bg-hi); }
+#sp-save-btn { min-width:132px; height:32px; padding:0 18px; background:var(--accent); color:#08131B; border:none; border-radius:var(--r-s); font-family:inherit; font-size:14px; font-weight:600; cursor:pointer; transition:opacity .2s var(--ease); }
 #sp-save-btn:hover { opacity:.88; }
 
 /* Search webview */
@@ -1585,13 +1585,24 @@ html,body{
 .st-quiet{ color:var(--t4); }
 
 /* Settings section rail */
-#sp-rail{ display:flex; gap:2px; padding:10px 16px 0; border-bottom:1px solid var(--border);
-  background:var(--bg); position:sticky; top:var(--titlebar); z-index:5; }
-.sp-rail-btn{ font-family:inherit; font-size:13px; font-weight:550; color:var(--t3);
-  background:none; border:none; border-bottom:2px solid transparent;
-  padding:9px 13px 10px; cursor:pointer; transition:color .2s var(--ease), border-color .2s var(--ease); }
-.sp-rail-btn:hover{ color:var(--t1); }
-.sp-rail-btn.active{ color:var(--accent); border-bottom-color:var(--accent); }
+#sp-main{ flex:1; display:flex; min-height:0; }
+#sp-rail{
+  width:186px; flex-shrink:0; display:flex; flex-direction:column; gap:2px;
+  padding:14px 10px; border-right:1px solid var(--border); background:var(--surface);
+  overflow-y:auto;
+}
+.sp-rail-btn{
+  display:flex; align-items:center; gap:9px; width:100%; text-align:left;
+  font-family:inherit; font-size:13.5px; font-weight:450; color:var(--t2);
+  background:none; border:none; border-radius:var(--r-s);
+  padding:7px 10px; cursor:pointer;
+  transition:background .2s var(--ease), color .2s var(--ease);
+}
+.sp-rail-btn:hover{ background:var(--card); color:var(--t1); }
+/* Selected row is a filled pill, the way a macOS sidebar marks its selection —
+   not an underline, which belongs to tabs in a browser. */
+.sp-rail-btn.active{ background:var(--accent); color:#08131B; font-weight:550; }
+.sp-rail-btn.active .ico{ color:#08131B; }
 .sp-tab-content{ display:none; }
 .sp-tab-content.active{ display:block; animation:fadeUp .18s ease both; }
 
@@ -2023,11 +2034,26 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
 
   <!-- Section rail. Settings was one long scroll with no way to navigate it,
        so everything past the first screen was effectively hidden. -->
+  <div id="sp-main">
+  <!-- Vertical sidebar, as macOS System Settings uses. Horizontal tabs above a
+       long scroll made the sections read as a website, not an application. -->
   <nav id="sp-rail">
-    <button class="sp-rail-btn active" data-sp-tab="profile">Account</button>
-    <button class="sp-rail-btn" data-sp-tab="plan">Plan</button>
-    <button class="sp-rail-btn" data-sp-tab="privacy">Privacy</button>
-    <button class="sp-rail-btn" data-sp-tab="advanced">Advanced</button>
+    <button class="sp-rail-btn active" data-sp-tab="profile">
+      <svg class="ico" viewBox="0 0 16 16" fill="none" aria-hidden="true"><circle cx="8" cy="5.6" r="2.9" stroke="currentColor" stroke-width="1.5"/><path d="M2.6 14c0-2.7 2.4-4.8 5.4-4.8s5.4 2.1 5.4 4.8" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      <span>Account</span>
+    </button>
+    <button class="sp-rail-btn" data-sp-tab="plan">
+      <svg class="ico" viewBox="0 0 16 16" fill="none" aria-hidden="true"><rect x="1.8" y="3.6" width="12.4" height="8.8" rx="1.8" stroke="currentColor" stroke-width="1.5"/><path d="M1.8 6.9h12.4" stroke="currentColor" stroke-width="1.5"/></svg>
+      <span>Plan</span>
+    </button>
+    <button class="sp-rail-btn" data-sp-tab="privacy">
+      <svg class="ico" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M8 1.8l5.2 2.1v4c0 3-2.2 5.2-5.2 6.3-3-1.1-5.2-3.3-5.2-6.3v-4L8 1.8z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/></svg>
+      <span>Privacy</span>
+    </button>
+    <button class="sp-rail-btn" data-sp-tab="advanced">
+      <svg class="ico" viewBox="0 0 16 16" fill="none" aria-hidden="true"><path d="M3 4.6h10M3 8h10M3 11.4h10" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="6" cy="4.6" r="1.5" fill="var(--bg-hi)" stroke="currentColor" stroke-width="1.3"/><circle cx="10.4" cy="11.4" r="1.5" fill="var(--bg-hi)" stroke="currentColor" stroke-width="1.3"/></svg>
+      <span>Advanced</span>
+    </button>
   </nav>
   <div id="sp-body">
 
@@ -2208,11 +2234,11 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
       <div style="padding:0 20px 4px">
         <div class="adv-field">
           <div class="adv-field-row" style="display:flex;gap:6px">
-            <input id="adv-gemini-key" type="password" placeholder="AIza…" autocomplete="off" spellcheck="false" style="flex:1;height:40px;padding:0 12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-s);color:var(--t1);font-family:inherit;font-size:14px;outline:none"/>
+            <input id="adv-gemini-key" type="password" placeholder="AIza…" autocomplete="off" spellcheck="false" style="flex:1;height:40px;padding:0 12px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r-s);color:var(--t1);font-family:inherit;font-size:14px;outline:none;font-family:var(--mono);font-size:12.5px"/>
             <button class="adv-activate-btn" id="adv-gemini-clear" type="button" title="Clear key" style="height:40px">Clear</button>
           </div>
         </div>
-        <p class="adv-hint" id="adv-gemini-status" style="margin-top:6px">Using shared key. Hit the daily limit? Paste your own free key from <a href="#" id="adv-gemini-link" style="color:var(--accent)">aistudio.google.com</a> for a higher personal quota.</p>
+        <p class="adv-hint" id="adv-gemini-status" style="margin-top:6px">Optional. Analysis runs on Mistral in the EU by default; a key here sends your requests to Google instead, under your own agreement with them.</p>
       </div>
       <div class="sp-divider"></div>
       <div class="sp-section-lbl">Support</div>
@@ -2227,6 +2253,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
     </div>
 
   </div>
+  </div><!-- /sp-main -->
   <div id="sp-footer">
     <button id="sp-save-btn">Save changes</button>
   </div>
