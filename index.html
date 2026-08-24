@@ -1408,6 +1408,11 @@ html,body{
 .sp-plan-popular { font-size:var(--fs-micro); font-weight:700; text-transform:uppercase; letter-spacing:.06em; color:var(--accent-t); background:var(--accent-dim); border:1px solid rgba(76,194,255,.25); padding:2px 6px; border-radius:20px; }
 .sp-plan-row-desc { font-size:var(--fs-meta); color:var(--t3); }
 .sp-plan-row-right { display:flex; flex-direction:column; align-items:flex-end; gap:6px; flex-shrink:0; }
+.sp-plan-row-btn.soon{
+  background:none; border:1px solid var(--border2); color:var(--t3);
+  cursor:default; font-weight:450;
+}
+.sp-plan-row-btn.soon:hover{ background:none; }
 .sp-plan-row-price { font-size:var(--fs-sub); font-weight:700; color:var(--t1); }
 .sp-plan-row-price sub { font-size:var(--fs-micro); font-weight:400; color:var(--t3); }
 .sp-plan-row-btn { padding:4px 12px; border-radius:20px; font-family:inherit; font-size:var(--fs-meta); font-weight:600; cursor:pointer; border:none; transition:opacity .26s var(--ease); }
@@ -2177,7 +2182,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
         <div class="sp-plan-row" id="plan-tile-free">
           <div class="sp-plan-row-left">
             <span class="sp-plan-row-name">Free</span>
-            <span class="sp-plan-row-desc">10 checks a month · local mode</span>
+            <span class="sp-plan-row-desc">10 checks a month. Local mode is unlimited and always free.</span>
           </div>
           <div class="sp-plan-row-right">
             <span class="sp-plan-row-price">&euro;0</span>
@@ -2186,22 +2191,22 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
         </div>
         <div class="sp-plan-row" id="plan-tile-pro">
           <div class="sp-plan-row-left">
-            <span class="sp-plan-row-name">Pro <span class="sp-plan-popular">Popular</span></span>
-            <span class="sp-plan-row-desc">Unlimited checks · continuous monitoring</span>
+            <span class="sp-plan-row-name">Pro</span>
+            <span class="sp-plan-row-desc">Unlimited checks, and it watches continuously instead of only when you ask.</span>
           </div>
           <div class="sp-plan-row-right">
             <span class="sp-plan-row-price">&euro;8,99<sub>/mo</sub></span>
-            <button class="sp-plan-row-btn upgrade" id="plan-pro-action">Upgrade →</button>
+            <button class="sp-plan-row-btn soon" id="plan-pro-action" disabled>Not on sale yet</button>
           </div>
         </div>
         <div class="sp-plan-row" id="plan-tile-max">
           <div class="sp-plan-row-left">
             <span class="sp-plan-row-name">Max</span>
-            <span class="sp-plan-row-desc">Everything in Pro · most capable model</span>
+            <span class="sp-plan-row-desc">Everything in Pro, on the most capable model, across your devices.</span>
           </div>
           <div class="sp-plan-row-right">
             <span class="sp-plan-row-price">&euro;19,99<sub>/mo</sub></span>
-            <button class="sp-plan-row-btn upgrade" id="plan-max-action">Upgrade →</button>
+            <button class="sp-plan-row-btn soon" id="plan-max-action" disabled>Not on sale yet</button>
           </div>
         </div>
       </div>
