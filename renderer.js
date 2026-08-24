@@ -607,15 +607,28 @@ function createStreamEl() {
   return el;
 }
 
+// Chunks arrive faster than the screen refreshes. Rendering each one re-parsed
+// the whole buffer, rebuilt the entire subtree, and then read scrollHeight —
+// a forced synchronous layout — for a frame nobody sees. Coalescing to one
+// render per animation frame does the same work at the rate the display can
+// actually show it.
+let streamFrame = 0;
 function appendChunk(text) {
   if (!streamEl) return;
   streamBuffer += text;
-  streamEl.querySelector('.chat-body').innerHTML = md(streamBuffer);
-  markVerdict(streamEl.querySelector('.chat-msg'), streamBuffer);
-  scrollBottom();
+  if (streamFrame) return;
+  streamFrame = requestAnimationFrame(() => {
+    streamFrame = 0;
+    if (!streamEl) return;
+    const body = streamEl.querySelector('.chat-body');
+    if (body) body.innerHTML = md(streamBuffer);
+    markVerdict(streamEl.querySelector('.chat-msg'), streamBuffer);
+    scrollBottom();
+  });
 }
 
 function finalizeStream(data) {
+  if (streamFrame) { cancelAnimationFrame(streamFrame); streamFrame = 0; }
   if (!streamEl) return;
   const cursor = streamEl.querySelector('.stream-cursor');
   if (cursor) cursor.remove();
@@ -740,6 +753,7 @@ window.sk.on('stream-done', (data) => {
 window.sk.on('stream-error', ({ message }) => {
   hdrDot.classList.remove('on');
   document.getElementById('sb-mark')?.classList.remove('spinning');
+  if (streamFrame) { cancelAnimationFrame(streamFrame); streamFrame = 0; }
   if (streamEl) { streamEl.remove(); streamEl = null; streamBuffer = ''; }
   appendError(message);
   showToast('Something went wrong', 'err', 3500);
