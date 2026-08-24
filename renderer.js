@@ -1064,7 +1064,7 @@ function switchSettingsTab(tabId) {
   if (id === 'privacy') renderPrivacyPanel().catch(() => {});
 }
 
-// ── What leaves this device ─────────────────────────────────────────────────
+// ── Privacy tab ─────────────────────────────────────────────────────────────
 // Renders from live state. If a future change starts sending something new,
 // this panel is wrong until someone updates it, which is the point: the claim
 // and the behaviour are kept in the same place.
