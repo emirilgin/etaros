@@ -11,6 +11,21 @@
         ],
         "createdAt": "2026-08-06T14:39:19.487Z",
         "reason": "380px auth card: input/button/msg sit at one optical size by role; hierarchy carried by weight and colour"
+      },
+      {
+        "rule": "bounce-easing",
+        "value": "spring",
+        "createdAt": "2026-08-24T21:55:55.353Z",
+        "reason": "User asked three times for bubbly/springy motion; tempered to a 1.25 overshoot, which settles rather than bounces"
+      },
+      {
+        "rule": "bounce-easing",
+        "value": "*",
+        "files": [
+          "index.html"
+        ],
+        "createdAt": "2026-08-24T21:56:16.740Z",
+        "reason": "Spring motion requested by the user; tempered to a 1.25 overshoot that settles rather than bounces"
       }
     ]
   }
