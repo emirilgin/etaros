@@ -976,18 +976,22 @@ refreshStatus();
 // ─── Theme ────────────────────────────────────────────────────────────────────
 // Dark is the product's own look and lives in :root, so it is the absence of an
 // override. Only light needs a data-theme attribute.
+// Three states. "auto" removes the attribute entirely so the OS decides through
+// prefers-color-scheme; an explicit choice always outranks the system.
 function applyTheme(theme) {
-  const t = theme === 'light' ? 'light' : 'dark';
-  if (t === 'dark') document.documentElement.removeAttribute('data-theme');
-  else document.documentElement.setAttribute('data-theme', 'light');
+  const t = ['light', 'dark', 'auto'].includes(theme) ? theme : 'auto';
+  if (t === 'auto') document.documentElement.removeAttribute('data-theme');
+  else document.documentElement.setAttribute('data-theme', t);
   localStorage.setItem('etaros_theme', t);
-  document.querySelectorAll('.theme-opt').forEach(b =>
-    b.classList.toggle('active', b.dataset.theme === t));
+  const sel = document.getElementById('theme-select');
+  if (sel && sel.value !== t) sel.value = t;
 }
-// Apply saved theme immediately on load
-applyTheme(localStorage.getItem('etaros_theme'));
-document.querySelectorAll('.theme-opt').forEach(btn =>
-  btn.addEventListener('click', () => applyTheme(btn.dataset.theme)));
+
+// Older builds stored only 'light' or 'dark'; both are still honoured, and an
+// unset value now means automatic rather than dark.
+applyTheme(localStorage.getItem('etaros_theme') || 'auto');
+document.getElementById('theme-select')
+  ?.addEventListener('change', e => applyTheme(e.target.value));
 
 // ─── Custom confirm dialog ────────────────────────────────────────────────────
 function showConfirm(message, onOk) {
@@ -1192,11 +1196,12 @@ function openSettingsPage(section = 'profile') {
     if (autoScan)  autoScan.checked  = Boolean(s.autoScan);
     if (loginItem) loginItem.checked = Boolean(s.startOnLogin);
     const interval = Number(s.scanInterval ?? 30);
-    document.querySelectorAll('.adv-pill').forEach(p =>
-      p.classList.toggle('active', Number(p.dataset.val) === interval));
+    const intervalSel = document.getElementById('interval-select');
+    if (intervalSel) intervalSel.value = String(interval);
     const prov = s.provider || 'builtin';
-    document.querySelectorAll('.adv-pcard').forEach(c =>
-      c.classList.toggle('active', c.dataset.prov === prov));
+    const provSel = document.getElementById('prov-select');
+    if (provSel) provSel.value = prov;
+    setProviderDesc(prov);
     const ownKeyField = document.getElementById('adv-own-key-field');
     const ownKey      = document.getElementById('adv-own-key');
     if (ownKeyField) ownKeyField.style.display = (prov === 'claude') ? '' : 'none';
@@ -1294,8 +1299,8 @@ document.getElementById('sp-save-btn')?.addEventListener('click', async () => {
   const name     = document.getElementById('sp-name')?.value.trim() || 'You';
   const language = document.getElementById('sp-lang')?.value || 'en';
   const avatar   = spAvatarDataUrl || undefined;
-  const activePill = document.querySelector('.adv-pill.active');
-  const activeProv = document.querySelector('.adv-pcard.active');
+  const intervalSel = document.getElementById('interval-select');
+  const provSel     = document.getElementById('prov-select');
 
   // Smart key routing: a Gemini key (AIza…) in any field goes to geminiKey,
   // a Claude key (sk-ant…) goes to apiKey, prevents the "pasted in wrong box" trap.
@@ -1309,10 +1314,10 @@ document.getElementById('sp-save-btn')?.addEventListener('click', async () => {
     window.sk.saveProfile({ name, language, ...(avatar ? { avatar } : {}) }),
     window.sk.saveSettings({
       city:         document.getElementById('adv-city')?.value.trim()    || '',
-      scanInterval: activePill ? Number(activePill.dataset.val)          : 30,
+      scanInterval: intervalSel ? Number(intervalSel.value)              : 30,
       autoScan:     document.getElementById('adv-auto-scan')?.checked    ?? false,
       startOnLogin: document.getElementById('adv-login')?.checked        ?? false,
-      provider:     activeProv ? activeProv.dataset.prov                 : 'builtin',
+      provider:     provSel ? provSel.value                              : 'builtin',
       apiKey,
       geminiKey,
     }),
@@ -1367,21 +1372,24 @@ function updateTesterStatus() {
   });
 }
 
-// Interval pills
-document.querySelectorAll('.adv-pill').forEach(pill =>
-  pill.addEventListener('click', () => {
-    document.querySelectorAll('.adv-pill').forEach(p => p.classList.remove('active'));
-    pill.classList.add('active');
-  }));
+// The provider row explains itself: each choice sends the screen somewhere
+// different, and that is the one thing a user of this product should never
+// have to guess at.
+function setProviderDesc(prov) {
+  const d = document.getElementById('prov-desc');
+  if (!d) return;
+  d.textContent =
+    prov === 'ollama' ? 'Runs on this machine. Nothing leaves the device.'
+  : prov === 'claude' ? 'Your own key, sent straight to that provider under your agreement.'
+  : 'Mistral, on European infrastructure. Nothing is kept.';
+}
 
-// Provider cards
-document.querySelectorAll('.adv-pcard').forEach(card =>
-  card.addEventListener('click', () => {
-    document.querySelectorAll('.adv-pcard').forEach(c => c.classList.remove('active'));
-    card.classList.add('active');
-    const ownKeyField = document.getElementById('adv-own-key-field');
-    if (ownKeyField) ownKeyField.style.display = (card.dataset.prov === 'claude') ? '' : 'none';
-  }));
+document.getElementById('prov-select')?.addEventListener('change', e => {
+  const prov = e.target.value;
+  setProviderDesc(prov);
+  const ownKeyField = document.getElementById('adv-own-key-field');
+  if (ownKeyField) ownKeyField.style.display = (prov === 'claude') ? '' : 'none';
+});
 
 // Redeem tester/beta code
 document.getElementById('adv-tester-btn')?.addEventListener('click', async () => {

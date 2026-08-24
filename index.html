@@ -36,6 +36,7 @@
   --accent-glow:rgba(76,194,255,.06);
   --accent-t:   #7FD4FF;
   --accent-hi:  #6BCBFF;
+  --on-accent:  #08131B;
 
   /* Verdict colours, the only other hues in the product. */
   --green: #3DD68C; --green-bg: rgba(61,214,140,.12);
@@ -79,19 +80,35 @@
   --bg:#F7F9FB; --bg-hi:#EFF3F7; --surface:#FFFFFF; --card:#F4F7FA; --card-h:#E8EEF4;
   --border:#DCE4EC; --border2:#C4D0DC;
   --accent:#0A7CC4; --accent-dim:rgba(10,124,196,.1); --accent-glow:rgba(10,124,196,.05);
-  --accent-t:#075E95; --accent-hi:#1A8FD8;
+  --accent-t:#075E95; --accent-hi:#1A8FD8; --on-accent:#FFFFFF;
   --green:#128257; --green-bg:rgba(18,130,87,.1);
   --red:#C4332B;   --red-bg:rgba(196,51,43,.1);
   --amber:#9A6B12; --amber-bg:rgba(154,107,18,.1);
   /* t3/t4 were 3.50:1 and 1.94:1 on white — unreadable, not just quiet. */
   --t1:#0D1620; --t2:#4C5B6B; --t3:#5A6875; --t4:#63707D;
 }
+/* Automatic: with no data-theme attribute the OS decides. An explicit
+   data-theme always wins, so a user who picked dark stays dark in a light room. */
+@media (prefers-color-scheme: light){
+  :root:not([data-theme]){
+    --bg:#F7F9FB; --bg-hi:#EFF3F7; --surface:#FFFFFF; --card:#F4F7FA; --card-h:#E8EEF4;
+    --border:#DCE4EC; --border2:#C4D0DC;
+    --accent:#0A7CC4; --accent-dim:rgba(10,124,196,.1); --accent-glow:rgba(10,124,196,.05);
+    --accent-t:#075E95; --accent-hi:#1A8FD8; --on-accent:#FFFFFF;
+    --green:#128257; --green-bg:rgba(18,130,87,.1);
+    --red:#C4332B;   --red-bg:rgba(196,51,43,.1);
+    --amber:#9A6B12; --amber-bg:rgba(154,107,18,.1);
+    --t1:#0D1620; --t2:#4C5B6B; --t3:#5A6875; --t4:#63707D;
+  }
+}
+:root:not([data-theme]){ color-scheme: light dark; }
+
 /* Legacy theme keys kept so saved preferences don't land on a blank palette. */
 [data-theme="dark"], [data-theme="midnight"]{ color-scheme: dark; }
 [data-theme="ocean"]{
   --bg:#F7F9FB; --bg-hi:#EFF3F7; --surface:#FFFFFF; --card:#F4F7FA; --card-h:#E8EEF4;
   --border:#DCE4EC; --border2:#C4D0DC;
-  --accent:#0A7CC4; --accent-t:#075E95; --accent-hi:#1A8FD8;
+  --accent:#0A7CC4; --accent-t:#075E95; --accent-hi:#1A8FD8; --on-accent:#FFFFFF;
   /* t3/t4 were 3.50:1 and 1.94:1 on white — unreadable, not just quiet. */
   --t1:#0D1620; --t2:#4C5B6B; --t3:#5A6875; --t4:#63707D;
 }
@@ -601,9 +618,9 @@ html,body{
 /* One opener leads. Without this the six read as a wall and none is an entry. */
 .empty-chip.is-primary{
   order:-1; background:var(--accent); border-color:var(--accent);
-  color:#08131B; font-weight:600; box-shadow:var(--sh-1);
+  color:var(--on-accent); font-weight:600; box-shadow:var(--sh-1);
 }
-.empty-chip.is-primary:hover{ background:var(--accent-hi); border-color:var(--accent-hi); color:#08131B; }
+.empty-chip.is-primary:hover{ background:var(--accent-hi); border-color:var(--accent-hi); color:var(--on-accent); }
 .empty-chip:hover{ background:var(--card); color:var(--t1); border-color:var(--border2); }
 
 /* ── Time divider ── */
@@ -762,7 +779,7 @@ html,body{
 .limit-msg-icon{ font-size:28px; margin-bottom:10px; }
 .limit-msg-title{ font-size:15px; font-weight:700; color:var(--t1); margin-bottom:6px; }
 .limit-msg-sub{ font-size:13px; color:var(--t3); line-height:1.55; margin-bottom:16px; max-width:340px; margin-left:auto; margin-right:auto; }
-.limit-msg-btn{ padding:11px 22px; border-radius:10px; background:var(--accent); color:#08131B; border:none; font-family:inherit; font-size:14px; font-weight:600; cursor:pointer; transition:opacity .2s var(--ease); }
+.limit-msg-btn{ padding:11px 22px; border-radius:10px; background:var(--accent); color:var(--on-accent); border:none; font-family:inherit; font-size:14px; font-weight:600; cursor:pointer; transition:opacity .2s var(--ease); }
 .limit-msg-btn:hover{ opacity:.88; }
 
 /* Clean rotating ring spinner (Claude-style) */
@@ -845,7 +862,7 @@ html,body{
   width:32px; height:32px; border-radius:50%; flex-shrink:0;
   background:var(--accent); border:none; cursor:pointer;
   display:flex; align-items:center; justify-content:center;
-  color:#08131B; transition:opacity .2s var(--ease), transform .2s var(--ease), background .2s var(--ease);
+  color:var(--on-accent); transition:opacity .2s var(--ease), transform .2s var(--ease), background .2s var(--ease);
   box-shadow:var(--sh-1);
 }
 #send:hover:not(:disabled){ opacity:.9; transform:scale(1.06); }
@@ -892,7 +909,7 @@ html,body{
   background:linear-gradient(135deg,var(--accent),var(--accent-t));
   border:none; cursor:pointer; flex-shrink:0;
   display:flex; align-items:center; justify-content:center; font-size:14px;
-  color:#08131B; transition:opacity .2s var(--ease), transform .2s var(--ease);
+  color:var(--on-accent); transition:opacity .2s var(--ease), transform .2s var(--ease);
   box-shadow:var(--sh-1);
 }
 #note-save-btn:hover{ opacity:.9; transform:scale(1.07); }
@@ -1064,7 +1081,7 @@ html,body{
 #search-go-btn{
   width:30px; height:30px; border-radius:50%;
   background:var(--accent);
-  border:none; cursor:pointer; color:#08131B; font-size:14px;
+  border:none; cursor:pointer; color:var(--on-accent); font-size:14px;
   display:flex; align-items:center; justify-content:center;
   flex-shrink:0; transition:opacity .2s var(--ease), transform .2s var(--ease);
   box-shadow:var(--sh-1);
@@ -1237,7 +1254,7 @@ html,body{
 .mem-game-input:focus{ border-color:rgba(76,194,255,.45); }
 .mem-game-actions{ display:flex; gap:8px; }
 .mem-game-skip{ flex:0; padding:8px 14px; background:none; border:1px solid var(--border); border-radius:var(--r-s); color:var(--t3); font-family:inherit; font-size:13px; cursor:pointer; }
-.mem-game-save{ flex:1; padding:8px 14px; background:var(--accent); border:none; border-radius:var(--r-s); color:#08131B; font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; transition:opacity .2s var(--ease); }
+.mem-game-save{ flex:1; padding:8px 14px; background:var(--accent); border:none; border-radius:var(--r-s); color:var(--on-accent); font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; transition:opacity .2s var(--ease); }
 .mem-game-save:hover{ opacity:.88; }
 .mem-game-hint{ font-size:11.5px; color:var(--t4); text-align:center; }
 
@@ -1313,6 +1330,31 @@ html,body{
 .sp-big-avatar svg { width:32px; height:32px; color:var(--t3); }
 .sp-avatar-btn { font-size:12px; color:var(--accent-t); cursor:pointer; font-weight:500; background:none; border:none; font-family:inherit; }
 .sp-avatar-btn:hover { text-decoration:underline; }
+/* Apple-style setting row: name and explanation on the left, one control on
+   the right. Replaces three different control languages (tiles, pills, tiles)
+   with one, which is what made the panel feel like several apps. */
+.sp-row{
+  display:flex; align-items:center; gap:18px;
+  padding:11px 20px; min-height:46px;
+}
+.sp-row + .sp-row{ border-top:1px solid var(--border); }
+.sp-row-text{ flex:1; min-width:0; }
+.sp-row-name{ font-size:13.5px; color:var(--t1); }
+.sp-row-desc{ font-size:11.5px; color:var(--t3); margin-top:2px; line-height:1.45; }
+.sp-select{
+  flex-shrink:0; min-width:148px; height:28px; padding:0 30px 0 11px;
+  font-family:inherit; font-size:13px; color:var(--t1);
+  background:var(--card); border:1px solid var(--border2); border-radius:var(--r-xs);
+  cursor:pointer; appearance:none;
+  /* Disclosure chevron, drawn rather than a glyph, tinted with the text ramp. */
+  background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' fill='none'><path d='M3 4.6L6 7.6l3-3' stroke='%238794A4' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-repeat:no-repeat; background-position:right 9px center; background-size:12px;
+  transition:border-color .2s var(--ease), background-color .2s var(--ease);
+}
+.sp-select:hover{ background-color:var(--card-h); }
+.sp-select:focus-visible{ border-color:var(--accent); }
+.sp-select option{ background:var(--surface); color:var(--t1); }
+
 .sp-section-lbl { font-size:13px; font-weight:600; letter-spacing:-.01em; color:var(--t1); padding:20px 20px 8px; }
 .sp-field { display:flex; flex-direction:column; gap:4px; padding:0 20px 10px; }
 .sp-field label { font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:.09em; color:var(--t3); }
@@ -1334,7 +1376,7 @@ html,body{
 .sp-tier-pill.max { background:linear-gradient(135deg,rgba(76,194,255,.1),rgba(139,127,212,.1)); color:var(--accent-t); border:1px solid rgba(76,194,255,.2); }
 .sp-tier-info strong { font-size:13px; color:var(--t1); }
 .sp-tier-info p { font-size:12px; color:var(--t2); margin-top:2px; line-height:1.5; }
-.sp-upgrade-btn { display:flex; align-items:center; justify-content:center; width:calc(100% - 40px); margin:12px 20px 0; height:38px; background:var(--accent); color:#08131B; border:none; border-radius:var(--r-s); font-family:inherit; font-size:13.5px; font-weight:600; cursor:pointer; transition:opacity .2s var(--ease); }
+.sp-upgrade-btn { display:flex; align-items:center; justify-content:center; width:calc(100% - 40px); margin:12px 20px 0; height:38px; background:var(--accent); color:var(--on-accent); border:none; border-radius:var(--r-s); font-family:inherit; font-size:13.5px; font-weight:600; cursor:pointer; transition:opacity .2s var(--ease); }
 .sp-upgrade-btn:hover { opacity:.88; }
 .sp-plan-list { margin:0 20px 8px; display:flex; flex-direction:column; gap:6px; }
 .sp-plan-row { display:flex; align-items:center; justify-content:space-between; padding:13px 16px; background:var(--surface); border:1px solid var(--border); border-radius:var(--r-s); transition:border-color .2s var(--ease); }
@@ -1347,7 +1389,7 @@ html,body{
 .sp-plan-row-price { font-size:14px; font-weight:700; color:var(--t1); }
 .sp-plan-row-price sub { font-size:10px; font-weight:400; color:var(--t3); }
 .sp-plan-row-btn { padding:5px 12px; border-radius:20px; font-family:inherit; font-size:11.5px; font-weight:600; cursor:pointer; border:none; transition:opacity .2s var(--ease); }
-.sp-plan-row-btn.upgrade { background:var(--accent); color:#08131B; }
+.sp-plan-row-btn.upgrade { background:var(--accent); color:var(--on-accent); }
 .sp-plan-row-btn.upgrade:hover { opacity:.85; }
 .sp-plan-row-btn.current-lbl { background:transparent; color:var(--t3); border:1px solid var(--border); cursor:default; }
 .sp-plan-row-btn.locked { background:transparent; color:var(--t4); border:1px solid var(--border); cursor:default; font-size:11px; }
@@ -1359,7 +1401,7 @@ html,body{
 .sp-divider { height:1px; background:var(--border); margin:8px 0; }
 .sp-section-divider { height:1px; background:var(--border); margin:16px 0 0; }
 #sp-footer { flex-shrink:0; display:flex; justify-content:flex-end; padding:12px 20px; border-top:1px solid var(--border); background:var(--bg-hi); }
-#sp-save-btn { min-width:132px; height:32px; padding:0 18px; background:var(--accent); color:#08131B; border:none; border-radius:var(--r-s); font-family:inherit; font-size:14px; font-weight:600; cursor:pointer; transition:opacity .2s var(--ease); }
+#sp-save-btn { min-width:132px; height:32px; padding:0 18px; background:var(--accent); color:var(--on-accent); border:none; border-radius:var(--r-s); font-family:inherit; font-size:14px; font-weight:600; cursor:pointer; transition:opacity .2s var(--ease); }
 #sp-save-btn:hover { opacity:.88; }
 
 /* Search webview */
@@ -1385,7 +1427,7 @@ html,body{
 .adv-field input::placeholder { color:var(--t4); }
 .adv-field-row { display:flex; gap:6px; }
 .adv-field-row input { flex:1; }
-.adv-field-row .adv-activate-btn { height:40px; padding:0 14px; background:var(--accent); color:#08131B; border:none; border-radius:var(--r-s); font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; transition:opacity .2s var(--ease); flex-shrink:0; }
+.adv-field-row .adv-activate-btn { height:40px; padding:0 14px; background:var(--accent); color:var(--on-accent); border:none; border-radius:var(--r-s); font-family:inherit; font-size:13px; font-weight:600; cursor:pointer; transition:opacity .2s var(--ease); flex-shrink:0; }
 .adv-field-row .adv-activate-btn:hover { opacity:.88; }
 .adv-pills { display:grid; grid-template-columns:repeat(4,1fr); gap:5px; }
 .adv-pill { padding:9px 4px; text-align:center; background:var(--surface); border:1px solid var(--border); border-radius:var(--r-s); cursor:pointer; font-size:12px; color:var(--t2); font-family:inherit; transition:background .2s var(--ease), border-color .2s var(--ease), color .2s var(--ease); user-select:none; }
@@ -1448,7 +1490,7 @@ html,body{
   background:var(--card); color:var(--t3); border:1px solid var(--border);
 }
 .sp-plan-tile.current .sp-plan-tile-badge { background:var(--accent-dim); color:var(--accent-t); border-color:rgba(76,194,255,.3); }
-.sp-plan-tile.highlighted .sp-plan-tile-badge { background:var(--accent); color:#08131B; border-color:var(--accent); }
+.sp-plan-tile.highlighted .sp-plan-tile-badge { background:var(--accent); color:var(--on-accent); border-color:var(--accent); }
 .sp-plan-tile-price { font-size:24px; font-weight:700; color:var(--t1); line-height:1; letter-spacing:-.03em; }
 .sp-plan-tile-price sub { font-size:12px; font-weight:400; color:var(--t3); letter-spacing:0; }
 .sp-plan-tile-name { font-size:13px; font-weight:600; color:var(--t1); }
@@ -1462,7 +1504,7 @@ html,body{
   font-family:inherit; font-size:12px; font-weight:600; border:none; cursor:pointer;
   transition:opacity .2s var(--ease); width:100%;
 }
-.sp-plan-tile-action.upgrade { background:var(--accent); color:#08131B; }
+.sp-plan-tile-action.upgrade { background:var(--accent); color:var(--on-accent); }
 .sp-plan-tile-action.upgrade:hover { opacity:.88; }
 .sp-plan-tile-action.current-lbl { background:transparent; color:var(--accent-t); cursor:default; }
 .sp-plan-tile-action.locked { background:var(--card); color:var(--t3); cursor:default; }
@@ -1490,7 +1532,7 @@ html,body{
 .links-input-actions { display:flex; justify-content:flex-end; }
 #link-analyze-btn {
   height:30px; padding:0 14px; border-radius:var(--r-s);
-  background:var(--accent); color:#08131B; border:none;
+  background:var(--accent); color:var(--on-accent); border:none;
   font-family:inherit; font-size:12.5px; font-weight:600;
   cursor:pointer; transition:opacity .2s var(--ease); display:flex; align-items:center; gap:5px;
 }
@@ -1601,8 +1643,8 @@ html,body{
 .sp-rail-btn:hover{ background:var(--card); color:var(--t1); }
 /* Selected row is a filled pill, the way a macOS sidebar marks its selection —
    not an underline, which belongs to tabs in a browser. */
-.sp-rail-btn.active{ background:var(--accent); color:#08131B; font-weight:550; }
-.sp-rail-btn.active .ico{ color:#08131B; }
+.sp-rail-btn.active{ background:var(--accent); color:var(--on-accent); font-weight:550; }
+.sp-rail-btn.active .ico{ color:var(--on-accent); }
 .sp-tab-content{ display:none; }
 .sp-tab-content.active{ display:block; animation:fadeUp .18s ease both; }
 
@@ -2160,21 +2202,32 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
     <!-- ── Advanced tab (inline) ── -->
     <div class="sp-tab-content" id="sp-tab-advanced">
       <div class="sp-section-lbl" style="padding-top:20px">Appearance</div>
-      <div style="padding:0 20px 10px">
-        <div class="theme-grid" id="theme-grid">
-          <button class="theme-opt" data-theme="dark"><span class="theme-sw" style="background:#0A0D11;border:1px solid #212A35"></span>Dark</button>
-          <button class="theme-opt" data-theme="light"><span class="theme-sw" style="background:#F7F9FB;border:1px solid #DCE4EC"></span>Light</button>
+      <div class="sp-row">
+        <div class="sp-row-text">
+          <div class="sp-row-name">Theme</div>
+          <div class="sp-row-desc">Automatic follows your system setting.</div>
         </div>
+        <select class="sp-select" id="theme-select" aria-label="Theme">
+          <option value="auto">Automatic</option>
+          <option value="light">Light</option>
+          <option value="dark">Dark</option>
+        </select>
       </div>
       <div class="sp-divider"></div>
-      <div class="sp-section-lbl">Scan interval</div>
-      <div style="padding:0 20px 10px">
-        <div class="adv-pills" id="adv-interval-pills">
-          <button class="adv-pill" data-val="15">15s<small>Fast</small></button>
-          <button class="adv-pill active" data-val="30">30s<small>Default</small></button>
-          <button class="adv-pill" data-val="60">60s<small>Gentle</small></button>
-          <button class="adv-pill" data-val="0">Off<small>Manual</small></button>
+      <div class="sp-section-lbl">Scanning</div>
+      <div class="sp-row">
+        <div class="sp-row-text">
+          <div class="sp-row-name">Check the screen every</div>
+          <div class="sp-row-desc">Only while continuous watching is on.</div>
         </div>
+        <select class="sp-select" id="interval-select" aria-label="Scan interval">
+          <option value="15">15 seconds</option>
+          <option value="30" selected>30 seconds</option>
+          <option value="60">60 seconds</option>
+          <option value="0">Never — I'll ask</option>
+        </select>
+      </div>
+      <div style="display:none">
       </div>
       <div style="padding:0 20px 4px">
         <div class="adv-toggle-row">
@@ -2204,24 +2257,23 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
         </div>
         <p class="adv-hint" id="adv-tester-status"></p>
       </div>
-      <div class="sp-section-lbl">AI provider</div>
+      <div class="sp-section-lbl">Where analysis runs</div>
+      <div class="sp-row">
+        <div class="sp-row-text">
+          <div class="sp-row-name">Provider</div>
+          <div class="sp-row-desc" id="prov-desc">Mistral, on European infrastructure. Nothing is kept.</div>
+        </div>
+        <select class="sp-select" id="prov-select" aria-label="AI provider">
+          <option value="builtin">Etaros (EU)</option>
+          <option value="ollama">Ollama (this machine)</option>
+          <option value="claude">My own key</option>
+        </select>
+      </div>
       <div style="padding:0 20px 10px">
-        <div class="adv-prov-grid" id="adv-prov-grid">
-          <div class="adv-pcard active" data-prov="builtin">
-            <span class="adv-pcard-icon">◉</span>
-            <span class="adv-pcard-name">Etaros</span>
-            <span class="adv-pcard-sub">Default</span>
-          </div>
-          <div class="adv-pcard" data-prov="ollama">
-            <span class="adv-pcard-icon">○</span>
-            <span class="adv-pcard-name">Ollama</span>
-            <span class="adv-pcard-sub">Local</span>
-          </div>
-          <div class="adv-pcard" data-prov="claude">
-            <span class="adv-pcard-icon">◈</span>
-            <span class="adv-pcard-name">Own Key</span>
-            <span class="adv-pcard-sub">Claude</span>
-          </div>
+        <div class="adv-prov-grid" id="adv-prov-grid" style="display:none">
+          <div class="adv-pcard active" data-prov="builtin"></div>
+          <div class="adv-pcard" data-prov="ollama"></div>
+          <div class="adv-pcard" data-prov="claude"></div>
         </div>
         <div id="adv-own-key-field" class="adv-field" style="margin-top:10px;display:none">
           <label>Anthropic API key</label>
@@ -2388,7 +2440,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
   background: var(--accent);
   border: none; border-radius: 8px;
   /* Dark ink on the accent, as everywhere else. White on #4CC2FF is 2:1. */
-  color: #08131B; font-size: 13px; font-weight: 700;
+  color: var(--on-accent); font-size: 13px; font-weight: 700;
   padding: 10px; cursor: pointer;
   margin-top: 4px;
   transition:opacity .2s var(--ease);
