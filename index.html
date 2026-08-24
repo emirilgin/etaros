@@ -519,6 +519,50 @@ html,body{
 .ico{ width:14px; height:14px; flex-shrink:0; display:block; }
 .tl-btn-action, .sb-bottom-btn, #update-msg{ display:inline-flex; align-items:center; gap:6px; }
 
+/* Reach rings. Nested circles, weakening outward: what the app covers. They
+   sit behind the mark and never move, so the pane has a face without asking
+   for attention. */
+.empty-rings{
+  position:absolute; top:0; left:50%; transform:translateX(-50%);
+  width:0; height:52px; display:flex; align-items:center; justify-content:center;
+  pointer-events:none; z-index:0;
+}
+.empty-rings span{
+  position:absolute; border-radius:50%; border:1px solid var(--accent);
+  /* Faded at the bottom so the rings never cut across the heading below. */
+  -webkit-mask-image:linear-gradient(to bottom,#000 30%,transparent 78%);
+          mask-image:linear-gradient(to bottom,#000 30%,transparent 78%);
+}
+.empty-rings span:nth-child(1){ width:96px;  height:96px;  opacity:.16; }
+.empty-rings span:nth-child(2){ width:150px; height:150px; opacity:.10; }
+.empty-rings span:nth-child(3){ width:212px; height:212px; opacity:.06; }
+.empty-rings span:nth-child(4){ width:282px; height:282px; opacity:.035; }
+#empty{ position:relative; }
+#empty > *:not(.empty-rings){ position:relative; z-index:1; }
+
+/* Three figures, quiet. "Kept" is the one no competitor can print, so it holds
+   its colour at zero while the others stay neutral until they have something
+   to say. */
+.empty-figures{
+  display:flex; gap:34px; margin-top:26px; padding-top:20px;
+  border-top:1px solid var(--border);
+}
+.empty-figures.is-fresh{ gap:0; }
+.empty-figures.is-fresh div{ display:none; }
+.empty-figures.is-fresh::after{
+  content:"Nothing stored, and nothing yet to store.";
+  font-size:var(--fs-meta); color:var(--t4);
+}
+.empty-figures div{ display:flex; flex-direction:column-reverse; align-items:center; gap:3px; }
+.empty-figures dt{ font-size:10.5px; letter-spacing:.06em; text-transform:uppercase; color:var(--t4); }
+.empty-figures dd{
+  font-family:var(--mono); font-variant-numeric:tabular-nums;
+  font-size:19px; letter-spacing:-.02em; color:var(--t2);
+}
+.empty-figures dd.is-kept{ color:var(--green); }
+.empty-figures dd.has-value{ color:var(--t1); }
+.empty-figures dd.is-caught{ color:var(--amber); }
+
 .empty-mark{
   width:52px; height:52px; display:flex; align-items:center; justify-content:center;
   animation:markPulse 5s ease-in-out infinite;
@@ -1731,6 +1775,12 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
         <div id="feed" role="log" aria-live="polite" aria-relevant="additions text" aria-label="Conversation">
           <!-- Empty state -->
           <div id="empty">
+            <!-- Concentric reach behind the mark. Static, not a pulse: this is
+                 the shape of what is watched, not an animation asking to be
+                 looked at. -->
+            <div class="empty-rings" aria-hidden="true">
+              <span></span><span></span><span></span><span></span>
+            </div>
             <div class="empty-mark">
               <svg viewBox="0 0 56 56" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <circle cx="28" cy="28" r="27" fill="var(--card)" stroke="var(--border2)"/>
@@ -1759,6 +1809,11 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
               <button class="empty-chip" data-msg="How do I make my accounts more secure? Give me a quick prioritized checklist (passwords, 2FA, etc).">Secure my accounts</button>
               <button class="empty-chip is-primary" data-msg="What do you see on my screen right now? Flag anything risky or suspicious.">Scan my screen</button>
             </div>
+            <dl class="empty-figures" id="empty-figures">
+              <div><dt>Checks</dt><dd class="num" id="fig-checks">0</dd></div>
+              <div><dt>Caught</dt><dd class="num" id="fig-caught">0</dd></div>
+              <div><dt>Kept</dt><dd class="num is-kept" id="fig-kept">0</dd></div>
+            </dl>
             <div id="trial-info"></div>
           </div>
 

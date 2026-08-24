@@ -925,6 +925,27 @@ async function refreshStatus() {
       c.style.display = caught ? '' : 'none';
       c.textContent = caught ? `${caught} caught` : '';
     }
+    // The empty state's figures read from the same source as the strip, so the
+    // two can never disagree. "Kept" stays green at zero: it is the one figure
+    // that is already true on day one, and the only one a competitor cannot print.
+    const figs = [
+      ['fig-checks', checks, 'has-value'],
+      ['fig-caught', caught, 'is-caught'],
+    ];
+    for (const [id, value, cls] of figs) {
+      const f = document.getElementById(id);
+      if (!f) continue;
+      f.textContent = String(value);
+      f.classList.toggle(cls, value > 0);
+    }
+    const keptFig = document.getElementById('fig-kept');
+    if (keptFig) keptFig.textContent = '0';
+
+    // Before the first check there is nothing to count, and three zeroes read
+    // emptier than no figures at all. One true sentence stands in until then.
+    const figRow = document.getElementById('empty-figures');
+    if (figRow) figRow.classList.toggle('is-fresh', checks === 0 && caught === 0);
+
     if (!strip$.dataset.state || strip$.dataset.state === 'idle') {
       setStatus(local ? 'local' : 'idle', s.autoScan ? 'Watching' : 'Ready');
     }
